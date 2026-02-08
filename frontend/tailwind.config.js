@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Cinzel', 'Orbitron', 'serif'],
-        tactical: ['Orbitron', 'JetBrains Mono', 'sans-serif'],
-        data: ['JetBrains Mono', 'Roboto Mono', 'monospace'],
+        display: ['Cinzel', 'serif'],
+        tactical: ['Orbitron', 'sans-serif'],
+        data: ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -64,24 +64,20 @@ module.exports = {
         },
         blood: 'hsl(var(--blood-red))',
         void: 'hsl(var(--void-black))',
-        slate: {
-          dark: 'hsl(var(--slate-dark))'
-        },
         steel: 'hsl(var(--steel))',
         rust: 'hsl(var(--rust))',
-        chart: {
-          '1': 'hsl(var(--chart-1))',
-          '2': 'hsl(var(--chart-2))',
-          '3': 'hsl(var(--chart-3))',
-          '4': 'hsl(var(--chart-4))',
-          '5': 'hsl(var(--chart-5))'
-        }
+        // Faction colors
+        imperium: 'hsl(var(--faction-imperium))',
+        chaos: 'hsl(var(--faction-chaos))',
+        xenos: 'hsl(var(--faction-xenos))',
       },
       boxShadow: {
-        'glow-gold': '0 0 20px hsl(var(--gold) / 0.3)',
-        'glow-green': '0 0 20px hsl(var(--terminal-green) / 0.3)',
-        'panel': '0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 200, 100, 0.05)',
-        'inset-dark': 'inset 0 2px 4px rgba(0, 0, 0, 0.5)'
+        'glow-gold': '0 0 20px hsl(var(--gold) / 0.4)',
+        'glow-green': '0 0 20px hsl(var(--terminal-green) / 0.4)',
+        'glow-chaos': '0 0 20px hsl(var(--chaos-purple) / 0.4)',
+        'glow-xenos': '0 0 20px hsl(var(--xenos-cyan) / 0.4)',
+        'panel': '0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 200, 100, 0.03)',
+        'inset-dark': 'inset 0 2px 6px rgba(0, 0, 0, 0.6)'
       },
       keyframes: {
         'accordion-down': {
@@ -92,30 +88,10 @@ module.exports = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' }
         },
-        'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 5px hsl(var(--gold) / 0.3)' },
-          '50%': { boxShadow: '0 0 20px hsl(var(--gold) / 0.6), 0 0 40px hsl(var(--gold) / 0.2)' }
-        },
-        'flicker': {
-          '0%, 100%': { opacity: '1' },
-          '92%': { opacity: '1' },
-          '93%': { opacity: '0.8' },
-          '94%': { opacity: '1' },
-          '96%': { opacity: '0.9' },
-          '97%': { opacity: '1' }
-        },
-        'scan': {
-          '0%': { transform: 'translateY(-100%)', opacity: '0' },
-          '50%': { opacity: '0.1' },
-          '100%': { transform: 'translateY(100%)', opacity: '0' }
-        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
-        'flicker': 'flicker 4s ease-in-out infinite',
-        'scan': 'scan 8s linear infinite'
       }
     }
   },

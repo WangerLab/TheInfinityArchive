@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Roboto+Mono:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,75 +7,70 @@
 @layer base {
   :root {
     /* Grimdark Theme - Warhammer 40k Cogitator Interface */
-    /* Background: Dark industrial slate */
-    --background: 222 47% 6%;
+    /* Background: slate-950 base */
+    --background: 222 47% 5%;
     --foreground: 45 80% 90%;
     
-    /* Card: Slightly lighter dark panels */
-    --card: 222 40% 8%;
+    /* Card: Industrial dark panels */
+    --card: 222 40% 7%;
     --card-foreground: 45 70% 85%;
     
     /* Popover */
-    --popover: 222 45% 7%;
+    --popover: 222 45% 6%;
     --popover-foreground: 45 70% 85%;
     
-    /* Primary: Amber Gold - Imperial sanctioned */
+    /* Primary: Holy Gold - amber-500 */
     --primary: 38 92% 50%;
-    --primary-foreground: 222 47% 6%;
+    --primary-foreground: 222 47% 5%;
     
-    /* Secondary: Deep industrial gray */
-    --secondary: 220 20% 15%;
+    /* Secondary: Deep steel */
+    --secondary: 220 20% 13%;
     --secondary-foreground: 45 60% 80%;
     
-    /* Muted: Subdued cogitator tones */
-    --muted: 220 25% 12%;
-    --muted-foreground: 220 15% 55%;
+    /* Muted: Cogitator subdued */
+    --muted: 220 25% 10%;
+    --muted-foreground: 220 15% 50%;
     
-    /* Accent: Emerald Terminal Green */
+    /* Accent: Auspex Green - emerald-500 */
     --accent: 145 70% 42%;
-    --accent-foreground: 222 47% 6%;
+    --accent-foreground: 222 47% 5%;
     
-    /* Destructive: Crimson warning */
+    /* Destructive: Blood Red */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     
     /* Borders and inputs */
-    --border: 38 30% 25%;
-    --input: 220 30% 15%;
+    --border: 38 25% 20%;
+    --input: 220 30% 12%;
     --ring: 38 92% 50%;
-    
-    /* Chart colors for data visualizations */
-    --chart-1: 38 92% 50%;
-    --chart-2: 145 70% 42%;
-    --chart-3: 270 60% 50%;
-    --chart-4: 0 72% 51%;
-    --chart-5: 200 80% 50%;
     
     /* Radius */
     --radius: 0.25rem;
     
     /* Custom Grimdark tokens */
     --gold: 38 92% 50%;
-    --gold-dim: 38 70% 35%;
+    --gold-dim: 38 70% 30%;
     --gold-bright: 45 95% 65%;
     --terminal-green: 145 70% 42%;
-    --terminal-green-dim: 145 50% 30%;
+    --terminal-green-dim: 145 50% 25%;
     --terminal-green-bright: 145 80% 55%;
     --blood-red: 0 72% 51%;
-    --void-black: 222 50% 4%;
-    --slate-dark: 222 47% 6%;
-    --steel: 220 15% 25%;
-    --rust: 25 60% 30%;
+    --void-black: 222 50% 3%;
+    --slate-dark: 222 47% 5%;
+    --steel: 220 15% 20%;
+    --rust: 25 60% 25%;
+    --chaos-purple: 270 60% 40%;
+    --xenos-cyan: 180 70% 45%;
+    
+    /* Faction colors */
+    --faction-imperium: 38 92% 50%;
+    --faction-chaos: 270 60% 50%;
+    --faction-xenos: 180 70% 45%;
     
     /* Shadows */
-    --shadow-glow-gold: 0 0 20px hsl(38 92% 50% / 0.3);
-    --shadow-glow-green: 0 0 20px hsl(145 70% 42% / 0.3);
-    --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-    --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 200, 100, 0.05);
-    
-    /* Transitions */
-    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --shadow-glow-gold: 0 0 20px hsl(38 92% 50% / 0.4);
+    --shadow-glow-green: 0 0 20px hsl(145 70% 42% / 0.4);
+    --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 200, 100, 0.03);
   }
 }
 
@@ -86,24 +81,24 @@
   
   body {
     @apply bg-background text-foreground;
-    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
     background-image: 
-      radial-gradient(circle at 20% 80%, hsl(var(--rust) / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(var(--gold) / 0.05) 0%, transparent 40%),
+      radial-gradient(ellipse at 10% 90%, hsl(var(--rust) / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 10%, hsl(var(--gold) / 0.04) 0%, transparent 40%),
       linear-gradient(180deg, hsl(var(--void-black)) 0%, hsl(var(--slate-dark)) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
   
-  /* Scrollbar styling for cogitator aesthetic */
+  /* Scrollbar styling */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   
   ::-webkit-scrollbar-track {
     background: hsl(var(--void-black));
-    border-left: 1px solid hsl(var(--border) / 0.5);
+    border-left: 1px solid hsl(var(--border) / 0.3);
   }
   
   ::-webkit-scrollbar-thumb {
@@ -115,7 +110,6 @@
     background: hsl(var(--gold));
   }
   
-  /* Selection */
   ::selection {
     background: hsl(var(--gold) / 0.3);
     color: hsl(var(--foreground));
@@ -125,15 +119,53 @@
 /* Typography Classes */
 @layer components {
   .font-display {
-    font-family: 'Cinzel', 'Orbitron', serif;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.1em;
   }
   
   .font-tactical {
-    font-family: 'Orbitron', 'JetBrains Mono', sans-serif;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.15em;
   }
   
   .font-data {
-    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* CRT Scanline Overlay Effect */
+@layer utilities {
+  .crt-scanlines {
+    position: relative;
+  }
+  
+  .crt-scanlines::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.15) 2px,
+      rgba(0, 0, 0, 0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+  
+  .crt-scanlines::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+    pointer-events: none;
+    z-index: 9998;
   }
 }
 
@@ -141,21 +173,22 @@
 @layer utilities {
   @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 5px hsl(var(--gold) / 0.3); }
-    50% { box-shadow: 0 0 20px hsl(var(--gold) / 0.6), 0 0 40px hsl(var(--gold) / 0.2); }
+    50% { box-shadow: 0 0 25px hsl(var(--gold) / 0.6), 0 0 50px hsl(var(--gold) / 0.2); }
   }
   
-  @keyframes scan-line {
+  @keyframes scan-line-vertical {
     0% { transform: translateY(-100%); opacity: 0; }
-    50% { opacity: 0.1; }
+    10% { opacity: 0.3; }
+    90% { opacity: 0.3; }
     100% { transform: translateY(100vh); opacity: 0; }
   }
   
   @keyframes flicker {
     0%, 100% { opacity: 1; }
     92% { opacity: 1; }
-    93% { opacity: 0.8; }
+    93% { opacity: 0.7; }
     94% { opacity: 1; }
-    96% { opacity: 0.9; }
+    96% { opacity: 0.85; }
     97% { opacity: 1; }
   }
   
@@ -164,16 +197,23 @@
     100% { opacity: 1; transform: translateY(0); }
   }
   
-  @keyframes ring-fill {
-    0% { stroke-dashoffset: 283; }
+  @keyframes sector-pacified {
+    0% { border-color: hsl(var(--border)); box-shadow: none; }
+    50% { border-color: hsl(var(--gold)); box-shadow: 0 0 30px hsl(var(--gold) / 0.5), inset 0 0 20px hsl(var(--gold) / 0.1); }
+    100% { border-color: hsl(var(--terminal-green)); box-shadow: 0 0 20px hsl(var(--terminal-green) / 0.4); }
+  }
+  
+  @keyframes data-stream {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
   }
   
   .animate-pulse-glow {
     animation: pulse-glow 3s ease-in-out infinite;
   }
   
-  .animate-scan-line {
-    animation: scan-line 8s linear infinite;
+  .animate-scan-vertical {
+    animation: scan-line-vertical 6s linear infinite;
   }
   
   .animate-flicker {
@@ -181,15 +221,19 @@
   }
   
   .animate-cogitator-boot {
-    animation: cogitator-boot 0.5s ease-out forwards;
+    animation: cogitator-boot 0.4s ease-out forwards;
+  }
+  
+  .animate-sector-pacified {
+    animation: sector-pacified 1.5s ease-out forwards;
   }
 }
 
 /* Panel and card styles */
 @layer components {
   .panel-cogitator {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--void-black)) 100%);
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--void-black)) 100%);
+    border: 1px solid hsl(var(--border) / 0.4);
     box-shadow: var(--shadow-panel);
     position: relative;
     overflow: hidden;
@@ -202,41 +246,53 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5), transparent);
-  }
-  
-  .panel-cogitator::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.2), transparent);
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.4), transparent);
   }
   
   /* Mechanical switch styling */
   .switch-mechanical {
     background: linear-gradient(180deg, hsl(var(--steel)) 0%, hsl(var(--void-black)) 100%);
     border: 2px solid hsl(var(--border));
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 1px 0 hsl(var(--gold) / 0.1);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 1px 0 hsl(var(--gold) / 0.1);
   }
   
   .switch-mechanical[data-state="checked"] {
     background: linear-gradient(180deg, hsl(var(--gold)) 0%, hsl(var(--gold-dim)) 100%);
     border-color: hsl(var(--gold-bright));
-    box-shadow: 0 0 15px hsl(var(--gold) / 0.5), inset 0 1px 0 hsl(var(--gold-bright));
+    box-shadow: 0 0 20px hsl(var(--gold) / 0.5), inset 0 1px 0 hsl(var(--gold-bright));
   }
   
   /* Terminal text glow */
   .text-terminal {
     color: hsl(var(--terminal-green));
-    text-shadow: 0 0 10px hsl(var(--terminal-green) / 0.5);
+    text-shadow: 0 0 10px hsl(var(--terminal-green) / 0.6);
   }
   
   .text-gold-glow {
     color: hsl(var(--gold));
     text-shadow: 0 0 10px hsl(var(--gold) / 0.5);
+  }
+  
+  /* Faction styling */
+  .faction-imperium {
+    border-color: hsl(var(--faction-imperium) / 0.5);
+    --accent-color: hsl(var(--faction-imperium));
+  }
+  
+  .faction-chaos {
+    border-color: hsl(var(--faction-chaos) / 0.5);
+    --accent-color: hsl(var(--faction-chaos));
+  }
+  
+  .faction-xenos {
+    border-color: hsl(var(--faction-xenos) / 0.5);
+    --accent-color: hsl(var(--faction-xenos));
+  }
+  
+  .faction-dimmed {
+    opacity: 0.25;
+    filter: grayscale(0.8);
+    pointer-events: none;
   }
 }
 
@@ -244,23 +300,23 @@
 @layer utilities {
   .grid-overlay {
     background-image: 
-      linear-gradient(hsl(var(--gold) / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--gold) / 0.03) 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(hsl(var(--gold) / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--gold) / 0.02) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
   
-  .noise-texture {
-    position: relative;
-  }
-  
-  .noise-texture::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-    mix-blend-mode: overlay;
+  .data-stream-bg {
+    background: 
+      linear-gradient(45deg, 
+        transparent 25%, 
+        hsl(var(--gold) / 0.02) 25%, 
+        hsl(var(--gold) / 0.02) 50%, 
+        transparent 50%, 
+        transparent 75%, 
+        hsl(var(--gold) / 0.02) 75%
+      );
+    background-size: 8px 8px;
+    animation: data-stream 20s linear infinite;
   }
 }
 
@@ -269,30 +325,18 @@
   [data-debug-wrapper="true"] {
     display: contents !important;
   }
+}
 
-  [data-debug-wrapper="true"] > * {
-    margin-left: inherit;
-    margin-right: inherit;
-    margin-top: inherit;
-    margin-bottom: inherit;
-    padding-left: inherit;
-    padding-right: inherit;
-    padding-top: inherit;
-    padding-bottom: inherit;
-    column-gap: inherit;
-    row-gap: inherit;
-    gap: inherit;
-    border-left-width: inherit;
-    border-right-width: inherit;
-    border-top-width: inherit;
-    border-bottom-width: inherit;
-    border-left-style: inherit;
-    border-right-style: inherit;
-    border-top-style: inherit;
-    border-bottom-style: inherit;
-    border-left-color: inherit;
-    border-right-color: inherit;
-    border-top-color: inherit;
-    border-bottom-color: inherit;
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--gold) / 0.6);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .crt-scanlines::before,
+  .crt-scanlines::after {
+    display: none;
   }
 }

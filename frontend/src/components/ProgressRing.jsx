@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export const ProgressRing = ({ 
   progress = 0, 
@@ -7,7 +8,7 @@ export const ProgressRing = ({
   strokeWidth = 6,
   className,
   showPercentage = true,
-  variant = 'gold' // 'gold' or 'green'
+  variant = 'gold' // 'gold', 'green', 'chaos', 'xenos'
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -15,16 +16,28 @@ export const ProgressRing = ({
 
   const colors = {
     gold: {
-      track: 'stroke-gold-dim/30',
+      track: 'stroke-gold-dim/20',
       progress: 'stroke-gold',
       text: 'text-gold',
       glow: 'drop-shadow-[0_0_8px_hsl(var(--gold)/0.5)]'
     },
     green: {
-      track: 'stroke-terminal-dim/30',
+      track: 'stroke-terminal-dim/20',
       progress: 'stroke-terminal',
       text: 'text-terminal',
       glow: 'drop-shadow-[0_0_8px_hsl(var(--terminal-green)/0.5)]'
+    },
+    chaos: {
+      track: 'stroke-chaos/20',
+      progress: 'stroke-chaos',
+      text: 'text-chaos',
+      glow: 'drop-shadow-[0_0_8px_hsl(var(--chaos-purple)/0.5)]'
+    },
+    xenos: {
+      track: 'stroke-xenos/20',
+      progress: 'stroke-xenos',
+      text: 'text-xenos',
+      glow: 'drop-shadow-[0_0_8px_hsl(var(--xenos-cyan)/0.5)]'
     }
   };
 
@@ -47,39 +60,23 @@ export const ProgressRing = ({
           className={colorSet.track}
         />
         {/* Progress arc */}
-        <circle
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className={cn(colorSet.progress, "transition-all duration-700 ease-out")}
-          style={{
-            strokeDasharray: circumference,
-            strokeDashoffset: offset,
-          }}
+          className={colorSet.progress}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ strokeDasharray: circumference }}
         />
-        {/* Glow effect overlay for filled progress */}
-        {progress > 0 && (
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            strokeWidth={strokeWidth + 4}
-            strokeLinecap="round"
-            className={cn(colorSet.progress, "opacity-20")}
-            style={{
-              strokeDasharray: circumference,
-              strokeDashoffset: offset,
-            }}
-          />
-        )}
       </svg>
       {showPercentage && (
         <span className={cn(
-          "absolute font-tactical text-sm font-bold",
+          "absolute font-tactical text-xs font-bold",
           colorSet.text
         )}>
           {Math.round(progress)}%
