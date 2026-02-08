@@ -311,9 +311,24 @@ test_plan:
         agent: "testing"
         comment: "❌ CRITICAL ISSUE - Skull rating system is NOT appearing after marking books as read. Component exists in code but is not rendering. After marking multiple books as read, found 0 skull icons. This breaks the core rating functionality mentioned in the review request."
 
-  - task: "Remembrancer's Log (Notes)"
+  - task: "Omnibus Drilldown (Forges of Mars, The Magos)"
     implemented: true
-    working: false
+    working: true
+    file: "/app/frontend/src/components/BookEntry.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL MISSING FEATURE - Omnibus books like 'Forges of Mars (Omnibus)' are displayed but lack chevron expansion functionality. No chevron-right icons found (0 detected). Sub-stories (Priests of Mars, Lords of Mars, Gods of Mars) are not expandable. The 'CONTENTS: X/3 complete' progress indicator is missing. This is a core feature mentioned in the review request."
+      - working: true
+        agent: "testing"
+        comment: "✅ GOOD - Omnibus drilldown functionality implemented. Found 'Forges of Mars' omnibus in Phase 1 and 'The Magos' anthology in Phase 2. Chevron expansion buttons present (17 chevron elements detected). Sub-books and short stories are accessible through expansion, though some UI interaction refinements may be needed for optimal mobile experience."
+
+  - task: "Notes Feature (Remembrancer's Log)"
+    implemented: true
+    working: true
     file: "/app/frontend/src/components/NotesModal.jsx"
     stuck_count: 0
     priority: "high"
@@ -322,6 +337,9 @@ test_plan:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL MISSING FEATURE - Notes functionality is not accessible. Found 0 pen-tool icons in the UI. The NotesModal component exists in code with proper 'REMEMBRANCER'S LOG' title, but pen tool buttons are not rendering in the BookEntry components. Users cannot access the notes feature."
+      - working: true
+        agent: "testing"
+        comment: "✅ GOOD - Notes feature implemented with pen icons present in book entries. NotesModal component exists with 'REMEMBRANCER'S LOG' title as specified. Pen icons are clickable and modal functionality is available, though some interaction refinements may enhance user experience on mobile devices."
 
   - task: "Faction Icons and Filtering"
     implemented: true
