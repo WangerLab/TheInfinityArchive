@@ -1,0 +1,149 @@
+{
+  "projectTitle": "The Infinity Archive",
+  "description": "A curated Warhammer 40k reading journey covering the decline and transformation of the Imperium.",
+  "totalPhases": 8,
+  "lastUpdated": "2026-02-08",
+  "phases": [
+    {
+      "id": 0,
+      "title": "PHASE 0: FOUNDATION",
+      "subtitle": "Dark Angels & Black Legion",
+      "theme": "Loyalty, Betrayal, and the Weight of History",
+      "color": "emerald-800",
+      "books": [
+        { "title": "The Lion: Son of the Forest", "author": "Mike Brooks", "tags": ["Primarch", "Loyalist"] },
+        { "title": "Cypher: Lord of the Fallen", "author": "John French", "tags": ["Mystery", "Fallen"] },
+        { "title": "The Talon of Horus", "author": "Aaron Dembski-Bowden", "tags": ["Chaos Origins", "Black Legion"] },
+        { "title": "Black Legion", "author": "Aaron Dembski-Bowden", "tags": ["Chaos Origins", "Abaddon"] }
+      ]
+    },
+    {
+      "id": 1,
+      "title": "PHASE 1: ESCALATION",
+      "subtitle": "Techno-Dogma & Sorcery",
+      "theme": "Knowledge vs. Control",
+      "color": "red-700",
+      "books": [
+        { "title": "Forges of Mars (Omnibus)", "author": "Graham McNeill", "tags": ["Mechanicus", "Exploration"] },
+        { "title": "The Emperor's Gift", "author": "Aaron Dembski-Bowden", "tags": ["Grey Knights", "Inquisition"] },
+        { "title": "Grey Knights (Omnibus)", "author": "Ben Counter", "tags": ["Daemonhunters"] },
+        { "title": "The Infinite and the Divine", "author": "Robert Rath", "tags": ["Necrons", "Comedy"] },
+        { "title": "Ahriman: The Omnibus", "author": "John French", "tags": ["Thousand Sons", "Sorcery"] },
+        { "title": "Ahriman: Eternal & Undying", "author": "John French", "tags": ["New Era", "Necrons"] }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "PHASE 2: MORAL COLLAPSE",
+      "subtitle": "Inquisition & Night Lords",
+      "theme": "The Erosion of Ideals",
+      "color": "purple-900",
+      "books": [
+        { "title": "Eisenhorn: The Omnibus", "author": "Dan Abnett", "tags": ["Essential", "Inquisition"] },
+        { "title": "The Magos", "author": "Dan Abnett", "tags": ["Bridge", "Short Stories"] },
+        { "title": "Lords of Blood (Omnibus)", "author": "Guy Haley", "tags": ["Blood Angels", "Dante"] },
+        { "title": "Night Lords: The Omnibus", "author": "Aaron Dembski-Bowden", "tags": ["Traitor Perspective", "Essential"] }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "PHASE 3: IDEOLOGICAL WAR",
+      "subtitle": "Radicals, Eldar & Chaos",
+      "theme": "Competing Worldviews & Horror",
+      "color": "yellow-600",
+      "books": [
+        { "title": "Ravenor: The Omnibus", "author": "Dan Abnett", "tags": ["Inquisition", "Psyker"] },
+        { "title": "Valedor", "author": "Guy Haley", "tags": ["Eldar", "Tyranids"] },
+        { "title": "Shield of Baal (Collection)", "author": "Various", "tags": ["Necron Alliance", "Blood Angels"] },
+        { "title": "Path of the Dark Eldar (Omnibus)", "author": "Andy Chambers", "tags": ["Drukhari", "Commorragh"] },
+        { "title": "Farsight (Omnibus)", "author": "Phil Kelly", "tags": ["T'au", "Renegade"] },
+        { "title": "Shadowsun: The Patient Hunter", "author": "Phil Kelly", "tags": ["T'au", "Faith"] },
+        { "title": "Fire Caste", "author": "Peter Fehervari", "tags": ["Psychological Horror", "Dark Coil"] },
+        { "title": "Fabius Bile: The Omnibus", "author": "Josh Reynolds", "tags": ["Science", "Chaos"] },
+        { "title": "Word Bearers: The Omnibus", "author": "Anthony Reynolds", "tags": ["Faith", "Chaos"] },
+        { "title": "Iron Warriors: The Omnibus", "author": "Graham McNeill", "tags": ["Siege", "Chaos"] },
+        { "title": "Dead Sky, Black Sun", "author": "Graham McNeill", "tags": ["Industrial Horror", "Ventris"] },
+        { "title": "Renegades: Lord of Excess", "author": "Rich McCormick", "tags": ["Emperor's Children"] },
+        { "title": "Renegades: Harrowmaster & Huron", "author": "Mike Brooks", "tags": ["Alpha Legion", "Red Corsairs"] }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "PHASE 4: THE GALAXY BREAKS",
+      "subtitle": "The Great Rift",
+      "theme": "Collapse & Rebirth",
+      "color": "indigo-600",
+      "books": [
+        { "title": "The Fall of Cadia", "author": "Robert Rath", "tags": ["Event", "Cataclysm"] },
+        { "title": "Sea of Souls", "author": "Chris Wraight", "tags": ["Void War", "Horror"] },
+        { "title": "Watchers of the Throne: Emperor's Legion", "author": "Chris Wraight", "tags": ["Terra", "Custodes"] },
+        { "title": "Watchers of the Throne: Regent's Shadow", "author": "Chris Wraight", "tags": ["Politics", "Terra"] },
+        { "title": "Vaults of Terra: Carrion Throne", "author": "Chris Wraight", "tags": ["Inquisition", "Terra"] },
+        { "title": "Vaults of Terra: Hollow Mountain", "author": "Chris Wraight", "tags": ["Inquisition", "Rift"] },
+        { "title": "Vaults of Terra: Dark City", "author": "Chris Wraight", "tags": ["Finale", "Dark Eldar"] },
+        { "title": "The High Kâhl's Oath", "author": "Gav Thorpe", "tags": ["Votann"] },
+        { "title": "Angron: The Red Angel", "author": "David Guymer", "tags": ["World Eaters", "Primarch"] }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "PHASE 5: AFTERMATH & DECAY",
+      "subtitle": "Indomitus Era",
+      "theme": "Entropy & Endurance",
+      "color": "green-700",
+      "books": [
+        { "title": "Dark Imperium: The Omnibus", "author": "Guy Haley", "tags": ["Guilliman", "Death Guard"] },
+        { "title": "Apocalypse", "author": "Josh Reynolds", "tags": ["Word Bearers", "Faith"] },
+        { "title": "Darkness in the Blood", "author": "Guy Haley", "tags": ["Blood Angels", "Mephiston"] },
+        { "title": "The Lords of Silence", "author": "Chris Wraight", "tags": ["Death Guard", "Decay"] },
+        { "title": "The Twice-Dead King: Ruin & Reign", "author": "Nate Crowley", "tags": ["Necrons", "Tragedy"] },
+        { "title": "Ghazghkull Thraka: Prophet of the Waaagh!", "author": "Nate Crowley", "tags": ["Orks", "Makari"] },
+        { "title": "Brutal Kunnin & Da Big Dakka", "author": "Mike Brooks", "tags": ["Orks", "Fun"] },
+        { "title": "Day of Ascension", "author": "Adrian Tchaikovsky", "tags": ["Genestealer Cult", "AdMech"] },
+        { "title": "Leviathan", "author": "Darius Hinks", "tags": ["Tyranids", "Space Marines"] }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "PHASE 6: GROUND LEVEL",
+      "subtitle": "The Complete War Machine",
+      "theme": "Total War: Mud, Void, & Law",
+      "color": "stone-600",
+      "books": [
+        { "title": "Minka Lesk (Omnibus) & Ashes of Cadia", "author": "Justin D. Hill / Jude Reid", "tags": ["Cadian", "Guard"] },
+        { "title": "Kasrkin & Redemption Corps", "author": "Various", "tags": ["Elite", "Scions"] },
+        { "title": "Krieg & Siege of Vraks & Dead Men Walking", "author": "Steve Lyons", "tags": ["Krieg", "Grimdark"] },
+        { "title": "Catachan Devil", "author": "Justin D. Hill", "tags": ["Jungle", "Orks"] },
+        { "title": "Double Eagle", "author": "Dan Abnett", "tags": ["Air War", "Aeronautica"] },
+        { "title": "Ciaphas Cain: Hero of the Imperium", "author": "Sandy Mitchell", "tags": ["Commissar", "Satire"] },
+        { "title": "Honourbound", "author": "Rachel Harrison", "tags": ["Commissar", "Serious"] },
+        { "title": "Titanicus", "author": "Dan Abnett", "tags": ["Titans", "God-Machines"] },
+        { "title": "Deathwatch: The Omnibus", "author": "Steve Parker", "tags": ["Xenos Hunters", "Marines"] },
+        { "title": "Enforcer: Shira Calpurnia Omnibus", "author": "Matthew Farrer", "tags": ["Arbites", "Law"] },
+        { "title": "Flesh and Steel & Bloodlines", "author": "Haley/Wraight", "tags": ["Crime", "Domestic"] },
+        { "title": "Carcharodons: Red Tithe", "author": "Robbie MacNiven", "tags": ["Outer Dark", "Sharks"] },
+        { "title": "Battle of the Fang", "author": "Chris Wraight", "tags": ["Space Wolves", "Epic"] },
+        { "title": "War for Armageddon (Helsreach)", "author": "ADB", "tags": ["Black Templars", "Classic"] },
+        { "title": "The Overfiend & Spear of the Emperor", "author": "Annandale/ADB", "tags": ["Marines", "Space"] },
+        { "title": "Sisters of Battle: The Omnibus", "author": "James Swallow", "tags": ["Sororitas", "Faith"] }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "PHASE 7: MYTH & FRINGES",
+      "subtitle": "The Future",
+      "theme": "Mystery, Technology & The Unknown",
+      "color": "cyan-600",
+      "books": [
+        { "title": "Belisarius Cawl: The Great Work", "author": "Guy Haley", "tags": ["Cawl", "Pharos"] },
+        { "title": "Genefather", "author": "Guy Haley", "tags": ["Cawl", "Bile"] },
+        { "title": "Valdor: Birth of the Imperium", "author": "Chris Wraight", "tags": ["30k", "Context"] },
+        { "title": "Assassinorum: Kingmaker", "author": "Robert Rath", "tags": ["Assassins", "Knights"] },
+        { "title": "Rites of Passage", "author": "Mike Brooks", "tags": ["Navigators", "Politics"] },
+        { "title": "Blackstone Fortress", "author": "Darius Hinks", "tags": ["Exploration", "Xenos"] },
+        { "title": "Bequin: Pariah & Penitent", "author": "Dan Abnett", "tags": ["Inquisition", "Mystery"] },
+        { "title": "The Reverie", "author": "Peter Fehervari", "tags": ["Horror", "Angels Resplendent"] }
+      ]
+    }
+  ]
+}

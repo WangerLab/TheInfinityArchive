@@ -1,34 +1,47 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* App-specific styles - minimal, using design system tokens */
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Custom progress bar styling for grimdark theme */
+[role="progressbar"] > div {
+  background: linear-gradient(90deg, hsl(var(--gold)) 0%, hsl(var(--terminal-green)) 100%);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Accordion content transition */
+[data-state="open"] > [data-radix-accordion-content] {
+  animation: accordion-down 0.3s ease-out;
 }
 
-.App-link {
-    color: #61dafb;
+[data-state="closed"] > [data-radix-accordion-content] {
+  animation: accordion-up 0.2s ease-out;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--gold) / 0.5);
+  outline-offset: 2px;
+}
+
+/* Button active states */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Mobile touch improvements */
+@media (hover: none) {
+  button, 
+  [role="button"],
+  [role="switch"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
