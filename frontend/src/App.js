@@ -242,7 +242,7 @@ function App() {
         onFilterToggle={handleFilterToggle}
       />
 
-      <main className="px-4 py-4 pb-8">
+      <main className="px-4 py-4 pb-32">
         {/* Description */}
         <div className="grimdark-panel rounded-lg p-4 mb-4">
           <p className="text-sm text-slate-200 leading-relaxed font-medium">

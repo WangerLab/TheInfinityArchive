@@ -158,8 +158,8 @@ export const PhaseDetail = ({
       </div>
 
       {/* Book list */}
-      <ScrollArea className="max-h-[65vh]">
-        <div className="p-3 space-y-2">
+      <ScrollArea className="max-h-[60vh]">
+        <div className="p-3 pb-8 space-y-2">
           {books.map((book, index) => (
             <RecursiveBookEntry
               key={book.title}
