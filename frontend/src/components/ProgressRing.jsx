@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 export const ProgressRing = ({ 
   progress = 0, 
@@ -8,48 +7,25 @@ export const ProgressRing = ({
   strokeWidth = 6,
   className,
   showPercentage = true,
-  variant = 'gold' // 'gold', 'green', 'chaos', 'xenos'
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
-
-  const colors = {
-    gold: {
-      track: 'stroke-gold-dim/20',
-      progress: 'stroke-gold',
-      text: 'text-gold',
-      glow: 'drop-shadow-[0_0_8px_hsl(var(--gold)/0.5)]'
-    },
-    green: {
-      track: 'stroke-terminal-dim/20',
-      progress: 'stroke-terminal',
-      text: 'text-terminal',
-      glow: 'drop-shadow-[0_0_8px_hsl(var(--terminal-green)/0.5)]'
-    },
-    chaos: {
-      track: 'stroke-chaos/20',
-      progress: 'stroke-chaos',
-      text: 'text-chaos',
-      glow: 'drop-shadow-[0_0_8px_hsl(var(--chaos-purple)/0.5)]'
-    },
-    xenos: {
-      track: 'stroke-xenos/20',
-      progress: 'stroke-xenos',
-      text: 'text-xenos',
-      glow: 'drop-shadow-[0_0_8px_hsl(var(--xenos-cyan)/0.5)]'
-    }
-  };
-
-  const colorSet = colors[variant] || colors.gold;
+  
+  const getGradientId = `progress-gradient-${Math.random().toString(36).substr(2, 9)}`;
+  
+  const isPacified = progress >= 100;
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
-      <svg
-        width={size}
-        height={size}
-        className={cn("transform -rotate-90", progress > 0 && colorSet.glow)}
-      >
+      <svg width={size} height={size} className="transform -rotate-90">
+        <defs>
+          <linearGradient id={getGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={isPacified ? "hsl(160, 85%, 40%)" : "hsl(38, 92%, 50%)"} />
+            <stop offset="100%" stopColor={isPacified ? "hsl(160, 85%, 50%)" : "hsl(45, 95%, 55%)"} />
+          </linearGradient>
+        </defs>
+        
         {/* Background track */}
         <circle
           cx={size / 2}
@@ -57,30 +33,37 @@ export const ProgressRing = ({
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
-          className={colorSet.track}
+          className="stroke-white/10"
         />
+        
         {/* Progress arc */}
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className={colorSet.progress}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ strokeDasharray: circumference }}
+          stroke={`url(#${getGradientId})`}
+          className="transition-all duration-700 ease-out"
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset: offset,
+            filter: progress > 0 ? `drop-shadow(0 0 6px ${isPacified ? 'hsl(160, 85%, 40%)' : 'hsl(38, 92%, 50%)'})` : 'none'
+          }}
         />
       </svg>
+      
       {showPercentage && (
-        <span className={cn(
-          "absolute font-tactical text-xs font-bold",
-          colorSet.text
-        )}>
-          {Math.round(progress)}%
-        </span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className={cn(
+            "font-tactical text-lg font-bold",
+            isPacified ? "text-auspex text-glow-auspex" : "text-gold text-glow-gold"
+          )}>
+            {Math.round(progress)}
+          </span>
+          <span className="text-[9px] text-slate-400 font-semibold tracking-widest">%</span>
+        </div>
       )}
     </div>
   );

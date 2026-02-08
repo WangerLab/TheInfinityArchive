@@ -13,7 +13,7 @@ export const SkullRating = ({
   const sizes = {
     sm: 'w-5 h-5',
     md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    lg: 'w-7 h-7'
   };
 
   const handleClick = (value) => {
@@ -22,7 +22,7 @@ export const SkullRating = ({
   };
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("flex items-center gap-0.5", className)}>
       {Array.from({ length: maxRating }, (_, i) => {
         const value = i + 1;
         const isFilled = value <= rating;
@@ -34,9 +34,9 @@ export const SkullRating = ({
             onClick={() => handleClick(value)}
             disabled={readonly}
             className={cn(
-              "touch-target transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-md",
-              !readonly && "active:scale-90"
+              "touch-checkbox p-1 transition-all duration-200 rounded",
+              "focus:outline-none focus:ring-2 focus:ring-gold/50",
+              !readonly && "active:scale-90 hover:bg-gold/10"
             )}
             aria-label={`Rate ${value} out of ${maxRating}`}
           >
@@ -45,7 +45,7 @@ export const SkullRating = ({
                 sizes[size],
                 "transition-all duration-200",
                 isFilled 
-                  ? "fill-primary text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" 
+                  ? "fill-gold text-gold drop-shadow-[0_0_8px_hsl(var(--gold))]" 
                   : "text-slate-600 hover:text-slate-400"
               )}
             />
@@ -53,7 +53,7 @@ export const SkullRating = ({
         );
       })}
       {rating > 0 && (
-        <span className="ml-2 text-sm font-mono text-primary font-semibold">
+        <span className="ml-2 text-sm font-data text-gold font-bold">
           {rating}/{maxRating}
         </span>
       )}

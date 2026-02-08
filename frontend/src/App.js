@@ -13,7 +13,7 @@ function App() {
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
   
-  const [bookProgress, setBookProgress] = useLocalStorage('infinity-archive-mobile-v1', {});
+  const [bookProgress, setBookProgress] = useLocalStorage('infinity-archive-v3', {});
 
   useEffect(() => {
     const loadData = async () => {
@@ -33,10 +33,10 @@ function App() {
     loadData();
   }, []);
 
-  // Global stats calculation
+  // Calculate global stats recursively - sum all pages
   const globalStats = useMemo(() => {
     if (!projectData) return { 
-      totalPages: 0, readPages: 0, totalBooks: 0, completedBooks: 0, 
+      totalPages: 0, readPages: 0, totalItems: 0, completedItems: 0, 
       totalRated: 0, averageRating: 0 
     };
 
@@ -51,16 +51,18 @@ function App() {
       phase.books.forEach(book => {
         const progress = bookProgress[book.title];
         
-        if (book.contents) {
-          book.contents.forEach(story => {
-            totalPages += story.pages || 0;
+        if (book.contents && book.contents.length > 0) {
+          // Omnibus/Anthology - count sub-items
+          book.contents.forEach(subItem => {
+            totalPages += subItem.pages || 0;
             totalItems++;
-            if (progress?.contents?.[story.title]) {
-              readPages += story.pages || 0;
+            if (progress?.contents?.[subItem.title]) {
+              readPages += subItem.pages || 0;
               completedItems++;
             }
           });
         } else {
+          // Single book
           totalPages += book.pages || 0;
           totalItems++;
           if (progress?.isRead) {
@@ -79,8 +81,8 @@ function App() {
     return {
       totalPages,
       readPages,
-      totalBooks: totalItems,
-      completedBooks: completedItems,
+      totalItems,
+      completedItems,
       totalRated,
       averageRating: totalRated > 0 ? totalRatingSum / totalRated : 0
     };
@@ -91,18 +93,18 @@ function App() {
     const books = phase.books || [];
     let totalPages = 0;
     let readPages = 0;
-    let completedItems = 0;
     let totalItems = 0;
+    let completedItems = 0;
 
     books.forEach(book => {
       const progress = bookProgress[book.title];
       
-      if (book.contents) {
-        book.contents.forEach(story => {
-          totalPages += story.pages || 0;
+      if (book.contents && book.contents.length > 0) {
+        book.contents.forEach(subItem => {
+          totalPages += subItem.pages || 0;
           totalItems++;
-          if (progress?.contents?.[story.title]) {
-            readPages += story.pages || 0;
+          if (progress?.contents?.[subItem.title]) {
+            readPages += subItem.pages || 0;
             completedItems++;
           }
         });
@@ -117,8 +119,8 @@ function App() {
     });
 
     return { 
-      completedBooks: completedItems, 
-      totalBooks: totalItems, 
+      completedItems, 
+      totalItems, 
       totalPages,
       readPages,
       progress: totalPages > 0 ? (readPages / totalPages) * 100 : 0
@@ -137,14 +139,14 @@ function App() {
     }));
   }, [setBookProgress]);
 
-  const handleSubStoryReadChange = useCallback((bookTitle, storyTitle, isRead) => {
+  const handleSubItemReadChange = useCallback((bookTitle, subItemTitle, isRead) => {
     setBookProgress(prev => ({
       ...prev,
       [bookTitle]: {
         ...prev[bookTitle],
         contents: {
           ...prev[bookTitle]?.contents,
-          [storyTitle]: isRead
+          [subItemTitle]: isRead
         }
       }
     }));
@@ -187,16 +189,16 @@ function App() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center scanlines">
         <div className="text-center space-y-4 px-6">
-          <div className="w-16 h-16 mx-auto rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center animate-pulse">
-            <Database className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 mx-auto rounded-xl grimdark-panel flex items-center justify-center animate-pulse">
+            <Database className="w-8 h-8 text-gold" />
           </div>
           <div>
-            <p className="font-display text-lg text-primary tracking-wider">INITIALIZING</p>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <Loader2 className="w-4 h-4 animate-spin text-accent" />
-              <p className="text-sm text-slate-400">Loading archive data...</p>
+            <p className="font-display text-xl text-gold tracking-wider text-glow-gold">INITIALIZING COGITATOR</p>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <Loader2 className="w-5 h-5 animate-spin text-auspex" />
+              <p className="text-sm text-slate-300 font-semibold">Loading archive data...</p>
             </div>
           </div>
         </div>
@@ -207,18 +209,18 @@ function App() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 scanlines">
         <div className="text-center space-y-4 max-w-sm">
-          <div className="w-16 h-16 mx-auto rounded-xl bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto rounded-xl grimdark-panel flex items-center justify-center border-destructive/50">
             <AlertTriangle className="w-8 h-8 text-destructive" />
           </div>
           <div>
-            <p className="font-display text-lg text-destructive tracking-wider">ERROR</p>
-            <p className="text-sm text-slate-400 mt-2">{error}</p>
+            <p className="font-display text-xl text-destructive tracking-wider">COGITATOR ERROR</p>
+            <p className="text-sm text-slate-300 mt-2 font-medium">{error}</p>
           </div>
           <button 
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-primary/10 border border-primary/30 rounded-lg font-semibold text-primary tracking-wider"
+            className="px-6 py-3 grimdark-panel rounded-lg font-bold text-gold tracking-wider hover:glow-gold transition-all"
           >
             RETRY
           </button>
@@ -228,12 +230,12 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black safe-bottom">
+    <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
       <GlobalHeader
         totalPages={globalStats.totalPages}
         readPages={globalStats.readPages}
-        totalBooks={globalStats.totalBooks}
-        completedBooks={globalStats.completedBooks}
+        totalItems={globalStats.totalItems}
+        completedItems={globalStats.completedItems}
         totalRated={globalStats.totalRated}
         averageRating={globalStats.averageRating}
         activeFilters={activeFilters}
@@ -242,14 +244,16 @@ function App() {
 
       <main className="px-4 py-4 pb-8">
         {/* Description */}
-        <div className="oled-surface rounded-lg p-3 mb-4">
-          <p className="text-sm text-slate-300 leading-relaxed">
-            <span className="text-primary font-semibold">{'>'}</span> {projectData.description}
+        <div className="grimdark-panel rounded-lg p-4 mb-4">
+          <p className="text-sm text-slate-200 leading-relaxed font-medium">
+            <span className="text-gold font-bold">{'>'}</span> {projectData.description}
           </p>
-          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-            <span className="font-mono">{projectData.totalPhases} SECTORS</span>
-            <span>•</span>
-            <span className="font-mono">{globalStats.totalPages.toLocaleString()} PAGES</span>
+          <div className="flex items-center gap-4 mt-3 text-xs text-slate-400 font-data">
+            <span>{projectData.totalPhases} SECTORS</span>
+            <span className="text-gold">•</span>
+            <span>{globalStats.totalPages.toLocaleString()} TOTAL PAGES</span>
+            <span className="text-gold">•</span>
+            <span>{globalStats.totalItems} ITEMS</span>
           </div>
         </div>
 
@@ -258,12 +262,12 @@ function App() {
           {projectData.phases.map((phase) => {
             const stats = getPhaseStats(phase);
             const isExpanded = expandedPhase === phase.id;
-            const isPacified = stats.progress === 100;
+            const isPacified = stats.progress >= 100;
 
             return (
               <div 
                 key={phase.id}
-                className="animate-slide-up"
+                className="animate-slide-in"
                 style={{ animationDelay: `${phase.id * 50}ms` }}
               >
                 <PhaseCard
@@ -271,8 +275,8 @@ function App() {
                   progress={stats.progress}
                   totalPages={stats.totalPages}
                   readPages={stats.readPages}
-                  totalBooks={stats.totalBooks}
-                  completedBooks={stats.completedBooks}
+                  totalItems={stats.totalItems}
+                  completedItems={stats.completedItems}
                   isExpanded={isExpanded}
                   isPacified={isPacified}
                   onClick={() => handlePhaseClick(phase.id)}
@@ -285,7 +289,7 @@ function App() {
                     onBookReadChange={handleBookReadChange}
                     onBookRatingChange={handleBookRatingChange}
                     onBookNotesChange={handleBookNotesChange}
-                    onSubStoryReadChange={handleSubStoryReadChange}
+                    onSubItemReadChange={handleSubItemReadChange}
                     onClose={() => setExpandedPhase(null)}
                     activeFilters={activeFilters}
                   />
@@ -296,13 +300,13 @@ function App() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-8 pt-4 border-t border-white/5">
+        <footer className="mt-8 pt-4 border-t border-gold/20">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
-              <span className="font-semibold tracking-wider">ONLINE</span>
+              <span className="w-2 h-2 rounded-full bg-auspex animate-pulse-glow shadow-[0_0_8px_hsl(var(--auspex))]" />
+              <span className="font-tactical tracking-widest text-auspex">COGITATOR ONLINE</span>
             </div>
-            <span className="font-mono">v.M41 • LOCAL STORAGE</span>
+            <span className="font-data">v.M41.3 • {globalStats.totalPages.toLocaleString()} PAGES</span>
           </div>
         </footer>
       </main>
