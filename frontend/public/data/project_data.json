@@ -2,18 +2,33 @@
   "projectTitle": "The Infinity Archive",
   "description": "A curated Warhammer 40k reading journey covering the decline and transformation of the Imperium.",
   "totalPhases": 8,
-  "lastUpdated": "2026-02-08",
+  "lastUpdated": "2026-02-09",
   "phases": [
     {
       "id": 0,
       "title": "PHASE 0: FOUNDATION",
       "subtitle": "Dark Angels & Black Legion",
       "theme": "Loyalty, Betrayal, and the Weight of History",
+      "color": "emerald-700",
       "books": [
-        { "title": "The Lion: Son of the Forest", "author": "Mike Brooks", "pages": 416, "type": "novel", "tags": ["Primarch", "Loyalist"], "faction": "imperium" },
-        { "title": "Cypher: Lord of the Fallen", "author": "John French", "pages": 368, "type": "novel", "tags": ["Mystery", "Fallen"], "faction": "chaos" },
-        { "title": "The Talon of Horus", "author": "Aaron Dembski-Bowden", "pages": 416, "type": "novel", "tags": ["Chaos Origins", "Black Legion"], "faction": "chaos" },
-        { "title": "Black Legion", "author": "Aaron Dembski-Bowden", "pages": 384, "type": "novel", "tags": ["Chaos Origins", "Abaddon"], "faction": "chaos" }
+        { "title": "Angels of Darkness", "author": "Gav Thorpe", "pages": 416, "type": "novel", "tags": ["Classic", "Interrogator"] },
+        { "title": "The Purging of Kadillus", "author": "Gav Thorpe", "pages": 320, "type": "novel", "tags": ["Battle", "Belial"] },
+        {
+          "title": "Legacy of Caliban (Trilogy)",
+          "author": "Gav Thorpe",
+          "pages": 960,
+          "type": "omnibus",
+          "tags": ["The Hunt", "Ravenwing"],
+          "contents": [
+            { "title": "Ravenwing", "pages": 320, "type": "novel" },
+            { "title": "Master of Sanctity", "pages": 320, "type": "novel" },
+            { "title": "The Unforgiven", "pages": 320, "type": "novel" }
+          ]
+        },
+        { "title": "Cypher: Lord of the Fallen", "author": "John French", "pages": 208, "type": "novel", "tags": ["Mystery", "Fallen"] },
+        { "title": "The Lion: Son of the Forest", "author": "Mike Brooks", "pages": 384, "type": "novel", "tags": ["Primarch", "Return"] },
+        { "title": "The Talon of Horus", "author": "Aaron Dembski-Bowden", "pages": 416, "type": "novel", "tags": ["Chaos Origins", "Black Legion"] },
+        { "title": "Black Legion", "author": "Aaron Dembski-Bowden", "pages": 368, "type": "novel", "tags": ["Chaos Origins", "Abaddon"] }
       ]
     },
     {
@@ -21,49 +36,49 @@
       "title": "PHASE 1: ESCALATION",
       "subtitle": "Techno-Dogma & Sorcery",
       "theme": "Knowledge vs. Control",
+      "color": "red-700",
       "books": [
-        { 
-          "title": "Forges of Mars", 
-          "author": "Graham McNeill", 
-          "pages": 1024,
+        {
+          "title": "Forges of Mars (Omnibus)",
+          "author": "Graham McNeill",
+          "pages": 980,
           "type": "omnibus",
-          "tags": ["Mechanicus", "Exploration"], 
-          "faction": "imperium",
+          "tags": ["Mechanicus", "Exploration"],
           "contents": [
-            { "title": "Priests of Mars", "pages": 352, "type": "novel" },
-            { "title": "Lords of Mars", "pages": 336, "type": "novel" },
-            { "title": "Gods of Mars", "pages": 336, "type": "novel" }
+            { "title": "Priests of Mars", "pages": 320, "type": "novel" },
+            { "title": "Lords of Mars", "pages": 320, "type": "novel" },
+            { "title": "Gods of Mars", "pages": 320, "type": "novel" },
+            { "title": "Zero Day Exploit", "pages": 20, "type": "short" }
           ]
         },
-        { "title": "The Emperor's Gift", "author": "Aaron Dembski-Bowden", "pages": 480, "type": "novel", "tags": ["Grey Knights", "Inquisition"], "faction": "imperium" },
-        { 
-          "title": "Grey Knights", 
-          "author": "Ben Counter", 
+        { "title": "The Emperor’s Gift", "author": "Aaron Dembski-Bowden", "pages": 304, "type": "novel", "tags": ["Grey Knights"] },
+        {
+          "title": "Grey Knights (Omnibus)",
+          "author": "Ben Counter",
           "pages": 768,
           "type": "omnibus",
-          "tags": ["Daemonhunters"], 
-          "faction": "imperium",
+          "tags": ["Daemonhunters"],
           "contents": [
-            { "title": "Grey Knights", "pages": 256, "type": "novel" },
-            { "title": "Dark Adeptus", "pages": 256, "type": "novel" },
-            { "title": "Hammer of Daemons", "pages": 256, "type": "novel" }
+            { "title": "Grey Knights", "pages": 250, "type": "novel" },
+            { "title": "Dark Adeptus", "pages": 250, "type": "novel" },
+            { "title": "Hammer of Daemons", "pages": 268, "type": "novel" }
           ]
         },
-        { "title": "The Infinite and the Divine", "author": "Robert Rath", "pages": 368, "type": "novel", "tags": ["Necrons", "Comedy"], "faction": "xenos" },
-        { 
-          "title": "Ahriman", 
-          "author": "John French", 
-          "pages": 896,
+        { "title": "The Infinite and the Divine", "author": "Robert Rath", "pages": 368, "type": "novel", "tags": ["Necrons", "Comedy"] },
+        {
+          "title": "Ahriman: The Omnibus",
+          "author": "John French",
+          "pages": 960,
           "type": "omnibus",
-          "tags": ["Thousand Sons", "Sorcery"], 
-          "faction": "chaos",
+          "tags": ["Thousand Sons"],
           "contents": [
-            { "title": "Ahriman: Exile", "pages": 288, "type": "novel" },
-            { "title": "Ahriman: Sorcerer", "pages": 304, "type": "novel" },
-            { "title": "Ahriman: Unchanged", "pages": 304, "type": "novel" }
+             { "title": "Ahriman: Exile", "pages": 320, "type": "novel" },
+             { "title": "Ahriman: Sorcerer", "pages": 320, "type": "novel" },
+             { "title": "Ahriman: Unchanged", "pages": 320, "type": "novel" }
           ]
         },
-        { "title": "Ahriman: Eternal", "author": "John French", "pages": 352, "type": "novel", "tags": ["New Era"], "faction": "chaos" }
+        { "title": "Ahriman: Eternal", "author": "John French", "pages": 320, "type": "novel", "tags": ["New Era"] },
+        { "title": "Ahriman: Undying", "author": "John French", "pages": 320, "type": "novel", "tags": ["New Era"] }
       ]
     },
     {
@@ -71,62 +86,44 @@
       "title": "PHASE 2: MORAL COLLAPSE",
       "subtitle": "Inquisition & Night Lords",
       "theme": "The Erosion of Ideals",
+      "color": "purple-800",
       "books": [
-        { 
-          "title": "Eisenhorn", 
-          "author": "Dan Abnett", 
-          "pages": 896,
+        {
+          "title": "Eisenhorn: The Omnibus",
+          "author": "Dan Abnett",
+          "pages": 800,
           "type": "omnibus",
-          "tags": ["Essential", "Inquisition"], 
-          "faction": "imperium",
+          "tags": ["Essential", "Inquisition"],
           "contents": [
-            { "title": "Xenos", "pages": 288, "type": "novel" },
-            { "title": "Malleus", "pages": 304, "type": "novel" },
-            { "title": "Hereticus", "pages": 304, "type": "novel" }
+            { "title": "Xenos", "pages": 260, "type": "novel" },
+            { "title": "Missing in Action", "pages": 30, "type": "short" },
+            { "title": "Malleus", "pages": 270, "type": "novel" },
+            { "title": "Backcloth for a Crown Additional", "pages": 30, "type": "short" },
+            { "title": "Hereticus", "pages": 280, "type": "novel" }
           ]
         },
-        { 
-          "title": "The Magos", 
-          "author": "Dan Abnett", 
-          "pages": 720, 
-          "type": "anthology",
-          "tags": ["Bridge", "Short Stories"], 
-          "faction": "imperium",
+        { "title": "The Magos", "author": "Dan Abnett", "pages": 600, "type": "novel", "tags": ["Bridge", "Anthology"] },
+        {
+          "title": "Lords of Blood (Omnibus)",
+          "author": "Guy Haley",
+          "pages": 650,
+          "type": "omnibus",
+          "tags": ["Blood Angels"],
           "contents": [
-            { "title": "The Magos (Novel)", "pages": 400, "type": "novel" },
-            { "title": "Regia Occulta", "pages": 40, "type": "short" },
-            { "title": "Thorn Wishes Talon", "pages": 35, "type": "short" },
-            { "title": "Perihelion", "pages": 45, "type": "short" },
-            { "title": "The Keeler Image", "pages": 30, "type": "short" },
-            { "title": "Playing Patience", "pages": 35, "type": "short" },
-            { "title": "The Strange Demise of Titus Endor", "pages": 35, "type": "short" },
-            { "title": "Backcloth for a Crown Additional", "pages": 50, "type": "short" },
-            { "title": "Alizebeth", "pages": 50, "type": "short" }
+            { "title": "Dante", "pages": 350, "type": "novel" },
+            { "title": "The Devastation of Baal", "pages": 300, "type": "novel" }
           ]
         },
-        { 
-          "title": "Lords of Blood", 
-          "author": "Guy Haley", 
-          "pages": 768,
+        {
+          "title": "Night Lords: The Omnibus",
+          "author": "Aaron Dembski-Bowden",
+          "pages": 960,
           "type": "omnibus",
-          "tags": ["Blood Angels", "Dante"], 
-          "faction": "imperium",
+          "tags": ["Essential", "Traitor"],
           "contents": [
-            { "title": "Dante", "pages": 384, "type": "novel" },
-            { "title": "The Devastation of Baal", "pages": 384, "type": "novel" }
-          ]
-        },
-        { 
-          "title": "Night Lords", 
-          "author": "Aaron Dembski-Bowden", 
-          "pages": 896,
-          "type": "omnibus",
-          "tags": ["Traitor Perspective", "Essential"], 
-          "faction": "chaos",
-          "contents": [
-            { "title": "Soul Hunter", "pages": 288, "type": "novel" },
-            { "title": "Blood Reaver", "pages": 304, "type": "novel" },
-            { "title": "Void Stalker", "pages": 304, "type": "novel" }
+            { "title": "Soul Hunter", "pages": 320, "type": "novel" },
+            { "title": "Blood Reaver", "pages": 320, "type": "novel" },
+            { "title": "Void Stalker", "pages": 320, "type": "novel" }
           ]
         }
       ]
@@ -136,90 +133,32 @@
       "title": "PHASE 3: IDEOLOGICAL WAR",
       "subtitle": "Radicals, Eldar & Chaos",
       "theme": "Competing Worldviews & Horror",
+      "color": "yellow-600",
       "books": [
-        { 
-          "title": "Ravenor", 
-          "author": "Dan Abnett", 
-          "pages": 896,
-          "type": "omnibus",
-          "tags": ["Inquisition", "Psyker"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Ravenor", "pages": 288, "type": "novel" },
-            { "title": "Ravenor Returned", "pages": 304, "type": "novel" },
-            { "title": "Ravenor Rogue", "pages": 304, "type": "novel" }
-          ]
-        },
-        { "title": "Valedor", "author": "Guy Haley", "pages": 320, "type": "novel", "tags": ["Eldar", "Tyranids"], "faction": "xenos" },
-        { 
-          "title": "Shield of Baal", 
-          "author": "Various", 
-          "pages": 416, 
-          "type": "anthology",
-          "tags": ["Necron Alliance", "Blood Angels"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Devourer", "pages": 120, "type": "novel" },
-            { "title": "Shadow of the Leviathan", "pages": 80, "type": "short" },
-            { "title": "Tempestus", "pages": 100, "type": "short" },
-            { "title": "The Word of the Silent King", "pages": 56, "type": "short" },
-            { "title": "Wraithflight", "pages": 60, "type": "short" }
-          ]
-        },
-        { 
-          "title": "Path of the Dark Eldar", 
-          "author": "Andy Chambers", 
+        {
+          "title": "Ravenor: The Omnibus",
+          "author": "Dan Abnett",
           "pages": 768,
           "type": "omnibus",
-          "tags": ["Drukhari", "Commorragh"], 
-          "faction": "xenos",
+          "tags": ["Inquisition"],
           "contents": [
-            { "title": "Path of the Renegade", "pages": 256, "type": "novel" },
-            { "title": "Path of the Incubus", "pages": 256, "type": "novel" },
-            { "title": "Path of the Archon", "pages": 256, "type": "novel" }
+            { "title": "Ravenor", "pages": 250, "type": "novel" },
+            { "title": "Ravenor Returned", "pages": 250, "type": "novel" },
+            { "title": "Ravenor Rogue", "pages": 268, "type": "novel" }
           ]
         },
-        { 
-          "title": "Farsight", 
-          "author": "Phil Kelly", 
-          "pages": 640,
-          "type": "omnibus",
-          "tags": ["T'au", "Renegade"], 
-          "faction": "xenos",
-          "contents": [
-            { "title": "Farsight: Crisis of Faith", "pages": 320, "type": "novel" },
-            { "title": "Farsight: Empire of Lies", "pages": 320, "type": "novel" }
-          ]
-        },
-        { "title": "Shadowsun: The Patient Hunter", "author": "Phil Kelly", "pages": 224, "type": "novel", "tags": ["T'au", "Faith"], "faction": "xenos" },
-        { "title": "Fire Caste", "author": "Peter Fehervari", "pages": 320, "type": "novel", "tags": ["Psychological Horror", "Dark Coil"], "faction": "imperium" },
-        { 
-          "title": "Fabius Bile", 
-          "author": "Josh Reynolds", 
-          "pages": 896,
-          "type": "omnibus",
-          "tags": ["Science", "Chaos"], 
-          "faction": "chaos",
-          "contents": [
-            { "title": "Primogenitor", "pages": 304, "type": "novel" },
-            { "title": "Clonelord", "pages": 304, "type": "novel" },
-            { "title": "Manflayer", "pages": 288, "type": "novel" }
-          ]
-        },
-        { 
-          "title": "Word Bearers", 
-          "author": "Anthony Reynolds", 
-          "pages": 768,
-          "type": "omnibus",
-          "tags": ["Faith", "Chaos"], 
-          "faction": "chaos",
-          "contents": [
-            { "title": "Dark Apostle", "pages": 256, "type": "novel" },
-            { "title": "Dark Disciple", "pages": 256, "type": "novel" },
-            { "title": "Dark Creed", "pages": 256, "type": "novel" }
-          ]
-        },
-        { "title": "Dead Sky, Black Sun", "author": "Graham McNeill", "pages": 320, "type": "novel", "tags": ["Industrial Horror", "Ventris"], "faction": "imperium" }
+        { "title": "Valedor", "author": "Guy Haley", "pages": 320, "type": "novel", "tags": ["Eldar", "Tyranids"] },
+        { "title": "Shield of Baal", "author": "Various", "pages": 250, "type": "anthology", "tags": ["Necron Alliance"] },
+        { "title": "Path of the Dark Eldar (Omnibus)", "author": "Andy Chambers", "pages": 800, "type": "omnibus", "tags": ["Drukhari"], "contents": [{"title": "Path of the Renegade", "pages": 260, "type": "novel"}, {"title": "Path of the Incubus", "pages": 260, "type": "novel"}, {"title": "Path of the Archon", "pages": 280, "type": "novel"}] },
+        { "title": "Farsight (Omnibus)", "author": "Phil Kelly", "pages": 600, "type": "omnibus", "tags": ["T'au"], "contents": [{"title": "Crisis of Faith", "pages": 300, "type": "novel"}, {"title": "Empire of Lies", "pages": 300, "type": "novel"}] },
+        { "title": "Shadowsun: The Patient Hunter", "author": "Phil Kelly", "pages": 250, "type": "novel", "tags": ["T'au"] },
+        { "title": "Fire Caste", "author": "Peter Fehervari", "pages": 384, "type": "novel", "tags": ["Horror", "Dark Coil"] },
+        { "title": "Fabius Bile: The Omnibus", "author": "Josh Reynolds", "pages": 900, "type": "omnibus", "tags": ["Science", "Chaos"], "contents": [{"title": "Primogenitor", "pages": 300, "type": "novel"}, {"title": "Clonelord", "pages": 300, "type": "novel"}, {"title": "Manflayer", "pages": 300, "type": "novel"}] },
+        { "title": "Word Bearers: The Omnibus", "author": "Anthony Reynolds", "pages": 768, "type": "omnibus", "tags": ["Faith", "Chaos"], "contents": [{"title": "Dark Apostle", "pages": 250, "type": "novel"}, {"title": "Dark Disciple", "pages": 250, "type": "novel"}, {"title": "Dark Creed", "pages": 268, "type": "novel"}] },
+        { "title": "Iron Warriors: The Omnibus", "author": "Graham McNeill", "pages": 768, "type": "omnibus", "tags": ["Siege", "Chaos"], "contents": [{"title": "Storm of Iron", "pages": 400, "type": "novel"}, {"title": "Short Stories", "pages": 368, "type": "short"}] },
+        { "title": "Dead Sky, Black Sun", "author": "Graham McNeill", "pages": 320, "type": "novel", "tags": ["Horror", "Ventris"] },
+        { "title": "Renegades: Lord of Excess", "author": "Rich McCormick", "pages": 320, "type": "novel", "tags": ["Emperor's Children"] },
+        { "title": "Renegades: Harrowmaster", "author": "Mike Brooks", "pages": 304, "type": "novel", "tags": ["Alpha Legion"] }
       ]
     },
     {
@@ -227,15 +166,14 @@
       "title": "PHASE 4: THE GALAXY BREAKS",
       "subtitle": "The Great Rift",
       "theme": "Collapse & Rebirth",
+      "color": "indigo-600",
       "books": [
-        { "title": "The Fall of Cadia", "author": "Robert Rath", "pages": 400, "type": "novel", "tags": ["Event", "Cataclysm"], "faction": "imperium" },
-        { "title": "Sea of Souls", "author": "Chris Wraight", "pages": 320, "type": "novel", "tags": ["Void War", "Horror"], "faction": "imperium" },
-        { "title": "Watchers of the Throne: Emperor's Legion", "author": "Chris Wraight", "pages": 352, "type": "novel", "tags": ["Terra", "Custodes"], "faction": "imperium" },
-        { "title": "Watchers of the Throne: Regent's Shadow", "author": "Chris Wraight", "pages": 368, "type": "novel", "tags": ["Politics", "Terra"], "faction": "imperium" },
-        { "title": "Vaults of Terra: Carrion Throne", "author": "Chris Wraight", "pages": 336, "type": "novel", "tags": ["Inquisition", "Terra"], "faction": "imperium" },
-        { "title": "Vaults of Terra: Hollow Mountain", "author": "Chris Wraight", "pages": 336, "type": "novel", "tags": ["Inquisition", "Rift"], "faction": "imperium" },
-        { "title": "Vaults of Terra: Dark City", "author": "Chris Wraight", "pages": 352, "type": "novel", "tags": ["Finale", "Dark Eldar"], "faction": "imperium" },
-        { "title": "Angron: The Red Angel", "author": "David Guymer", "pages": 320, "type": "novel", "tags": ["World Eaters", "Primarch"], "faction": "chaos" }
+        { "title": "The Fall of Cadia", "author": "Robert Rath", "pages": 544, "type": "novel", "tags": ["Event", "Cataclysm"] },
+        { "title": "Sea of Souls", "author": "Chris Wraight", "pages": 300, "type": "novel", "tags": ["Void War", "Horror"] },
+        { "title": "Watchers of the Throne 1 & 2", "author": "Chris Wraight", "pages": 608, "type": "omnibus", "tags": ["Terra", "Custodes"], "contents": [{"title": "The Emperor's Legion", "pages": 304, "type": "novel"}, {"title": "The Regent's Shadow", "pages": 304, "type": "novel"}] },
+        { "title": "Vaults of Terra (Trilogy)", "author": "Chris Wraight", "pages": 928, "type": "omnibus", "tags": ["Inquisition", "Terra"], "contents": [{"title": "The Carrion Throne", "pages": 304, "type": "novel"}, {"title": "The Hollow Mountain", "pages": 304, "type": "novel"}, {"title": "The Dark City", "pages": 320, "type": "novel"}] },
+        { "title": "The High Kâhl's Oath", "author": "Gav Thorpe", "pages": 250, "type": "novel", "tags": ["Votann"] },
+        { "title": "Angron: The Red Angel", "author": "David Guymer", "pages": 352, "type": "novel", "tags": ["World Eaters", "Primarch"] }
       ]
     },
     {
@@ -243,38 +181,17 @@
       "title": "PHASE 5: AFTERMATH & DECAY",
       "subtitle": "Indomitus Era",
       "theme": "Entropy & Endurance",
+      "color": "green-700",
       "books": [
-        { 
-          "title": "Dark Imperium", 
-          "author": "Guy Haley", 
-          "pages": 960,
-          "type": "omnibus",
-          "tags": ["Guilliman", "Death Guard"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Dark Imperium", "pages": 320, "type": "novel" },
-            { "title": "Plague War", "pages": 320, "type": "novel" },
-            { "title": "Godblight", "pages": 320, "type": "novel" }
-          ]
-        },
-        { "title": "Apocalypse", "author": "Josh Reynolds", "pages": 400, "type": "novel", "tags": ["Word Bearers", "Faith"], "faction": "chaos" },
-        { "title": "Darkness in the Blood", "author": "Guy Haley", "pages": 384, "type": "novel", "tags": ["Blood Angels", "Mephiston"], "faction": "imperium" },
-        { "title": "The Lords of Silence", "author": "Chris Wraight", "pages": 336, "type": "novel", "tags": ["Death Guard", "Decay"], "faction": "chaos" },
-        { 
-          "title": "The Twice-Dead King", 
-          "author": "Nate Crowley", 
-          "pages": 672,
-          "type": "omnibus",
-          "tags": ["Necrons", "Tragedy"], 
-          "faction": "xenos",
-          "contents": [
-            { "title": "Ruin", "pages": 336, "type": "novel" },
-            { "title": "Reign", "pages": 336, "type": "novel" }
-          ]
-        },
-        { "title": "Ghazghkull Thraka: Prophet of the Waaagh!", "author": "Nate Crowley", "pages": 368, "type": "novel", "tags": ["Orks", "Makari"], "faction": "xenos" },
-        { "title": "Day of Ascension", "author": "Adrian Tchaikovsky", "pages": 384, "type": "novel", "tags": ["Genestealer Cult", "AdMech"], "faction": "xenos" },
-        { "title": "Leviathan", "author": "Darius Hinks", "pages": 352, "type": "novel", "tags": ["Tyranids", "Space Marines"], "faction": "xenos" }
+        { "title": "Dark Imperium: The Omnibus", "author": "Guy Haley", "pages": 900, "type": "omnibus", "tags": ["Guilliman", "Death Guard"], "contents": [{"title": "Dark Imperium", "pages": 300, "type": "novel"}, {"title": "Plague War", "pages": 300, "type": "novel"}, {"title": "Godblight", "pages": 300, "type": "novel"}] },
+        { "title": "Apocalypse", "author": "Josh Reynolds", "pages": 350, "type": "novel", "tags": ["Word Bearers", "Faith"] },
+        { "title": "Darkness in the Blood", "author": "Guy Haley", "pages": 350, "type": "novel", "tags": ["Blood Angels"] },
+        { "title": "The Lords of Silence", "author": "Chris Wraight", "pages": 320, "type": "novel", "tags": ["Death Guard", "Decay"] },
+        { "title": "The Twice-Dead King: Ruin & Reign", "author": "Nate Crowley", "pages": 608, "type": "omnibus", "tags": ["Necrons"], "contents": [{"title": "Ruin", "pages": 304, "type": "novel"}, {"title": "Reign", "pages": 304, "type": "novel"}] },
+        { "title": "Ghazghkull Thraka: Prophet of the Waaagh!", "author": "Nate Crowley", "pages": 304, "type": "novel", "tags": ["Orks"] },
+        { "title": "Brutal Kunnin & Da Big Dakka", "author": "Mike Brooks", "pages": 608, "type": "omnibus", "tags": ["Orks"], "contents": [{"title": "Brutal Kunnin", "pages": 288, "type": "novel"}, {"title": "Da Big Dakka", "pages": 320, "type": "novel"}] },
+        { "title": "Day of Ascension", "author": "Adrian Tchaikovsky", "pages": 208, "type": "novel", "tags": ["Genestealer Cult"] },
+        { "title": "Leviathan", "author": "Darius Hinks", "pages": 320, "type": "novel", "tags": ["Tyranids"] }
       ]
     },
     {
@@ -282,52 +199,79 @@
       "title": "PHASE 6: GROUND LEVEL",
       "subtitle": "The Complete War Machine",
       "theme": "Total War: Mud, Void, & Law",
+      "color": "stone-500",
       "books": [
-        { "title": "Cadia Stands", "author": "Justin D. Hill", "pages": 352, "type": "novel", "tags": ["Cadian", "Guard"], "faction": "imperium" },
-        { "title": "Cadian Honour", "author": "Justin D. Hill", "pages": 368, "type": "novel", "tags": ["Cadian", "Guard"], "faction": "imperium" },
-        { 
-          "title": "Ciaphas Cain: Hero of the Imperium", 
-          "author": "Sandy Mitchell", 
-          "pages": 768,
-          "type": "omnibus",
-          "tags": ["Commissar", "Satire"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "For the Emperor", "pages": 256, "type": "novel" },
-            { "title": "Caves of Ice", "pages": 256, "type": "novel" },
-            { "title": "The Traitor's Hand", "pages": 256, "type": "novel" }
-          ]
+        {
+            "title": "Gaunt's Ghosts: The Founding",
+            "author": "Dan Abnett",
+            "pages": 1008,
+            "type": "omnibus",
+            "tags": ["Legendary", "Guard", "Completed"],
+            "contents": [
+                {"title": "First and Only", "pages": 320, "type": "novel"},
+                {"title": "Ghostmaker", "pages": 320, "type": "novel"},
+                {"title": "Necropolis", "pages": 368, "type": "novel"}
+            ]
         },
-        { "title": "Honourbound", "author": "Rachel Harrison", "pages": 400, "type": "novel", "tags": ["Commissar", "Serious"], "faction": "imperium" },
-        { "title": "Titanicus", "author": "Dan Abnett", "pages": 352, "type": "novel", "tags": ["Titans", "God-Machines"], "faction": "imperium" },
-        { 
-          "title": "Deathwatch", 
-          "author": "Steve Parker", 
-          "pages": 768,
-          "type": "omnibus",
-          "tags": ["Xenos Hunters", "Marines"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Deathwatch", "pages": 256, "type": "novel" },
-            { "title": "Shadowbreaker", "pages": 256, "type": "novel" },
-            { "title": "Deathwatch: Ignition", "pages": 256, "type": "novel" }
-          ]
+        {
+            "title": "Gaunt's Ghosts: The Saint",
+            "author": "Dan Abnett",
+            "pages": 1300,
+            "type": "omnibus",
+            "tags": ["Legendary", "Guard", "Completed"],
+            "contents": [
+                {"title": "Honour Guard", "pages": 320, "type": "novel"},
+                {"title": "Guns of Tanith", "pages": 320, "type": "novel"},
+                {"title": "Straight Silver", "pages": 320, "type": "novel"},
+                {"title": "Sabbat Martyr", "pages": 340, "type": "novel"}
+            ]
         },
-        { "title": "Battle of the Fang", "author": "Chris Wraight", "pages": 384, "type": "novel", "tags": ["Space Wolves", "Epic"], "faction": "imperium" },
-        { "title": "Helsreach", "author": "Aaron Dembski-Bowden", "pages": 352, "type": "novel", "tags": ["Black Templars", "Classic"], "faction": "imperium" },
-        { 
-          "title": "Sisters of Battle", 
-          "author": "James Swallow", 
-          "pages": 768,
-          "type": "omnibus",
-          "tags": ["Sororitas", "Faith"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Faith & Fire", "pages": 256, "type": "novel" },
-            { "title": "Hammer & Anvil", "pages": 256, "type": "novel" },
-            { "title": "Red & Black", "pages": 256, "type": "novel" }
-          ]
-        }
+        {
+            "title": "Gaunt's Ghosts: The Lost",
+            "author": "Dan Abnett",
+            "pages": 1300,
+            "type": "omnibus",
+            "tags": ["Legendary", "Guard", "Completed"],
+            "contents": [
+                {"title": "Traitor General", "pages": 320, "type": "novel"},
+                {"title": "His Last Command", "pages": 320, "type": "novel"},
+                {"title": "The Armour of Contempt", "pages": 320, "type": "novel"},
+                {"title": "Only in Death", "pages": 340, "type": "novel"}
+            ]
+        },
+        {
+            "title": "Gaunt's Ghosts: The Victory",
+            "author": "Dan Abnett",
+            "pages": 1250,
+            "type": "omnibus",
+            "tags": ["Legendary", "Guard", "Completed"],
+            "contents": [
+                {"title": "Blood Pact", "pages": 320, "type": "novel"},
+                {"title": "Salvation's Reach", "pages": 320, "type": "novel"},
+                {"title": "The Warmaster", "pages": 320, "type": "novel"},
+                {"title": "Anarch", "pages": 290, "type": "novel"}
+            ]
+        },
+        { "title": "Minka Lesk (Omnibus)", "author": "Justin D. Hill", "pages": 900, "type": "omnibus", "tags": ["Cadian"], "contents": [{"title": "Cadia Stands", "pages": 250, "type": "novel"}, {"title": "Cadian Honour", "pages": 300, "type": "novel"}, {"title": "Traitor Rock", "pages": 350, "type": "novel"}] },
+        { "title": "Creed: Ashes of Cadia", "author": "Jude Reid", "pages": 320, "type": "novel", "tags": ["Cadian"] },
+        { "title": "Kasrkin", "author": "Edoardo Albert", "pages": 304, "type": "novel", "tags": ["Scions"] },
+        { "title": "Redemption Corps", "author": "Rob Sanders", "pages": 416, "type": "novel", "tags": ["Scions"] },
+        { "title": "Krieg Cluster", "author": "Steve Lyons", "pages": 958, "type": "omnibus", "tags": ["Krieg"], "contents": [{"title": "Krieg", "pages": 288, "type": "novel"}, {"title": "Siege of Vraks", "pages": 350, "type": "novel"}, {"title": "Dead Men Walking", "pages": 320, "type": "novel"}] },
+        { "title": "Catachan Devil", "author": "Justin D. Hill", "pages": 320, "type": "novel", "tags": ["Jungle"] },
+        { "title": "Double Eagle", "author": "Dan Abnett", "pages": 416, "type": "novel", "tags": ["Air War"] },
+        { "title": "Ciaphas Cain: Hero of the Imperium", "author": "Sandy Mitchell", "pages": 768, "type": "omnibus", "tags": ["Commissar", "Satire"], "contents": [{"title": "For the Emperor", "pages": 250, "type": "novel"}, {"title": "Caves of Ice", "pages": 250, "type": "novel"}, {"title": "The Traitor's Hand", "pages": 268, "type": "novel"}] },
+        { "title": "Honourbound", "author": "Rachel Harrison", "pages": 350, "type": "novel", "tags": ["Commissar"] },
+        { "title": "Titanicus", "author": "Dan Abnett", "pages": 400, "type": "novel", "tags": ["Titans"] },
+        { "title": "Deathwatch: The Omnibus", "author": "Steve Parker", "pages": 750, "type": "omnibus", "tags": ["Xenos Hunters"], "contents": [{"title": "Deathwatch", "pages": 350, "type": "novel"}, {"title": "Shadowbreaker", "pages": 400, "type": "novel"}] },
+        { "title": "Enforcer: Shira Calpurnia", "author": "Matthew Farrer", "pages": 768, "type": "omnibus", "tags": ["Arbites", "Law"], "contents": [{"title": "Crossfire", "pages": 250, "type": "novel"}, {"title": "Legacy", "pages": 250, "type": "novel"}, {"title": "Blind", "pages": 268, "type": "novel"}] },
+        { "title": "Flesh and Steel", "author": "Guy Haley", "pages": 320, "type": "novel", "tags": ["Crime"] },
+        { "title": "Bloodlines", "author": "Chris Wraight", "pages": 320, "type": "novel", "tags": ["Crime"] },
+        { "title": "Carcharodons: Red Tithe", "author": "Robbie MacNiven", "pages": 320, "type": "novel", "tags": ["Sharks"] },
+        { "title": "Battle of the Fang", "author": "Chris Wraight", "pages": 416, "type": "novel", "tags": ["Space Wolves"] },
+        { "title": "War for Armageddon (Helsreach)", "author": "ADB", "pages": 416, "type": "novel", "tags": ["Templars"] },
+        { "title": "Spear of the Emperor", "author": "ADB", "pages": 352, "type": "novel", "tags": ["Marines"] },
+        { "title": "The Overfiend", "author": "David Annandale", "pages": 280, "type": "novel", "tags": ["Marines"] },
+        { "title": "Sisters of Battle: The Omnibus", "author": "James Swallow", "pages": 768, "type": "omnibus", "tags": ["Sororitas"], "contents": [{"title": "Faith & Fire", "pages": 350, "type": "novel"}, {"title": "Hammer & Anvil", "pages": 418, "type": "novel"}] }
       ]
     },
     {
@@ -335,25 +279,17 @@
       "title": "PHASE 7: MYTH & FRINGES",
       "subtitle": "The Future",
       "theme": "Mystery, Technology & The Unknown",
+      "color": "cyan-500",
       "books": [
-        { "title": "Belisarius Cawl: The Great Work", "author": "Guy Haley", "pages": 416, "type": "novel", "tags": ["Cawl", "Pharos"], "faction": "imperium" },
-        { "title": "Genefather", "author": "Guy Haley", "pages": 368, "type": "novel", "tags": ["Cawl", "Bile"], "faction": "imperium" },
-        { "title": "Valdor: Birth of the Imperium", "author": "Chris Wraight", "pages": 336, "type": "novel", "tags": ["30k", "Context"], "faction": "imperium" },
-        { "title": "Assassinorum: Kingmaker", "author": "Robert Rath", "pages": 320, "type": "novel", "tags": ["Assassins", "Knights"], "faction": "imperium" },
-        { "title": "Blackstone Fortress", "author": "Darius Hinks", "pages": 352, "type": "novel", "tags": ["Exploration", "Xenos"], "faction": "xenos" },
-        { 
-          "title": "Bequin", 
-          "author": "Dan Abnett", 
-          "pages": 736,
-          "type": "omnibus",
-          "tags": ["Inquisition", "Mystery"], 
-          "faction": "imperium",
-          "contents": [
-            { "title": "Pariah", "pages": 368, "type": "novel" },
-            { "title": "Penitent", "pages": 368, "type": "novel" }
-          ]
-        },
-        { "title": "The Reverie", "author": "Peter Fehervari", "pages": 320, "type": "novel", "tags": ["Horror", "Angels Resplendent"], "faction": "imperium" }
+        { "title": "Belisarius Cawl: The Great Work", "author": "Guy Haley", "pages": 368, "type": "novel", "tags": ["Cawl"] },
+        { "title": "Genefather", "author": "Guy Haley", "pages": 368, "type": "novel", "tags": ["Cawl", "Bile"] },
+        { "title": "Valdor: Birth of the Imperium", "author": "Chris Wraight", "pages": 208, "type": "novel", "tags": ["30k"] },
+        { "title": "Assassinorum: Kingmaker", "author": "Robert Rath", "pages": 352, "type": "novel", "tags": ["Assassins"] },
+        { "title": "Rites of Passage", "author": "Mike Brooks", "pages": 320, "type": "novel", "tags": ["Navigators"] },
+        { "title": "Blackstone Fortress", "author": "Darius Hinks", "pages": 320, "type": "novel", "tags": ["Exploration"] },
+        { "title": "Bequin: Pariah", "author": "Dan Abnett", "pages": 320, "type": "novel", "tags": ["Inquisition"] },
+        { "title": "Bequin: Penitent", "author": "Dan Abnett", "pages": 352, "type": "novel", "tags": ["Inquisition"] },
+        { "title": "The Reverie", "author": "Peter Fehervari", "pages": 320, "type": "novel", "tags": ["Horror"] }
       ]
     }
   ]

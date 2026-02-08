@@ -8,9 +8,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Orbitron', 'sans-serif'],
+        display: ['Cinzel', 'Orbitron', 'serif'],
+        tactical: ['Orbitron', 'JetBrains Mono', 'sans-serif'],
+        data: ['JetBrains Mono', 'Inter', 'monospace'],
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -50,30 +51,32 @@ module.exports = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        // Faction colors
-        imperium: 'hsl(var(--faction-imperium))',
-        chaos: 'hsl(var(--faction-chaos))',
-        xenos: 'hsl(var(--faction-xenos))',
-        // Type colors  
-        novel: 'hsl(var(--type-novel))',
-        short: 'hsl(var(--type-short))',
-        omnibus: 'hsl(var(--type-omnibus))',
-        anthology: 'hsl(var(--type-anthology))',
+        // Custom colors
+        gold: {
+          DEFAULT: 'hsl(var(--gold))',
+          dim: 'hsl(var(--gold-dim))',
+          bright: 'hsl(var(--gold-bright))'
+        },
+        auspex: {
+          DEFAULT: 'hsl(var(--auspex))',
+          dim: 'hsl(var(--auspex-dim))'
+        },
+        plasma: {
+          DEFAULT: 'hsl(var(--plasma))',
+          dim: 'hsl(var(--plasma-dim))'
+        },
+        void: 'hsl(var(--void))',
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
-      spacing: {
-        'safe-top': 'env(safe-area-inset-top)',
-        'safe-bottom': 'env(safe-area-inset-bottom)',
-      },
       minHeight: {
-        'touch': '44px',
+        'touch': '48px',
       },
       minWidth: {
-        'touch': '44px',
+        'touch': '48px',
       },
       keyframes: {
         'accordion-down': {
