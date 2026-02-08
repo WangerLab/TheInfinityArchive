@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,71 +6,60 @@
 
 @layer base {
   :root {
-    /* Grimdark Theme - Warhammer 40k Cogitator Interface */
-    /* Background: slate-950 base */
-    --background: 222 47% 5%;
-    --foreground: 45 80% 90%;
+    /* OLED Optimized - TRUE BLACK Theme */
+    --background: 0 0% 0%;
+    --foreground: 210 20% 95%;
     
-    /* Card: Industrial dark panels */
-    --card: 222 40% 7%;
-    --card-foreground: 45 70% 85%;
+    /* Cards - Subtle dark elevation */
+    --card: 0 0% 4%;
+    --card-foreground: 210 20% 95%;
     
     /* Popover */
-    --popover: 222 45% 6%;
-    --popover-foreground: 45 70% 85%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 210 20% 95%;
     
-    /* Primary: Holy Gold - amber-500 */
-    --primary: 38 92% 50%;
-    --primary-foreground: 222 47% 5%;
+    /* Primary: High-vis Amber */
+    --primary: 38 100% 55%;
+    --primary-foreground: 0 0% 0%;
     
-    /* Secondary: Deep steel */
-    --secondary: 220 20% 13%;
-    --secondary-foreground: 45 60% 80%;
+    /* Secondary: Dark surface */
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 210 20% 90%;
     
-    /* Muted: Cogitator subdued */
-    --muted: 220 25% 10%;
-    --muted-foreground: 220 15% 50%;
+    /* Muted */
+    --muted: 0 0% 10%;
+    --muted-foreground: 210 15% 60%;
     
-    /* Accent: Auspex Green - emerald-500 */
-    --accent: 145 70% 42%;
-    --accent-foreground: 222 47% 5%;
+    /* Accent: Cyan highlight */
+    --accent: 185 100% 50%;
+    --accent-foreground: 0 0% 0%;
     
-    /* Destructive: Blood Red */
-    --destructive: 0 72% 51%;
+    /* Success: Terminal Green */
+    --success: 145 80% 45%;
+    --success-foreground: 0 0% 0%;
+    
+    /* Destructive */
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Borders and inputs */
-    --border: 38 25% 20%;
-    --input: 220 30% 12%;
-    --ring: 38 92% 50%;
+    /* Borders */
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 38 100% 55%;
     
-    /* Radius */
-    --radius: 0.25rem;
-    
-    /* Custom Grimdark tokens */
-    --gold: 38 92% 50%;
-    --gold-dim: 38 70% 30%;
-    --gold-bright: 45 95% 65%;
-    --terminal-green: 145 70% 42%;
-    --terminal-green-dim: 145 50% 25%;
-    --terminal-green-bright: 145 80% 55%;
-    --blood-red: 0 72% 51%;
-    --void-black: 222 50% 3%;
-    --slate-dark: 222 47% 5%;
-    --steel: 220 15% 20%;
-    --rust: 25 60% 25%;
-    --chaos-purple: 270 60% 40%;
-    --xenos-cyan: 180 70% 45%;
+    /* Radius - Slightly rounded for mobile */
+    --radius: 0.5rem;
     
     /* Faction colors */
-    --faction-imperium: 38 92% 50%;
-    --faction-chaos: 270 60% 50%;
-    --faction-xenos: 180 70% 45%;
+    --faction-imperium: 38 100% 55%;
+    --faction-chaos: 280 80% 55%;
+    --faction-xenos: 185 100% 50%;
     
-    /* Shadows */
-    --shadow-glow-gold: 0 0 20px hsl(38 92% 50% / 0.4);
-    --shadow-glow-green: 0 0 20px hsl(145 70% 42% / 0.4);
-    --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 200, 100, 0.03);
+    /* Type colors */
+    --type-novel: 38 100% 55%;
+    --type-short: 185 100% 50%;
+    --type-omnibus: 280 80% 55%;
+    --type-anthology: 145 80% 45%;
   }
 }
 
@@ -80,263 +69,188 @@
   }
   
   body {
-    @apply bg-background text-foreground;
-    font-family: 'JetBrains Mono', monospace;
-    background-image: 
-      radial-gradient(ellipse at 10% 90%, hsl(var(--rust) / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 10%, hsl(var(--gold) / 0.04) 0%, transparent 40%),
-      linear-gradient(180deg, hsl(var(--void-black)) 0%, hsl(var(--slate-dark)) 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
+    @apply bg-black text-slate-100;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
   }
   
-  /* Scrollbar styling */
+  /* Scrollbar - minimal for OLED */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
   
   ::-webkit-scrollbar-track {
-    background: hsl(var(--void-black));
-    border-left: 1px solid hsl(var(--border) / 0.3);
+    background: transparent;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, hsl(var(--gold-dim)), hsl(var(--steel)));
-    border-radius: 2px;
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 4px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--gold));
+    background: hsl(var(--primary) / 0.5);
   }
   
+  /* Selection */
   ::selection {
-    background: hsl(var(--gold) / 0.3);
+    background: hsl(var(--primary) / 0.3);
     color: hsl(var(--foreground));
   }
 }
 
-/* Typography Classes */
+/* Typography */
 @layer components {
   .font-display {
-    font-family: 'Cinzel', serif;
-    letter-spacing: 0.1em;
-  }
-  
-  .font-tactical {
     font-family: 'Orbitron', sans-serif;
-    letter-spacing: 0.15em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
   }
   
-  .font-data {
+  .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 }
 
-/* CRT Scanline Overlay Effect */
-@layer utilities {
-  .crt-scanlines {
-    position: relative;
-  }
-  
-  .crt-scanlines::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.15) 2px,
-      rgba(0, 0, 0, 0.15) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
-  }
-  
-  .crt-scanlines::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(
-      ellipse at center,
-      transparent 0%,
-      rgba(0, 0, 0, 0.2) 100%
-    );
-    pointer-events: none;
-    z-index: 9998;
+/* Touch targets - minimum 44x44px */
+@layer components {
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
-/* Custom animations */
+/* OLED Panel styles */
+@layer components {
+  .oled-panel {
+    background: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 2%) 100%);
+    border: 1px solid hsl(var(--border));
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 hsl(var(--primary) / 0.05);
+  }
+  
+  .oled-surface {
+    background: hsl(0 0% 3%);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  
+  /* Glow effects */
+  .glow-amber {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  
+  .glow-cyan {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+  }
+  
+  .glow-success {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.3);
+  }
+  
+  /* Text glow */
+  .text-glow-amber {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+  
+  .text-glow-cyan {
+    text-shadow: 0 0 10px hsl(var(--accent) / 0.5);
+  }
+}
+
+/* Progress ring animation */
 @layer utilities {
+  @keyframes progress-fill {
+    from { stroke-dashoffset: 283; }
+  }
+  
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 5px hsl(var(--gold) / 0.3); }
-    50% { box-shadow: 0 0 25px hsl(var(--gold) / 0.6), 0 0 50px hsl(var(--gold) / 0.2); }
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
   
-  @keyframes scan-line-vertical {
-    0% { transform: translateY(-100%); opacity: 0; }
-    10% { opacity: 0.3; }
-    90% { opacity: 0.3; }
-    100% { transform: translateY(100vh); opacity: 0; }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
-  @keyframes flicker {
-    0%, 100% { opacity: 1; }
-    92% { opacity: 1; }
-    93% { opacity: 0.7; }
-    94% { opacity: 1; }
-    96% { opacity: 0.85; }
-    97% { opacity: 1; }
-  }
-  
-  @keyframes cogitator-boot {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes sector-pacified {
-    0% { border-color: hsl(var(--border)); box-shadow: none; }
-    50% { border-color: hsl(var(--gold)); box-shadow: 0 0 30px hsl(var(--gold) / 0.5), inset 0 0 20px hsl(var(--gold) / 0.1); }
-    100% { border-color: hsl(var(--terminal-green)); box-shadow: 0 0 20px hsl(var(--terminal-green) / 0.4); }
-  }
-  
-  @keyframes data-stream {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out forwards;
   }
   
   .animate-pulse-glow {
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-  
-  .animate-scan-vertical {
-    animation: scan-line-vertical 6s linear infinite;
-  }
-  
-  .animate-flicker {
-    animation: flicker 4s ease-in-out infinite;
-  }
-  
-  .animate-cogitator-boot {
-    animation: cogitator-boot 0.4s ease-out forwards;
-  }
-  
-  .animate-sector-pacified {
-    animation: sector-pacified 1.5s ease-out forwards;
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 }
 
-/* Panel and card styles */
+/* Type-specific styling */
 @layer components {
-  .panel-cogitator {
-    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--void-black)) 100%);
-    border: 1px solid hsl(var(--border) / 0.4);
-    box-shadow: var(--shadow-panel);
-    position: relative;
-    overflow: hidden;
+  .type-novel {
+    border-left-color: hsl(var(--type-novel));
   }
   
-  .panel-cogitator::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.4), transparent);
+  .type-short {
+    border-left-color: hsl(var(--type-short));
+    font-weight: 400;
+    opacity: 0.9;
   }
   
-  /* Mechanical switch styling */
-  .switch-mechanical {
-    background: linear-gradient(180deg, hsl(var(--steel)) 0%, hsl(var(--void-black)) 100%);
-    border: 2px solid hsl(var(--border));
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 1px 0 hsl(var(--gold) / 0.1);
+  .type-omnibus {
+    border-left-color: hsl(var(--type-omnibus));
   }
   
-  .switch-mechanical[data-state="checked"] {
-    background: linear-gradient(180deg, hsl(var(--gold)) 0%, hsl(var(--gold-dim)) 100%);
-    border-color: hsl(var(--gold-bright));
-    box-shadow: 0 0 20px hsl(var(--gold) / 0.5), inset 0 1px 0 hsl(var(--gold-bright));
+  .type-anthology {
+    border-left-color: hsl(var(--type-anthology));
   }
-  
-  /* Terminal text glow */
-  .text-terminal {
-    color: hsl(var(--terminal-green));
-    text-shadow: 0 0 10px hsl(var(--terminal-green) / 0.6);
-  }
-  
-  .text-gold-glow {
-    color: hsl(var(--gold));
-    text-shadow: 0 0 10px hsl(var(--gold) / 0.5);
-  }
-  
-  /* Faction styling */
+}
+
+/* Faction styling */
+@layer components {
   .faction-imperium {
-    border-color: hsl(var(--faction-imperium) / 0.5);
     --accent-color: hsl(var(--faction-imperium));
   }
   
   .faction-chaos {
-    border-color: hsl(var(--faction-chaos) / 0.5);
     --accent-color: hsl(var(--faction-chaos));
   }
   
   .faction-xenos {
-    border-color: hsl(var(--faction-xenos) / 0.5);
     --accent-color: hsl(var(--faction-xenos));
   }
   
   .faction-dimmed {
-    opacity: 0.25;
-    filter: grayscale(0.8);
-    pointer-events: none;
+    opacity: 0.2;
+    filter: grayscale(0.7);
   }
 }
 
-/* Grid overlay pattern */
-@layer utilities {
-  .grid-overlay {
-    background-image: 
-      linear-gradient(hsl(var(--gold) / 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--gold) / 0.02) 1px, transparent 1px);
-    background-size: 24px 24px;
+/* Safe area for mobile notches */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
   }
   
-  .data-stream-bg {
-    background: 
-      linear-gradient(45deg, 
-        transparent 25%, 
-        hsl(var(--gold) / 0.02) 25%, 
-        hsl(var(--gold) / 0.02) 50%, 
-        transparent 50%, 
-        transparent 75%, 
-        hsl(var(--gold) / 0.02) 75%
-      );
-    background-size: 8px 8px;
-    animation: data-stream 20s linear infinite;
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
 /* Data wrapper fix */
 @layer base {
   [data-debug-wrapper="true"] {
     display: contents !important;
-  }
-}
-
-/* Focus styles */
-*:focus-visible {
-  outline: 2px solid hsl(var(--gold) / 0.6);
-  outline-offset: 2px;
-}
-
-/* Print styles */
-@media print {
-  .crt-scanlines::before,
-  .crt-scanlines::after {
-    display: none;
   }
 }

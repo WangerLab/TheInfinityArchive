@@ -8,14 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Cinzel', 'serif'],
-        tactical: ['Orbitron', 'sans-serif'],
-        data: ['JetBrains Mono', 'monospace'],
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        display: ['Orbitron', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -44,6 +39,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))'
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))'
+        },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))'
@@ -51,33 +50,30 @@ module.exports = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        // Custom Grimdark colors
-        gold: {
-          DEFAULT: 'hsl(var(--gold))',
-          dim: 'hsl(var(--gold-dim))',
-          bright: 'hsl(var(--gold-bright))'
-        },
-        terminal: {
-          DEFAULT: 'hsl(var(--terminal-green))',
-          dim: 'hsl(var(--terminal-green-dim))',
-          bright: 'hsl(var(--terminal-green-bright))'
-        },
-        blood: 'hsl(var(--blood-red))',
-        void: 'hsl(var(--void-black))',
-        steel: 'hsl(var(--steel))',
-        rust: 'hsl(var(--rust))',
         // Faction colors
         imperium: 'hsl(var(--faction-imperium))',
         chaos: 'hsl(var(--faction-chaos))',
         xenos: 'hsl(var(--faction-xenos))',
+        // Type colors  
+        novel: 'hsl(var(--type-novel))',
+        short: 'hsl(var(--type-short))',
+        omnibus: 'hsl(var(--type-omnibus))',
+        anthology: 'hsl(var(--type-anthology))',
       },
-      boxShadow: {
-        'glow-gold': '0 0 20px hsl(var(--gold) / 0.4)',
-        'glow-green': '0 0 20px hsl(var(--terminal-green) / 0.4)',
-        'glow-chaos': '0 0 20px hsl(var(--chaos-purple) / 0.4)',
-        'glow-xenos': '0 0 20px hsl(var(--xenos-cyan) / 0.4)',
-        'panel': '0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 200, 100, 0.03)',
-        'inset-dark': 'inset 0 2px 6px rgba(0, 0, 0, 0.6)'
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)'
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+      },
+      minHeight: {
+        'touch': '44px',
+      },
+      minWidth: {
+        'touch': '44px',
       },
       keyframes: {
         'accordion-down': {
