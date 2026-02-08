@@ -231,7 +231,10 @@ export const RecursiveBookEntry = ({
           {/* Notes button */}
           {depth === 0 && (
             <button
-              onClick={() => setShowNotes(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNotes(true);
+              }}
               className={cn(
                 "touch-checkbox flex items-center justify-center shrink-0",
                 "transition-colors duration-200"
