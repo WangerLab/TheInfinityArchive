@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the 'Infinity Archive' reading tracker app at https://archivum-cogitator.preview.emergentagent.com/ - A Grimdark/Warhammer 40k themed reading tracker with features including main dashboard view, phase expansion, mark as read toggle, skull rating system, persistence, responsive design, and visual design verification."
+user_problem_statement: "Test the 'Infinity Archive' reading tracker app at https://infinity-reader.preview.emergentagent.com/ - A Grimdark/Warhammer 40k themed reading tracker with features including main dashboard view, phase expansion, mark as read toggle, skull rating system, persistence, responsive design, and visual design verification."
 
 frontend:
   - task: "Main Dashboard View"
