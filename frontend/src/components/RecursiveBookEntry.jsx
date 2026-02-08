@@ -101,7 +101,10 @@ export const RecursiveBookEntry = ({
           {/* Expand/Checkbox area */}
           {hasContents ? (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
               className="touch-checkbox flex items-center justify-center shrink-0"
             >
               <div className={cn(
