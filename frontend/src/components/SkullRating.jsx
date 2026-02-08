@@ -16,7 +16,8 @@ export const SkullRating = ({
     lg: 'w-7 h-7'
   };
 
-  const handleClick = (value) => {
+  const handleClick = (e, value) => {
+    e.stopPropagation();
     if (readonly || !onRatingChange) return;
     onRatingChange(value === rating ? 0 : value);
   };
