@@ -32,7 +32,7 @@ export const SkullRating = ({
           <button
             key={i}
             type="button"
-            onClick={() => handleClick(value)}
+            onClick={(e) => handleClick(e, value)}
             disabled={readonly}
             className={cn(
               "touch-checkbox p-1 transition-all duration-200 rounded",
