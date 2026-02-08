@@ -9,7 +9,8 @@ export const GrimdarkCheckbox = ({
   type = 'novel', // 'novel', 'short', 'omnibus', 'anthology'
   className
 }) => {
-  const handleToggle = () => {
+  const handleToggle = (e) => {
+    e.stopPropagation();
     if (!disabled && onCheckedChange) {
       onCheckedChange(!checked);
     }
