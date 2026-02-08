@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { MechanicalSwitch } from './MechanicalSwitch';
+import { TouchCheckbox } from './TouchCheckbox';
 import { SkullRating } from './SkullRating';
 import { NotesModal } from './NotesModal';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, BookMarked, ChevronRight, FileText, 
-  PenTool, FolderOpen, Shield, Swords, Bug 
+  Book, ScrollText, Library, Layers, 
+  ChevronRight, PenLine, User, FileText,
+  Shield, Swords, Bug
 } from 'lucide-react';
+
+// Type icon mapping
+const typeIcons = {
+  novel: Book,
+  short: ScrollText,
+  omnibus: Library,
+  anthology: Layers
+};
+
+// Faction icon mapping
+const factionIcons = {
+  imperium: Shield,
+  chaos: Swords,
+  xenos: Bug
+};
 
 export const BookEntry = ({ 
   book, 
@@ -16,7 +30,7 @@ export const BookEntry = ({
   isRead = false, 
   rating = 0,
   notes = '',
-  childProgress = null, // For omnibus: { read: 2, total: 3 }
+  childProgress = null,
   onReadChange,
   onRatingChange,
   onNotesChange,
@@ -24,204 +38,176 @@ export const BookEntry = ({
   isExpanded = false,
   onToggleExpand,
   activeFilters = [],
+  isSubItem = false,
   className 
 }) => {
   const [showNotes, setShowNotes] = useState(false);
   
-  // Check if this book should be dimmed based on filters
   const isDimmed = activeFilters.length > 0 && book.faction && !activeFilters.includes(book.faction);
+  
+  const TypeIcon = typeIcons[book.type] || Book;
+  const FactionIcon = factionIcons[book.faction] || Shield;
 
-  const factionColors = {
-    imperium: { border: 'border-l-gold', icon: Shield, color: 'text-gold' },
-    chaos: { border: 'border-l-chaos', icon: Swords, color: 'text-chaos' },
-    xenos: { border: 'border-l-xenos', icon: Bug, color: 'text-xenos' }
+  const typeColors = {
+    novel: 'text-primary',
+    short: 'text-accent',
+    omnibus: 'text-omnibus',
+    anthology: 'text-success'
   };
-
-  const factionStyle = factionColors[book.faction] || factionColors.imperium;
-  const FactionIcon = factionStyle.icon;
 
   return (
     <>
-      <motion.div 
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.03 }}
+      <div 
         className={cn(
-          "group relative p-3 rounded-sm transition-all duration-300",
-          "bg-gradient-to-r from-void/50 to-transparent",
-          "border-l-2",
-          isRead 
-            ? "border-l-terminal bg-terminal/5" 
-            : factionStyle.border,
+          "oled-surface rounded-lg p-3 transition-all duration-200",
+          "border-l-3",
+          isRead ? "border-l-success bg-success/5" : `type-${book.type}`,
+          isSubItem && "ml-4 border-l-2",
+          isSubItem && book.type === 'short' && "bg-white/[0.02]",
           isDimmed && "faction-dimmed",
           className
         )}
       >
-        {/* Index number */}
-        <div className="absolute -left-px top-0 bottom-0 flex items-center">
-          <span className={cn(
-            "font-tactical text-[9px] -ml-5 w-4 text-right",
-            isRead ? "text-terminal/60" : "text-muted-foreground/30"
-          )}>
-            {String(index + 1).padStart(2, '0')}
-          </span>
-        </div>
+        <div className="flex items-start gap-3">
+          {/* Expand button for omnibus/anthology OR checkbox */}
+          {hasContents ? (
+            <button
+              onClick={onToggleExpand}
+              className="touch-target flex items-center justify-center shrink-0"
+            >
+              <div className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                isExpanded 
+                  ? "bg-primary/20 text-primary" 
+                  : "bg-white/5 text-slate-400"
+              )}>
+                <ChevronRight className={cn(
+                  "w-5 h-5 transition-transform duration-200",
+                  isExpanded && "rotate-90"
+                )} />
+              </div>
+            </button>
+          ) : (
+            <TouchCheckbox
+              checked={isRead}
+              onCheckedChange={onReadChange}
+              type={book.type}
+            />
+          )}
 
-        <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-          {/* Main content */}
+          {/* Content */}
           <div className="flex-1 min-w-0">
             {/* Title row */}
-            <div className="flex items-start gap-2 mb-1">
-              {hasContents ? (
-                <button 
-                  onClick={onToggleExpand}
-                  className="mt-0.5 shrink-0 transition-colors hover:text-gold"
-                >
-                  <ChevronRight className={cn(
-                    "h-4 w-4 transition-transform duration-200",
-                    isExpanded && "rotate-90",
-                    isRead ? "text-terminal" : "text-gold/60"
-                  )} />
-                </button>
-              ) : (
-                <BookMarked className={cn(
-                  "h-4 w-4 mt-0.5 shrink-0 transition-colors",
-                  isRead ? "text-terminal" : "text-gold/60"
-                )} />
-              )}
-              
+            <div className="flex items-start gap-2">
+              <TypeIcon className={cn(
+                "w-4 h-4 mt-0.5 shrink-0",
+                isRead ? "text-success" : typeColors[book.type]
+              )} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className={cn(
-                    "font-data text-sm font-medium leading-tight transition-colors",
-                    isRead ? "text-terminal" : "text-foreground"
-                  )}>
-                    {book.title}
-                  </h4>
-                  {hasContents && (
-                    <span className="shrink-0 px-1.5 py-0.5 bg-gold/10 border border-gold/30 rounded-sm">
-                      <FolderOpen className="h-3 w-3 text-gold" />
-                    </span>
-                  )}
-                </div>
-
-                {/* Author & Pages */}
-                <div className="flex items-center gap-3 mt-0.5">
-                  <div className="flex items-center gap-1">
-                    <User className="h-3 w-3 text-muted-foreground/50" />
-                    <span className="font-data text-[10px] text-muted-foreground">
+                <h4 className={cn(
+                  "font-semibold leading-tight",
+                  isSubItem && book.type === 'short' ? "text-sm" : "text-base",
+                  isRead ? "text-success" : "text-white"
+                )}>
+                  {book.title}
+                </h4>
+                
+                {/* Author + Pages + Faction */}
+                {book.author && (
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                      <User className="w-3 h-3" />
                       {book.author}
                     </span>
-                  </div>
-                  {book.pages && (
-                    <div className="flex items-center gap-1">
-                      <FileText className="h-3 w-3 text-muted-foreground/50" />
-                      <span className="font-data text-[10px] text-muted-foreground">
-                        {book.pages.toLocaleString()} pages
+                    {book.pages && (
+                      <span className="flex items-center gap-1 text-xs text-slate-500">
+                        <FileText className="w-3 h-3" />
+                        {book.pages.toLocaleString()}p
                       </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <FactionIcon className={cn("h-3 w-3", factionStyle.color)} />
+                    )}
+                    {book.faction && (
+                      <FactionIcon className={cn(
+                        "w-3.5 h-3.5",
+                        book.faction === 'imperium' && "text-imperium",
+                        book.faction === 'chaos' && "text-chaos",
+                        book.faction === 'xenos' && "text-xenos"
+                      )} />
+                    )}
                   </div>
-                </div>
+                )}
+
+                {/* Type badge for omnibus/anthology */}
+                {hasContents && (
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className={cn(
+                      "text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full",
+                      book.type === 'omnibus' && "bg-omnibus/20 text-omnibus",
+                      book.type === 'anthology' && "bg-success/20 text-success"
+                    )}>
+                      {book.type?.toUpperCase()}
+                    </span>
+                    {childProgress && (
+                      <span className={cn(
+                        "text-xs font-semibold",
+                        childProgress.read === childProgress.total 
+                          ? "text-success" 
+                          : "text-slate-400"
+                      )}>
+                        {childProgress.read}/{childProgress.total} COMPLETE
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {book.tags?.map((tag, tagIndex) => (
-                    <Badge 
-                      key={tagIndex}
-                      variant="outline"
-                      className={cn(
-                        "text-[9px] px-1.5 py-0 h-4 font-data tracking-wide",
-                        "border-border/40 bg-muted/20",
-                        isRead && "border-terminal/30 text-terminal/80"
-                      )}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Child progress for omnibus */}
-                {childProgress && (
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <span className="font-tactical text-[9px] text-muted-foreground tracking-wider">
-                      CONTENTS:
-                    </span>
-                    <span className={cn(
-                      "font-data text-[10px]",
-                      childProgress.read === childProgress.total ? "text-terminal" : "text-gold"
-                    )}>
-                      {childProgress.read}/{childProgress.total} complete
-                    </span>
+                {book.tags && book.tags.length > 0 && !isSubItem && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {book.tags.map((tag, i) => (
+                      <span 
+                        key={i}
+                        className="text-[10px] px-2 py-0.5 bg-white/5 text-slate-400 rounded-full font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Rating - only when read */}
+            {isRead && !hasContents && (
+              <div className="mt-3 pt-3 border-t border-white/5">
+                <SkullRating
+                  rating={rating}
+                  onRatingChange={onRatingChange}
+                  size="sm"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-2 ml-6 sm:ml-0">
-            {/* Notes button */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+          {/* Notes button */}
+          {!isSubItem && (
+            <button
               onClick={() => setShowNotes(true)}
               className={cn(
-                "p-1.5 rounded-sm border transition-all duration-200",
-                notes 
-                  ? "border-gold/50 bg-gold/10 text-gold" 
-                  : "border-border/30 bg-muted/20 text-muted-foreground/50 hover:text-gold/70 hover:border-gold/30"
+                "touch-target flex items-center justify-center shrink-0",
+                "transition-colors duration-200"
               )}
-              title="Remembrancer's Log"
             >
-              <PenTool className="h-3.5 w-3.5" />
-            </motion.button>
-
-            {/* Read toggle */}
-            <div className="flex items-center gap-2">
-              <span className="font-tactical text-[8px] text-muted-foreground tracking-wider hidden sm:inline">
-                {isRead ? 'LOGGED' : 'MARK'}
-              </span>
-              <MechanicalSwitch
-                checked={isRead}
-                onCheckedChange={onReadChange}
-                size="sm"
-              />
-            </div>
-
-            {/* Rating - only shown when read */}
-            <AnimatePresence>
-              {isRead && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col items-start sm:items-end gap-0.5"
-                >
-                  <span className="font-tactical text-[8px] text-muted-foreground tracking-wider">
-                    RATING
-                  </span>
-                  <SkullRating
-                    rating={rating}
-                    onRatingChange={onRatingChange}
-                    size="sm"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              <div className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center",
+                notes 
+                  ? "bg-primary/20 text-primary" 
+                  : "bg-white/5 text-slate-500 hover:text-slate-300"
+              )}>
+                <PenLine className="w-4 h-4" />
+              </div>
+            </button>
+          )}
         </div>
-
-        {/* Completion glow effect */}
-        {isRead && (
-          <div className="absolute inset-0 rounded-sm pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-r from-terminal/5 to-transparent" />
-          </div>
-        )}
-      </motion.div>
+      </div>
 
       {/* Notes Modal */}
       <NotesModal
@@ -235,7 +221,7 @@ export const BookEntry = ({
   );
 };
 
-// Sub-story entry for omnibus contents
+// Sub-story entry component
 export const SubStoryEntry = ({
   story,
   index,
@@ -243,41 +229,56 @@ export const SubStoryEntry = ({
   onReadChange,
   className
 }) => {
+  const TypeIcon = typeIcons[story.type] || ScrollText;
+  const isShort = story.type === 'short';
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -5 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.2, delay: index * 0.05 }}
+    <div
       className={cn(
-        "flex items-center justify-between p-2 ml-6 rounded-sm",
-        "bg-void/30 border-l border-gold/20",
-        isRead && "border-l-terminal/50 bg-terminal/5",
+        "oled-surface rounded-lg p-3 ml-6 border-l-2",
+        isRead ? "border-l-success bg-success/5" : "border-l-white/20",
+        isShort && "bg-white/[0.02]",
         className
       )}
     >
-      <div className="flex items-center gap-2">
-        <span className="font-tactical text-[8px] text-muted-foreground/40 w-4">
-          {String(index + 1).padStart(2, '0')}
-        </span>
+      <div className="flex items-center gap-3">
+        <TouchCheckbox
+          checked={isRead}
+          onCheckedChange={onReadChange}
+          type={story.type}
+        />
+        
+        <TypeIcon className={cn(
+          "w-4 h-4 shrink-0",
+          isRead ? "text-success" : isShort ? "text-accent" : "text-primary"
+        )} />
+        
+        <div className="flex-1 min-w-0">
+          <h5 className={cn(
+            "leading-tight",
+            isShort ? "text-sm font-medium" : "text-base font-semibold",
+            isRead ? "text-success" : "text-slate-200"
+          )}>
+            {story.title}
+          </h5>
+          {story.pages && (
+            <span className="text-xs text-slate-500 font-mono">
+              {story.pages}p
+            </span>
+          )}
+        </div>
+
+        {/* Type indicator */}
         <span className={cn(
-          "font-data text-xs",
-          isRead ? "text-terminal" : "text-foreground/80"
+          "text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded",
+          isShort 
+            ? "bg-accent/20 text-accent" 
+            : "bg-primary/20 text-primary"
         )}>
-          {story.title}
+          {story.type === 'short' ? 'SHORT' : 'NOVEL'}
         </span>
-        {story.pages && (
-          <span className="font-data text-[9px] text-muted-foreground/50">
-            ({story.pages}p)
-          </span>
-        )}
       </div>
-      
-      <MechanicalSwitch
-        checked={isRead}
-        onCheckedChange={onReadChange}
-        size="sm"
-      />
-    </motion.div>
+    </div>
   );
 };
 

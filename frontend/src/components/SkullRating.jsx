@@ -1,7 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Skull } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export const SkullRating = ({ 
   rating = 0, 
@@ -12,18 +11,14 @@ export const SkullRating = ({
   className 
 }) => {
   const sizes = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6'
+    sm: 'w-5 h-5',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8'
   };
 
   const handleClick = (value) => {
     if (readonly || !onRatingChange) return;
-    if (value === rating) {
-      onRatingChange(0);
-    } else {
-      onRatingChange(value);
-    }
+    onRatingChange(value === rating ? 0 : value);
   };
 
   return (
@@ -33,40 +28,32 @@ export const SkullRating = ({
         const isFilled = value <= rating;
         
         return (
-          <motion.button
+          <button
             key={i}
             type="button"
             onClick={() => handleClick(value)}
             disabled={readonly}
-            whileHover={!readonly ? { scale: 1.15 } : undefined}
-            whileTap={!readonly ? { scale: 0.9 } : undefined}
             className={cn(
-              "transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-gold/50 rounded-sm",
-              !readonly && "cursor-pointer",
-              readonly && "cursor-default"
+              "touch-target transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-md",
+              !readonly && "active:scale-90"
             )}
             aria-label={`Rate ${value} out of ${maxRating}`}
           >
-            <motion.div
-              initial={false}
-              animate={isFilled ? { scale: [1, 1.2, 1] } : { scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Skull
-                className={cn(
-                  sizes[size],
-                  "transition-all duration-200",
-                  isFilled 
-                    ? "fill-gold text-gold drop-shadow-[0_0_8px_hsl(var(--gold)/0.7)]" 
-                    : "text-muted-foreground/30 hover:text-muted-foreground/50"
-                )}
-              />
-            </motion.div>
-          </motion.button>
+            <Skull
+              className={cn(
+                sizes[size],
+                "transition-all duration-200",
+                isFilled 
+                  ? "fill-primary text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" 
+                  : "text-slate-600 hover:text-slate-400"
+              )}
+            />
+          </button>
         );
       })}
       {rating > 0 && (
-        <span className="ml-2 text-xs font-data text-gold/80">
+        <span className="ml-2 text-sm font-mono text-primary font-semibold">
           {rating}/{maxRating}
         </span>
       )}
