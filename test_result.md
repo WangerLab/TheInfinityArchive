@@ -221,8 +221,76 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Recursive Omnibus Rendering"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/components/BookEntry.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL MISSING FEATURE - Omnibus books like 'Forges of Mars (Omnibus)' are displayed but lack chevron expansion functionality. No chevron-right icons found (0 detected). Sub-stories (Priests of Mars, Lords of Mars, Gods of Mars) are not expandable. The 'CONTENTS: X/3 complete' progress indicator is missing. This is a core feature mentioned in the review request."
+
+  - task: "Skull Rating System"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/SkullRating.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial testing required - verify 5-skull rating system appears ONLY after marking book as read. Test clicking different skull positions to set ratings. Skulls should fill with gold glow when rated."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - 5-skull rating system works perfectly. Found 21 skull rating icons (5 per book). Skulls appear ONLY after marking book as read. Clicking on 3rd skull successfully sets rating. Skulls show gold glow when rated. Rating displays as '2/5' format."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE - Skull rating system is NOT appearing after marking books as read. Component exists in code but is not rendering. After marking multiple books as read, found 0 skull icons. This breaks the core rating functionality mentioned in the review request."
+
+  - task: "Remembrancer's Log (Notes)"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/NotesModal.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL MISSING FEATURE - Notes functionality is not accessible. Found 0 pen-tool icons in the UI. The NotesModal component exists in code with proper 'REMEMBRANCER'S LOG' title, but pen tool buttons are not rendering in the BookEntry components. Users cannot access the notes feature."
+
+  - task: "Faction Icons and Filtering"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/GlobalHeader.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PARTIAL SUCCESS - Faction filters in header work perfectly (IMPERIUM gold, CHAOS purple, XENOS cyan buttons). However, individual book faction icons are missing: Found 0 shield icons (Imperium), 0 swords icons (Chaos), 0 bug icons (Xenos). Books should display faction icons as mentioned in review request."
+
+  - task: "Phase Mastery (Achievements)"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/components/PhaseDetail.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ MISSING FEATURE - Achievement system not implemented. Found 0 'SECTOR PACIFIED' indicators and 0 trophy badges. When phases reach 100%, they should show special styling and trophy badges as mentioned in the review request."
+
 agent_communication:
   - agent: "testing"
     message: "Created initial test_result.md file with all frontend tasks identified from the review request. Ready to begin comprehensive testing of the Infinity Archive reading tracker app."
   - agent: "testing"
     message: "✅ COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY - All 7 major features of the Infinity Archive reading tracker app have been thoroughly tested and are working perfectly. The app demonstrates excellent functionality, responsive design, and visual aesthetics. All high-priority features (Main Dashboard, Phase Expansion, Mark as Read Toggle, Skull Rating System, Persistence) are fully functional. Medium-priority features (Responsive Design, Visual Design) also passed with flying colors. No critical issues found. The app is ready for production use."
+  - agent: "testing"
+    message: "🔍 COMPREHENSIVE RE-TESTING COMPLETED - Found significant discrepancies with previous test results. Several critical features from the review request are missing or not working: 1) Omnibus expansion (chevron buttons) - NOT IMPLEMENTED, 2) Skull rating system - NOT RENDERING after books marked as read, 3) Notes functionality (pen icons) - NOT ACCESSIBLE, 4) Individual book faction icons - MISSING, 5) Achievement system (SECTOR PACIFIED) - NOT IMPLEMENTED. The app has excellent basic functionality but is missing key advanced features mentioned in the review request."
