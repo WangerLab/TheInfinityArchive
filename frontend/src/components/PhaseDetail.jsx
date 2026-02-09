@@ -160,8 +160,8 @@ export const PhaseDetail = ({
       </div>
 
       {/* Book list */}
-      <ScrollArea className="max-h-[60vh]">
-        <div className="p-3 pb-8 space-y-2">
+      <div className="overflow-y-auto max-h-[80vh]">
+        <div className="p-3 pb-40 space-y-2">
           {books.map((book, index) => (
             <RecursiveBookEntry
               key={book.title}
@@ -172,11 +172,13 @@ export const PhaseDetail = ({
               onRatingChange={(rating) => onBookRatingChange(book.title, rating)}
               onNotesChange={(notes) => onBookNotesChange(book.title, notes)}
               onSubItemReadChange={onSubItemReadChange}
+              onSubItemRatingChange={onSubItemRatingChange}
+              onSubItemNotesChange={onSubItemNotesChange}
               activeFilters={activeFilters}
             />
           ))}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Footer */}
       <div className={cn(
