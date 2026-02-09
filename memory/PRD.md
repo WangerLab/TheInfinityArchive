@@ -32,40 +32,41 @@ Build a mobile-first reading tracker app with a "Grimdark" aesthetic for trackin
 
 ## What's Been Implemented
 
-### Version 3.0 (Latest - December 2025)
-**Bug Fixes Applied:**
-1. **Sub-item Interactivity Fix** - Added `e.stopPropagation()` to:
-   - GrimdarkCheckbox.jsx (handleToggle)
-   - SkullRating.jsx (handleClick)
-   - RecursiveBookEntry.jsx (omnibus expand button, notes button)
-   
-2. **Scroll/Padding Fix** - Changed:
-   - `App.js` main container: `pb-8` → `pb-32`
-   - `PhaseDetail.jsx` ScrollArea inner div: Added `pb-8`
+### Version 3.1 (Latest - December 2025)
+**Final Bug Fixes Applied:**
+1. **Sub-item Ratings & Notes** - Full support for:
+   - `handleSubItemRatingChange` - Updates nested rating in contents object
+   - `handleSubItemNotesChange` - Updates nested notes in contents object
+   - `SkullRating` component rendered for checked sub-items
+   - `NotesModal` for each sub-item with feather button
+
+2. **Data Structure Migration** - Sub-items now store objects:
+   ```json
+   {"Legacy of Caliban (Trilogy)":{"contents":{"Ravenwing":{"isRead":true,"rating":4,"notes":"..."}}}}
+   ```
+   - Backward compatible with old boolean format via `isSubItemRead()` helper
+
+3. **Scroll/Layout Fix** - Changed:
+   - PhaseDetail: Replaced `ScrollArea` with `overflow-y-auto max-h-[80vh]`
+   - Inner padding: `pb-8` → `pb-40` for safety margin
 
 ### Previous Versions
-- V1: Grimdark MVP with basic tracking
-- V2: Recursive omnibus rendering, page-based XP
-- V3: Mobile OLED UI refinements
-- V3.0: High-fidelity visual polish
+- V3.0: Event propagation fixes (e.stopPropagation)
+- V1-V2: Initial build with recursive rendering
 
-## Test Results (Iteration 1)
-- Sub-item checkbox interactivity: PASSED
-- Page count updates: PASSED
-- localStorage persistence: PASSED
-- Omnibus progress display: PASSED
-- Scroll/padding: PASSED
-- Footer visibility: PASSED
-- Skull rating: PASSED
-- Visual style preserved: PASSED
+## Test Results
+- Sub-item checkbox: ✅ Working
+- Sub-item rating: ✅ Working (4 skulls visible, rating saved)
+- Sub-item notes: ✅ Working (modal opens, saves to localStorage)
+- Page count: ✅ Updates correctly (320 pages for Ravenwing)
+- Scroll container: ✅ Content accessible, footer visible
+- Visual style: ✅ Grimdark preserved
 
 ## Future Enhancements (Backlog)
 - P2: Export/import progress data
 - P2: Search functionality
 - P3: Statistics dashboard
-- P3: Reading goal tracking
 
 ## Known Limitations
 - Frontend-only (no backend/API)
-- Data is stored in localStorage (browser-specific)
-- JSON data file is static (no admin interface)
+- Data stored in localStorage (browser-specific)
