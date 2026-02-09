@@ -29,14 +29,26 @@ export const PhaseDetail = ({
     let ratingSum = 0;
     let ratedCount = 0;
 
+    // Helper to check if sub-item is read
+    const isSubItemRead = (data) => {
+      if (typeof data === 'boolean') return data;
+      return data?.isRead || false;
+    };
+
     const processBook = (book, data) => {
       if (book.contents && book.contents.length > 0) {
         book.contents.forEach(subItem => {
           totalPages += subItem.pages || 0;
           totalItems++;
-          if (data?.contents?.[subItem.title]) {
+          const subData = data?.contents?.[subItem.title];
+          if (isSubItemRead(subData)) {
             readPages += subItem.pages || 0;
             completedItems++;
+          }
+          // Count sub-item ratings
+          if (typeof subData === 'object' && subData?.rating > 0) {
+            ratingSum += subData.rating;
+            ratedCount++;
           }
         });
       } else {
