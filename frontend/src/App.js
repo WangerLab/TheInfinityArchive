@@ -47,6 +47,12 @@ function App() {
     let totalRated = 0;
     let totalRatingSum = 0;
 
+    // Helper to check if sub-item is read
+    const isSubItemRead = (data) => {
+      if (typeof data === 'boolean') return data;
+      return data?.isRead || false;
+    };
+
     projectData.phases.forEach(phase => {
       phase.books.forEach(book => {
         const progress = bookProgress[book.title];
@@ -56,9 +62,15 @@ function App() {
           book.contents.forEach(subItem => {
             totalPages += subItem.pages || 0;
             totalItems++;
-            if (progress?.contents?.[subItem.title]) {
+            const subData = progress?.contents?.[subItem.title];
+            if (isSubItemRead(subData)) {
               readPages += subItem.pages || 0;
               completedItems++;
+            }
+            // Count sub-item ratings
+            if (typeof subData === 'object' && subData?.rating > 0) {
+              totalRated++;
+              totalRatingSum += subData.rating;
             }
           });
         } else {
