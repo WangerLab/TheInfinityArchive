@@ -146,7 +146,33 @@ function App() {
         ...prev[bookTitle],
         contents: {
           ...prev[bookTitle]?.contents,
-          [subItemTitle]: isRead
+          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), isRead }
+        }
+      }
+    }));
+  }, [setBookProgress]);
+
+  const handleSubItemRatingChange = useCallback((bookTitle, subItemTitle, rating) => {
+    setBookProgress(prev => ({
+      ...prev,
+      [bookTitle]: {
+        ...prev[bookTitle],
+        contents: {
+          ...prev[bookTitle]?.contents,
+          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), rating }
+        }
+      }
+    }));
+  }, [setBookProgress]);
+
+  const handleSubItemNotesChange = useCallback((bookTitle, subItemTitle, notes) => {
+    setBookProgress(prev => ({
+      ...prev,
+      [bookTitle]: {
+        ...prev[bookTitle],
+        contents: {
+          ...prev[bookTitle]?.contents,
+          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), notes }
         }
       }
     }));
