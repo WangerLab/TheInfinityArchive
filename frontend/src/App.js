@@ -316,6 +316,8 @@ function App() {
                     onBookRatingChange={handleBookRatingChange}
                     onBookNotesChange={handleBookNotesChange}
                     onSubItemReadChange={handleSubItemReadChange}
+                    onSubItemRatingChange={handleSubItemRatingChange}
+                    onSubItemNotesChange={handleSubItemNotesChange}
                     onClose={() => setExpandedPhase(null)}
                     activeFilters={activeFilters}
                   />
