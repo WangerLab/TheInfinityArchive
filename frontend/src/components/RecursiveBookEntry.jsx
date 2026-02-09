@@ -269,7 +269,10 @@ export const RecursiveBookEntry = ({
           {book.contents.map((subItem, subIndex) => {
             const SubIcon = typeIcons[subItem.type] || ScrollText;
             const subStyle = typeStyles[subItem.type] || typeStyles.short;
-            const subIsRead = bookData.contents?.[subItem.title] || false;
+            const subItemData = bookData.contents?.[subItem.title];
+            const subIsRead = isSubItemRead(subItemData);
+            const subRating = (typeof subItemData === 'object' ? subItemData?.rating : 0) || 0;
+            const subNotes = (typeof subItemData === 'object' ? subItemData?.notes : '') || '';
             
             return (
               <div
@@ -282,7 +285,7 @@ export const RecursiveBookEntry = ({
                 )}
                 style={{ animationDelay: `${subIndex * 50}ms` }}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-2">
                   <GrimdarkCheckbox
                     checked={subIsRead}
                     onCheckedChange={(checked) => onSubItemReadChange(book.title, subItem.title, checked)}
@@ -290,34 +293,65 @@ export const RecursiveBookEntry = ({
                   />
                   
                   <SubIcon className={cn(
-                    "w-4 h-4 shrink-0",
+                    "w-4 h-4 shrink-0 mt-1",
                     subIsRead ? "text-auspex" : subStyle.icon
                   )} />
                   
                   <div className="flex-1 min-w-0">
-                    <h5 className={cn(
-                      "leading-tight",
-                      subItem.type === 'short' ? "text-sm italic font-medium" : "text-base font-semibold",
-                      subIsRead ? "text-auspex" : "text-slate-200"
-                    )}>
-                      {subItem.title}
-                    </h5>
-                    {subItem.pages && (
-                      <span className="text-xs text-slate-500 font-data">
-                        {subItem.pages}p
+                    <div className="flex items-center gap-2">
+                      <h5 className={cn(
+                        "leading-tight",
+                        subItem.type === 'short' ? "text-sm italic font-medium" : "text-base font-semibold",
+                        subIsRead ? "text-auspex" : "text-slate-200"
+                      )}>
+                        {subItem.title}
+                      </h5>
+                      {subItem.pages && (
+                        <span className="text-xs text-slate-500 font-data">
+                          {subItem.pages}p
+                        </span>
+                      )}
+                      {/* Type badge */}
+                      <span className={cn(
+                        "text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded border shrink-0",
+                        subItem.type === 'short' 
+                          ? "bg-plasma/20 text-plasma border-plasma/40" 
+                          : "bg-gold/20 text-gold border-gold/40"
+                      )}>
+                        {subItem.type === 'short' ? 'SHORT' : 'NOVEL'}
                       </span>
+                    </div>
+                    
+                    {/* Rating for sub-items when read */}
+                    {subIsRead && (
+                      <div className="mt-2 pt-2 border-t border-slate-700/30">
+                        <SkullRating
+                          rating={subRating}
+                          onRatingChange={(rating) => onSubItemRatingChange(book.title, subItem.title, rating)}
+                          size="sm"
+                        />
+                      </div>
                     )}
                   </div>
 
-                  {/* Type badge */}
-                  <span className={cn(
-                    "text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded border shrink-0",
-                    subItem.type === 'short' 
-                      ? "bg-plasma/20 text-plasma border-plasma/40" 
-                      : "bg-gold/20 text-gold border-gold/40"
-                  )}>
-                    {subItem.type === 'short' ? 'SHORT' : 'NOVEL'}
-                  </span>
+                  {/* Notes button for sub-items */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveSubNotes(subItem.title);
+                    }}
+                    className="touch-checkbox flex items-center justify-center shrink-0"
+                    title="Remembrancer's Log"
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center border",
+                      subNotes 
+                        ? "bg-gold/20 text-gold border-gold/40" 
+                        : "bg-slate-800/50 text-slate-500 border-slate-700 hover:text-gold hover:border-gold/40"
+                    )}>
+                      <Feather className="w-3.5 h-3.5" />
+                    </div>
+                  </button>
                 </div>
               </div>
             );
@@ -325,7 +359,7 @@ export const RecursiveBookEntry = ({
         </div>
       )}
 
-      {/* Notes Modal */}
+      {/* Notes Modal for parent book */}
       <NotesModal
         isOpen={showNotes}
         onClose={() => setShowNotes(false)}
@@ -333,6 +367,17 @@ export const RecursiveBookEntry = ({
         notes={bookData.notes || ''}
         onNotesChange={onNotesChange}
       />
+
+      {/* Notes Modal for sub-items */}
+      {activeSubNotes && (
+        <NotesModal
+          isOpen={true}
+          onClose={() => setActiveSubNotes(null)}
+          bookTitle={activeSubNotes}
+          notes={(typeof bookData.contents?.[activeSubNotes] === 'object' ? bookData.contents[activeSubNotes]?.notes : '') || ''}
+          onNotesChange={(notes) => onSubItemNotesChange(book.title, activeSubNotes, notes)}
+        />
+      )}
     </>
   );
 };
