@@ -50,10 +50,13 @@ export const RecursiveBookEntry = ({
   onRatingChange,
   onNotesChange,
   onSubItemReadChange,
+  onSubItemRatingChange,
+  onSubItemNotesChange,
   activeFilters = [],
 }) => {
   const [isExpanded, setIsExpanded] = useState(book.tags?.includes('Completed') || false);
   const [showNotes, setShowNotes] = useState(false);
+  const [activeSubNotes, setActiveSubNotes] = useState(null);
   
   const hasContents = book.contents && book.contents.length > 0;
   const TypeIcon = typeIcons[book.type] || Book;
