@@ -65,11 +65,17 @@ export const RecursiveBookEntry = ({
   const isLegendary = book.tags?.includes('Legendary');
   const isCompleted = book.tags?.includes('Completed');
   
+  // Helper to check if sub-item is read (handles both old boolean and new object format)
+  const isSubItemRead = (subItemData) => {
+    if (typeof subItemData === 'boolean') return subItemData;
+    return subItemData?.isRead || false;
+  };
+  
   // Calculate read status
   const getReadStatus = () => {
     if (hasContents) {
       const contentData = bookData.contents || {};
-      const readCount = book.contents.filter(c => contentData[c.title]).length;
+      const readCount = book.contents.filter(c => isSubItemRead(contentData[c.title])).length;
       return readCount === book.contents.length;
     }
     return bookData.isRead || false;
@@ -81,7 +87,7 @@ export const RecursiveBookEntry = ({
   const getChildProgress = () => {
     if (!hasContents) return null;
     const contentData = bookData.contents || {};
-    const readCount = book.contents.filter(c => contentData[c.title]).length;
+    const readCount = book.contents.filter(c => isSubItemRead(contentData[c.title])).length;
     return { read: readCount, total: book.contents.length };
   };
   
