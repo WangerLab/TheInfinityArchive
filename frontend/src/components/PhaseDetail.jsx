@@ -12,6 +12,8 @@ export const PhaseDetail = ({
   onBookRatingChange,
   onBookNotesChange,
   onSubItemReadChange,
+  onSubItemRatingChange,
+  onSubItemNotesChange,
   onClose,
   activeFilters = [],
   className 
