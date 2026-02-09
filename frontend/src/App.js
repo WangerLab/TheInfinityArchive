@@ -108,6 +108,12 @@ function App() {
     let totalItems = 0;
     let completedItems = 0;
 
+    // Helper to check if sub-item is read
+    const isSubItemRead = (data) => {
+      if (typeof data === 'boolean') return data;
+      return data?.isRead || false;
+    };
+
     books.forEach(book => {
       const progress = bookProgress[book.title];
       
@@ -115,7 +121,7 @@ function App() {
         book.contents.forEach(subItem => {
           totalPages += subItem.pages || 0;
           totalItems++;
-          if (progress?.contents?.[subItem.title]) {
+          if (isSubItemRead(progress?.contents?.[subItem.title])) {
             readPages += subItem.pages || 0;
             completedItems++;
           }
