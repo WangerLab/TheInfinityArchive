@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { GlobalHeader } from '@/components/GlobalHeader';
-import { PhaseCard } from '@/components/PhaseCard';
-import { PhaseDetail } from '@/components/PhaseDetail';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { GlobalHeader } from 'components/GlobalHeader';
+import { PhaseCard } from 'components/PhaseCard';
+import { PhaseDetail } from 'components/PhaseDetail';
+import { useLocalStorage } from 'hooks/useLocalStorage';
 import { Loader2, AlertTriangle, Database } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from 'lib/utils';
 
 function App() {
   const [projectData, setProjectData] = useState(null);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { cn } from 'lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog';
+import { Button } from 'components/ui/button';
+import { Textarea } from 'components/ui/textarea';
 import { Feather, Save, X, BookOpen } from 'lucide-react';
 
 export const NotesModal = ({
