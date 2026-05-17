@@ -1,8 +1,8 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from 'lib/utils';
 import { RecursiveBookEntry } from './RecursiveBookEntry';
 import { ProgressRing } from './ProgressRing';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from 'components/ui/scroll-area';
 import { ChevronUp, Trophy, FileText, Zap, Skull } from 'lucide-react';
 
 export const PhaseDetail = ({ 

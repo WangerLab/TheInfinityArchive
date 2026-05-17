@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from 'lib/utils';
 import { TouchCheckbox } from './TouchCheckbox';
 import { SkullRating } from './SkullRating';
 import { NotesModal } from './NotesModal';
