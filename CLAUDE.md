@@ -150,3 +150,24 @@ functionally broken). Resolved by deleting the Netlify site.
 
 **Lesson:** post-merge PR pages reveal external services connected to
 the repo. Bots commenting on PRs are a useful audit signal.
+
+### Sprint B-1: Build smoke test verifies compilability, not runtime correctness
+
+The mandatory `npm run build` smoke test (Lesson 1) catches compilation
+errors, missing imports, type problems, and Tailwind config issues. It
+does NOT catch runtime bugs in code that makes network calls, handles
+URL-hash redirects, manages auth state machines, or otherwise only
+exercises its real behavior once the bundle is loaded in a browser.
+
+Sprint B-1b's commit-Go was given on green-build alone, before any local
+end-to-end test. The Vercel deploy happened to work — but a redirect-URL
+typo, a missing Supabase auth config option, or a subtle state-machine
+bug in AuthGate would all have shipped silently to production.
+
+**Lesson:** for runtime-critical commits (auth flows, external API
+integration, redirects, complex state machines, side-effect-heavy hooks),
+build success is necessary but not sufficient. Sprint prompts must
+explicitly request runtime evidence ("did you run it locally; what did
+you see") before commit-Go, and Tim must run the test before giving the
+Go signal. This is in addition to, not a replacement for, the build
+smoke test.
