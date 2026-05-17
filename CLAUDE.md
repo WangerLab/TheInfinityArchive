@@ -7,15 +7,20 @@ Archive. Read this before making changes.
 
 - **Frontend:** React 19 + Tailwind CSS, plain `react-scripts` (no CRACO)
 - **UI primitives:** shadcn/ui + lucide-react + Framer Motion
-- **State:** React hooks + localStorage (target: Supabase, Sprint B)
-- **Build:** `cd frontend && yarn start` (dev), `yarn build` (prod)
+- **State:** React hooks + localStorage (target: Supabase, Sprint B-2)
+- **Backend:** Supabase (provisioned Sprint B-0, wired Sprint B-1+)
+- **Build:** `cd frontend && npm start` (dev), `npm run build` (prod)
 - **Hosting:** Vercel with `frontend/` as Root Directory
+- **Package manager:** npm (package-lock.json is authoritative)
 
 ## Code Conventions
 
 - Functional React components only. No class components.
 - File naming: `PascalCase.jsx` for components, `camelCase.js` for hooks/utils.
-- Imports via `@/`-alias (configured in `jsconfig.json`).
+- Imports: bare absolute paths from `src/` (e.g. `import { Button } from "components/ui/button"`).
+  Configured via `jsconfig.json` with `baseUrl: "src"`. Do NOT reintroduce
+  the `@/` alias — it requires CRACO or similar tooling which was removed
+  in Sprint A.
 - Tailwind utility-first. Custom CSS only in `index.css` and `App.css`
   for Grimdark base styles (scanlines, glows, font-display).
 - No inline styles unless dynamically computed.
@@ -57,12 +62,91 @@ Tim pushes himself, always. Claude Code stops and waits before push.
 
 ## Device Mode — Per Session
 
-- **Desktop:** local filesystem, git diff review allowed, push directly
+- **Desktop:** local filesystem, `git diff` review allowed, push directly
   to main after approval.
-- **Mobile:** push only via `claude/*`-branch, merge via GitHub Web UI.
-  No `git push origin HEAD:main`. Full file contents replace git diff
-  for review (hard to read git diff on phone).
+- **Mobile:** push only via `claude/*`-branch, merge via GitHub MCP or
+  Web UI. No `git push origin HEAD:main` (HTTP 403 from the Anthropic
+  harness). Full file contents replace `git diff` for review (hard to
+  read git diff on phone). Repo setting "Automatically delete head
+  branches" is ENABLED — server-side cleanup after every squash-merge,
+  no manual branch deletion needed.
+
+## Mobile Release Sequence
+
+After Tim's go-signal at sprint-commit completion, Claude Code executes
+in one shot:
+
+````
+git push -u origin claude/<sprint-id>
+# Then via GitHub MCP:
+#   create_pull_request (with exact title and body)
+#   merge_pull_request (squash, with exact title and body)
+# GitHub auto-deletes the head branch.
+git checkout main
+git pull origin main
+git branch -D claude/<sprint-id>   # local cleanup
+git log -1 --oneline                # verify squash commit on main
+````
+
+Tim verifies via screenshot, does not manually navigate the GitHub
+Web UI.
+
+## Mandatory Build Smoke Test
+
+Every commit that modifies `frontend/` (package.json, dependencies,
+jsconfig, tailwind config, src/, public/) MUST end with `npm run build`
+before the commit is finalized. Non-negotiable after the Sprint A → B-0
+lesson where CRACO removal silently broke alias resolution.
+
+Doc-only commits (no `frontend/` changes) are exempt.
 
 ## Lessons Learned
 
-(Empty — will grow as we hit problems and solve them.)
+### Sprint A → B-0: Latent build regression
+
+Sprint A removed CRACO without replacing its alias-resolution role.
+Sprint A's acceptance criteria explicitly skipped a build smoke test
+because "the sprint goal isn't build-related" — so the breakage went
+uncaught until B-0's first Vercel deploy failed.
+
+**Lesson:** every sprint that touches build tooling or config (even
+indirectly — removing CRACO is config) ends with a mandatory
+`npm run build` smoke test, even when the sprint goal isn't
+build-related.
+
+### Sprint B-0: Sed-pattern coverage in codebase rewrites
+
+When B-0 rewrote `@/` alias imports to bare absolute imports, the sed
+pattern matched only `from "@/...` and missed the side-effect import
+`import "@/index.css"` (no `from` keyword) in `src/index.js`. Claude Code
+caught it independently during smoke-test verification.
+
+**Lesson:** when prescribing batch rewrites, the match pattern must
+cover all syntactic forms of the construct — side-effect imports
+(`import "foo"`), type-only imports, re-exports (`export ... from`),
+and dynamic `import()` calls. Verify with a broader grep proving zero
+occurrences of the construct remain, not just zero matches-of-the-
+narrow-pattern.
+
+### Sprint B-0: GitHub auto-delete-branches setting
+
+Mobile-mode pushes via the Anthropic harness cannot run
+`git push --delete` (HTTP 403). The GitHub MCP `merge_pull_request` tool
+also does not expose a delete-branch flag. Resolved at end of B-0 by
+enabling the GitHub repo setting "Automatically delete head branches"
+— server-side cleanup eliminates the entire problem class for all
+future sprint commits.
+
+**Lesson:** the auto-delete-head-branches setting is the canonical
+solution for mobile-mode workflow. Do not attempt manual branch
+deletion in mobile-mode prompts.
+
+### Sprint B-0: PR pages are an integration audit point
+
+During B-0's PR review, a Netlify bot was observed commenting deploy
+previews on the open PR — revealing a legacy Netlify integration still
+deploying in parallel to Vercel (with no Supabase env vars, so
+functionally broken). Resolved by deleting the Netlify site.
+
+**Lesson:** post-merge PR pages reveal external services connected to
+the repo. Bots commenting on PRs are a useful audit signal.

@@ -15,38 +15,45 @@ architecture.
 
 ## Current Sprint
 
-**Sprint A — Emergent Exorcism** (in progress)
+**Sprint B-1 — Supabase Client + Magic Link Auth** (in progress)
 
-Cleanup of the Emergent.sh-generated boilerplate from the original
-scaffold. Three commits:
-- A-1: Remove backend/, tests/, test_reports/, test_result.md, .gitconfig ✓
-- A-2: Remove frontend/plugins/, craco.config.js; clean index.html
-  telemetry; switch package.json scripts to react-scripts ✓
-- A-3: Remove .emergent/, memory/; rewrite README.md and .gitignore;
-  create CLAUDE.md and PROJEKT_KONTEXT.md (this file) ← current
+Wire the Supabase JS client into the frontend, add Magic-Link
+authentication, gate the catalog behind a logged-in state. The
+localStorage persistence layer remains untouched in B-1 — B-2 will
+replace it with a Supabase-backed data layer.
 
-Branch: `claude/cleanup-remove-backend-XSXqj`. PR merge to main after
-A-3 commit lands.
+Structured into sub-commits:
+- B-0.5: Doc update (CLAUDE.md + PROJEKT_KONTEXT.md to post-B-0 state) ← current
+- B-1a: @supabase/supabase-js dependency + `lib/supabase.js` singleton + `.env.example`
+- B-1b: AuthGate component + App.js wrap + logout button in GlobalHeader
 
-## Tech Stack — Current vs Target
+## Tech Stack — Current State
 
-| Layer    | Current state              | Target (Sprint B+)        |
-|----------|----------------------------|---------------------------|
-| Frontend | React 19, Tailwind, CRA    | Unchanged                 |
-| State    | localStorage only          | Supabase + localStorage   |
-| Backend  | None                       | Supabase (Auth + Postgres)|
-| Hosting  | None (local only)          | Vercel, frontend/ as root |
-| Auth     | None                       | Supabase Auth             |
+| Layer       | Current state                                | Target (Sprint B-2+)              |
+|-------------|----------------------------------------------|-----------------------------------|
+| Frontend    | React 19, Tailwind, plain react-scripts      | Unchanged                         |
+| Build       | CRA-native, `baseUrl: "src"`, bare imports   | Unchanged                         |
+| Dependencies| 12 (cleaned in B-0, down from 52)            | +1 (@supabase/supabase-js in B-1a)|
+| State       | localStorage only                            | Supabase only (B-2, full replace) |
+| Auth        | None                                         | Supabase Magic Link (B-1b)        |
+| Backend     | Supabase provisioned, not yet read from app  | Active backend (B-1b/B-2)         |
+| Hosting     | Vercel, live, auto-deploys main              | Unchanged                         |
 
 ## Data Structure
 
 Reading list lives in `frontend/public/data/project_data.json`. Static
-JSON for now. 8 phases (id 0-7), each with `books[]`. Books are either
-single novels (`{title, author, pages, type, tags}`) or omnibuses with
-nested `contents[]` for sub-items.
+JSON, drives the entire app render. 8 phases (id 0-7), each with
+`books[]`. Books are either single novels
+(`{title, author, pages, type, tags}`) or omnibuses with nested
+`contents[]` for sub-items.
 
-Per-book user progress stored in localStorage under key
+The same catalog is now also seeded in Supabase (`public.phases` and
+`public.books` tables, 8 phases + 161 books = 79 top-level + 82 omnibus
+sub-items). The frontend does NOT yet read from Supabase — that's B-2.
+
+Per-book user progress is stored in localStorage under key
 `infinity-archive-v3`, shape:
+
 ```json
 {
   "Book Title": {
@@ -63,21 +70,35 @@ Per-book user progress stored in localStorage under key
 Backward-compatible with old boolean format for sub-items via
 `isSubItemRead()` helper in App.js.
 
+Supabase target schema (already provisioned, will be read from in B-2):
+`public.user_progress` table with `user_id` (FK auth.users), `book_id`
+(FK books.id), `is_read`, `rating` (1-5), `notes`, `completed_at`,
+`updated_at`. RLS enforces `auth.uid() = user_id` for all writes and
+reads.
+
 ## External Services
 
-| Service  | Status        | ID / URL  |
-|----------|---------------|-----------|
-| GitHub   | Active        | WangerLab/TheInfinityArchive |
-| Supabase | Not yet setup | — (Sprint B) |
-| Vercel   | Not yet setup | — (Sprint B) |
+| Service  | Status | ID / URL                                                  |
+|----------|--------|-----------------------------------------------------------|
+| GitHub   | Active | WangerLab/TheInfinityArchive (auto-delete head branches ON)|
+| Supabase | Active | Project ID `zekmlnnhczfdllbmxjec`, region `eu-central-1`, Free Tier. Dashboard: https://supabase.com/dashboard/project/zekmlnnhczfdllbmxjec |
+| Vercel   | Active | Project `the-infinity-archive` (Hobby tier), prod URL https://the-infinity-archive-jade.vercel.app, Root Directory `frontend/`, auto-deploys `main`. Env vars `REACT_APP_SUPABASE_URL` + `REACT_APP_SUPABASE_ANON_KEY` set for Production + Preview. |
 
 ## Next Sprints (planned, not committed)
 
-- **Sprint B:** Supabase project setup, Auth wiring, schema for book
-  progress, migration from localStorage. Vercel deployment.
+- **Sprint B-2:** localStorage → Supabase data layer swap. Replace
+  `useLocalStorage` hook with `useSupabaseProgress`. Delete
+  `useLocalStorage.js`. Hard-cut, no offline cache.
+- **Sprint B-3 (optional):** Pre-Supabase localStorage data migration
+  for Tim's existing reading state across devices.
+- **Sprint B-4 (optional polish):** logout flow polish, error/loading
+  auth states, fix `packageManager: yarn@...` field in package.json
+  (currently inconsistent with npm-based workflow, harmless because
+  package-lock.json takes precedence on Vercel).
 - **Sprint C:** Future-release tracker module (BL-GRP "Watch List"
-  integration — books announced but not yet published).
-- **Sprint D:** Statistics dashboard (Phase 7 work).
+  integration).
+- **Sprint D:** Statistics dashboard (recharts likely needs re-adding,
+  was removed in B-0 as unused).
 - **Sprint E:** BL-GRP-data-sync exploration — pull phase structure
   from BL-GRP project docs rather than hard-coded JSON.
 
@@ -87,5 +108,6 @@ The Infinity Archive consumes data curated in the BL-GRP project (in
 Claude.ai). The BL-GRP phase files (`BL-GRP-NN-*.docx`) are the source
 of truth for the reading list. When phase files change in ways that
 affect the app's data shape (new books, restructured phases, new
-factions), update `frontend/public/data/project_data.json`
-accordingly. This sync is manual for now — Sprint E may automate it.
+factions), update both `frontend/public/data/project_data.json` AND
+the Supabase seed (`public.phases` + `public.books` tables). This sync
+is manual for now — Sprint E may automate it.
