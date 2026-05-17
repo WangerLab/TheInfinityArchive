@@ -1,7 +1,8 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { ProgressRing } from './ProgressRing';
-import { Shield, Swords, Bug, FileText, Skull, Zap, Award } from 'lucide-react';
+import { Shield, Swords, Bug, FileText, Skull, Zap, Award, LogOut } from 'lucide-react';
+import { supabase } from 'lib/supabase';
 
 export const GlobalHeader = ({ 
   totalPages = 0,
@@ -46,10 +47,24 @@ export const GlobalHeader = ({
               COGITATOR INTERFACE v.M41
             </p>
           </div>
-          
-          <ProgressRing 
-            progress={progress} 
-            size={68} 
+
+          <button
+            onClick={() => supabase.auth.signOut()}
+            aria-label="Sign out"
+            className={cn(
+              "touch-target w-10 h-10 mr-2 rounded-md",
+              "border border-gold/30 text-gold/70",
+              "flex items-center justify-center",
+              "hover:border-gold hover:text-gold hover:bg-gold/10",
+              "active:scale-95 transition-all duration-200"
+            )}
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+
+          <ProgressRing
+            progress={progress}
+            size={68}
             strokeWidth={5}
           />
         </div>

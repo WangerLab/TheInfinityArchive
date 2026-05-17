@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GlobalHeader } from 'components/GlobalHeader';
+import { AuthGate } from 'components/AuthGate';
 import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
 import { useLocalStorage } from 'hooks/useLocalStorage';
@@ -274,6 +275,7 @@ function App() {
   }
 
   return (
+    <AuthGate>
     <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
       <GlobalHeader
         totalPages={globalStats.totalPages}
@@ -357,6 +359,7 @@ function App() {
         </footer>
       </main>
     </div>
+    </AuthGate>
   );
 }
 
