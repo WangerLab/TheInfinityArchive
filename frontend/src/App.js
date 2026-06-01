@@ -3,7 +3,7 @@ import { GlobalHeader } from 'components/GlobalHeader';
 import { AuthGate } from 'components/AuthGate';
 import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
-import { useLocalStorage } from 'hooks/useLocalStorage';
+import { useSupabaseProgress } from 'hooks/useSupabaseProgress';
 import { Loader2, AlertTriangle, Database } from 'lucide-react';
 import { cn } from 'lib/utils';
 
@@ -14,7 +14,7 @@ function ArchiveApp() {
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
   
-  const [bookProgress, setBookProgress] = useLocalStorage('infinity-archive-v3', {});
+  const [bookProgress, setBookProgress, { loading: progressLoading, error: progressError }] = useSupabaseProgress();
 
   useEffect(() => {
     const loadData = async () => {
@@ -232,7 +232,7 @@ function ArchiveApp() {
   }, []);
 
   // Loading state
-  if (loading) {
+  if (loading || progressLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center scanlines">
         <div className="text-center space-y-4 px-6">
@@ -252,7 +252,7 @@ function ArchiveApp() {
   }
 
   // Error state
-  if (error) {
+  if (error || progressError) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 scanlines">
         <div className="text-center space-y-4 max-w-sm">
@@ -261,7 +261,7 @@ function ArchiveApp() {
           </div>
           <div>
             <p className="font-display text-xl text-destructive tracking-wider">COGITATOR ERROR</p>
-            <p className="text-sm text-slate-300 mt-2 font-medium">{error}</p>
+            <p className="text-sm text-slate-300 mt-2 font-medium">{error || progressError}</p>
           </div>
           <button 
             onClick={() => window.location.reload()}
