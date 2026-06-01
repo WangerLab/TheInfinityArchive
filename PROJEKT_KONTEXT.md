@@ -15,17 +15,24 @@ architecture.
 
 ## Current Sprint
 
-**Sprint B-1 — Supabase Client + Magic Link Auth** (in progress)
+**Sprint B-2 — localStorage → Supabase data layer (COMPLETE)**
 
-Wire the Supabase JS client into the frontend, add Magic-Link
-authentication, gate the catalog behind a logged-in state. The
-localStorage persistence layer remains untouched in B-1 — B-2 will
-replace it with a Supabase-backed data layer.
+Replaced the localStorage progress layer with a Supabase-backed one.
+Per-book progress now persists to `public.user_progress`; the catalog
+still loads from the static JSON. Shipped in four commits:
 
-Structured into sub-commits:
-- B-0.5: Doc update (CLAUDE.md + PROJEKT_KONTEXT.md to post-B-0 state) ← current
-- B-1a: @supabase/supabase-js dependency + `lib/supabase.js` singleton + `.env.example`
-- B-1b: AuthGate component + App.js wrap + logout button in GlobalHeader
+- B-2a: `useSupabaseProgress` hook (title-keyed shape mirroring the old
+  useLocalStorage signature; debounced diff-based upsert; phantom-parent-
+  row guard for omnibus sub-items)
+- B-2b-1: behavior-neutral refactor — extract `ArchiveApp` so the data
+  layer renders under AuthGate (see CLAUDE.md lesson)
+- B-2b-2: the actual swap, `useLocalStorage` → `useSupabaseProgress` in
+  ArchiveApp
+- B-2c: delete unused `useLocalStorage.js`
+
+Verified locally and on the Vercel production deploy: top-level books,
+omnibus sub-items, and updates all persist correctly to user_progress;
+no phantom parent rows.
 
 ## Tech Stack — Current State
 
@@ -34,9 +41,9 @@ Structured into sub-commits:
 | Frontend    | React 19, Tailwind, plain react-scripts      | Unchanged                         |
 | Build       | CRA-native, `baseUrl: "src"`, bare imports   | Unchanged                         |
 | Dependencies| 12 (cleaned in B-0, down from 52)            | +1 (@supabase/supabase-js in B-1a)|
-| State       | localStorage only                            | Supabase only (B-2, full replace) |
+| State       | Supabase only (`useSupabaseProgress`)        | — (B-2 complete)                  |
 | Auth        | None                                         | Supabase Magic Link (B-1b)        |
-| Backend     | Supabase provisioned, not yet read from app  | Active backend (B-1b/B-2)         |
+| Backend     | Supabase active (auth + user_progress reads/writes) | —                          |
 | Hosting     | Vercel, live, auto-deploys main              | Unchanged                         |
 
 ## Data Structure
@@ -49,28 +56,22 @@ JSON, drives the entire app render. 8 phases (id 0-7), each with
 
 The same catalog is now also seeded in Supabase (`public.phases` and
 `public.books` tables, 8 phases + 161 books = 79 top-level + 82 omnibus
-sub-items). The frontend does NOT yet read from Supabase — that's B-2.
+sub-items). The frontend reads per-book progress from Supabase (B-2);
+the catalog (phases/books) still renders from the static JSON, not yet
+from the seeded Supabase tables — that's a later sprint (E).
 
-Per-book user progress is stored in localStorage under key
-`infinity-archive-v3`, shape:
+Per-book user progress is persisted in Supabase `public.user_progress`,
+read and written via the `useSupabaseProgress` hook. The hook
+reconstructs a title-keyed in-memory object (the same shape the old
+localStorage layer used, so the rest of App is unchanged) from the
+relational rows, and writes back via debounced diff-based upsert keyed
+on `(user_id, book_id)`. Sub-items resolve to their own `book_id` via
+the globally-unique title; the hook skips writing phantom parent rows
+for omnibus containers that have no progress of their own. The
+`isSubItemRead()` helper in App.js still normalizes the old boolean
+sub-item format for the in-memory shape.
 
-```json
-{
-  "Book Title": {
-    "isRead": true,
-    "rating": 4,
-    "notes": "...",
-    "contents": {
-      "Sub-Book Title": { "isRead": true, "rating": 5, "notes": "..." }
-    }
-  }
-}
-```
-
-Backward-compatible with old boolean format for sub-items via
-`isSubItemRead()` helper in App.js.
-
-Supabase target schema (already provisioned, will be read from in B-2):
+Supabase progress schema (active since B-2):
 `public.user_progress` table with `user_id` (FK auth.users), `book_id`
 (FK books.id), `is_read`, `rating` (1-5), `notes`, `completed_at`,
 `updated_at`. RLS enforces `auth.uid() = user_id` for all writes and
@@ -86,9 +87,6 @@ reads.
 
 ## Next Sprints (planned, not committed)
 
-- **Sprint B-2:** localStorage → Supabase data layer swap. Replace
-  `useLocalStorage` hook with `useSupabaseProgress`. Delete
-  `useLocalStorage.js`. Hard-cut, no offline cache.
 - **Sprint B-3 (optional):** Pre-Supabase localStorage data migration
   for Tim's existing reading state across devices.
 - **Sprint B-4 (optional polish):** logout flow polish, error/loading

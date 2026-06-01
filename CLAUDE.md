@@ -7,7 +7,8 @@ Archive. Read this before making changes.
 
 - **Frontend:** React 19 + Tailwind CSS, plain `react-scripts` (no CRACO)
 - **UI primitives:** shadcn/ui + lucide-react + Framer Motion
-- **State:** React hooks + localStorage (target: Supabase, Sprint B-2)
+- **State:** React hooks + Supabase (`useSupabaseProgress`), per-book
+  progress in `public.user_progress`. localStorage removed in B-2c.
 - **Backend:** Supabase (provisioned Sprint B-0, wired Sprint B-1+)
 - **Build:** `cd frontend && npm start` (dev), `npm run build` (prod)
 - **Hosting:** Vercel with `frontend/` as Root Directory
@@ -171,3 +172,29 @@ explicitly request runtime evidence ("did you run it locally; what did
 you see") before commit-Go, and Tim must run the test before giving the
 Go signal. This is in addition to, not a replacement for, the build
 smoke test.
+
+### Sprint B-2: Auth-dependent hooks must render under the AuthGate subtree
+
+B-2 swapped the progress layer to `useSupabaseProgress`, which calls
+`supabase.auth.getUser()` on mount. The naive swap wired the hook into
+`App()`, but `App()` also rendered `<AuthGate>` inside its own JSX.
+React hooks run during the component's render, BEFORE the JSX (and thus
+AuthGate) is evaluated — so the hook fired its auth call on every render,
+including the unauthenticated one, threw `AuthSessionMissingError`, and
+the app's error guard swallowed the login screen entirely. Build was
+green; this only surfaced in the local runtime test (confirming the
+Sprint B-1 lesson).
+
+The fix was a behavior-neutral refactor (B-2b-1): extract everything
+data- and progress-related into an `ArchiveApp` child, leaving `App()`
+as a thin `<AuthGate><ArchiveApp /></AuthGate>` wrapper. The hook now
+lives in `ArchiveApp`, which only renders once AuthGate confirms a
+session.
+
+**Lesson:** a hook that depends on auth state (or any precondition
+enforced by a gate component) must live in a component rendered as a
+CHILD of that gate, never in the component that renders the gate in its
+own JSX. The gate cannot protect a hook that sits at the same level as
+the gate's own JSX. When swapping in such a hook, check the render
+hierarchy first; if the gate is inside the same component, extract a
+child first (separate, behavior-neutral commit) before wiring the hook.
