@@ -7,7 +7,7 @@ import { useLocalStorage } from 'hooks/useLocalStorage';
 import { Loader2, AlertTriangle, Database } from 'lucide-react';
 import { cn } from 'lib/utils';
 
-function App() {
+function ArchiveApp() {
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -275,7 +275,6 @@ function App() {
   }
 
   return (
-    <AuthGate>
     <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
       <GlobalHeader
         totalPages={globalStats.totalPages}
@@ -359,6 +358,13 @@ function App() {
         </footer>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthGate>
+      <ArchiveApp />
     </AuthGate>
   );
 }
