@@ -198,3 +198,58 @@ own JSX. The gate cannot protect a hook that sits at the same level as
 the gate's own JSX. When swapping in such a hook, check the render
 hierarchy first; if the gate is inside the same component, extract a
 child first (separate, behavior-neutral commit) before wiring the hook.
+
+### Sprint B-3c: Large data seeds — apostrophes, ON CONFLICT arbiter, NOT NULL, file routing
+
+Seeding the 349-row master CSV into `books` surfaced five distinct traps,
+each caught only because intermediate output was inspected before applying:
+
+1. **Apostrophes in text[] array literals must be SQL-escaped.** Building
+   a Postgres array literal as `'{"...","..."}'` and then NOT doubling the
+   single-quotes inside the data silently *drops* apostrophes when the
+   value hits the DB (`C'tan` → `Ctan`, `El'Jonson` → `ElJonson`). Fix:
+   build the `{...}` literal, then `.replace("'", "''")` over the whole
+   literal before wrapping in `'...'`.
+
+2. **`ON CONFLICT (col)` needs a FULL unique constraint, not a partial
+   index.** A partial unique index (`... WHERE entry_id IS NOT NULL`) does
+   NOT satisfy `ON CONFLICT (entry_id)` unless the conflict clause repeats
+   the exact WHERE predicate. For an upsert arbiter, use a plain
+   `ADD CONSTRAINT ... UNIQUE (col)` (multiple NULLs are still allowed —
+   SQL treats NULLs as distinct).
+
+3. **`books.sort_order` is NOT NULL; CSV `position` is empty for 122 rows.**
+   Don't invent values. Derive deterministically from `entry_id`
+   (`Pn-MAJOR[.MINOR]` → `MAJOR*100 + MINOR`) when `position` is empty;
+   collision-free within phase. Verified-source value wins when present.
+
+4. **`books_parent_book_id_fkey` is ON DELETE CASCADE.** Deleting a parent
+   removes its children. Useful for legacy cleanup (legacy→legacy links go
+   together), but guard the delete: confirm no *seeded* row has a legacy
+   parent before issuing it, or the cascade could reach live data.
+
+5. **Don't route large seed files through the model context.** A 274 KB
+   SQL file cannot be read reliably (256 KB limit) and re-emitting it via
+   a tool parameter risks corrupting escaped apostrophes / array literals.
+   Apply large seeds via the Supabase SQL Editor (paste; split into atomic
+   halves if it exceeds the editor's single-statement limit) or local
+   `psql -f`. The MCP connector is for verification and small/guarded
+   migrations, not for bulk data transfer.
+
+**Cross-source lesson — title joins drift.** The B-2 catalog (from
+`project_data.json`) and the master CSV diverged on 44 of 161 rows across
+naming, omnibus structure, AND phase assignment. A title join silently
+leaves a third of the catalog unenriched. The fix was to add `entry_id`
+as a stable join-key (overriding the B-3b §5 "don't store it" decision —
+documented in the B-3c-1 migration). For any future CSV re-sync (Sprint E)
+or Curator-Mode write, join on `entry_id`, never on title.
+
+**Verification lesson — count both sub-item variants.** `row_type` has two
+sub-item values: `sub_item` (133) and `sub_item_optional` (40). Counting
+only `'sub_item'` undercounts by 40. Use
+`row_type IN ('sub_item','sub_item_optional')`.
+
+**Workflow note — migration file placement.** Twice in B-3c the delivered
+.sql landed in the `db/` root instead of `db/migrations/`. Add an explicit
+path check (`test -f db/migrations/<file>`) at the start of any migration-
+commit prompt before `git add`.
