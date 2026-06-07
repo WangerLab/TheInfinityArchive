@@ -155,7 +155,7 @@ export function useSupabaseProgress() {
         payloads.push({
           user_id: userId,
           book_id: bookId,
-          is_read: isRead,
+          status: isRead ? 'read' : 'unread',
           rating: ratingForDb(nextNorm?.rating),
           notes: nextNorm?.notes ?? null,
           completed_at: completedAt,
