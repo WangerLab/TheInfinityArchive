@@ -27,8 +27,8 @@ export function useSupabaseProgress() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const titleToIdRef = useRef(new Map());
-  const idToTitleRef = useRef(new Map());
+  const entryIdToIdRef = useRef(new Map());
+  const idToEntryIdRef = useRef(new Map());
   const idToParentIdRef = useRef(new Map());
   const completedAtByIdRef = useRef(new Map());
   const lastSyncedRef = useRef({});
@@ -49,19 +49,19 @@ export function useSupabaseProgress() {
 
         const { data: books, error: booksError } = await supabase
           .from('books')
-          .select('id, title, parent_book_id');
+          .select('id, title, parent_book_id, entry_id');
         if (booksError) throw booksError;
 
-        const titleToId = new Map();
-        const idToTitle = new Map();
+        const entryIdToId = new Map();
+        const idToEntryId = new Map();
         const idToParentId = new Map();
         for (const b of books || []) {
-          titleToId.set(b.title, b.id);
-          idToTitle.set(b.id, b.title);
+          entryIdToId.set(b.entry_id, b.id);
+          idToEntryId.set(b.id, b.entry_id);
           idToParentId.set(b.id, b.parent_book_id);
         }
-        titleToIdRef.current = titleToId;
-        idToTitleRef.current = idToTitle;
+        entryIdToIdRef.current = entryIdToId;
+        idToEntryIdRef.current = idToEntryId;
         idToParentIdRef.current = idToParentId;
 
         const { data: progressRows, error: progressError } = await supabase
@@ -73,8 +73,8 @@ export function useSupabaseProgress() {
         const completedAtById = new Map();
         for (const row of progressRows || []) {
           completedAtById.set(row.book_id, row.completed_at || null);
-          const title = idToTitle.get(row.book_id);
-          if (!title) {
+          const entryId = idToEntryId.get(row.book_id);
+          if (!entryId) {
             console.warn('[useSupabaseProgress] orphan progress row, unknown book_id:', row.book_id);
             continue;
           }
@@ -85,17 +85,17 @@ export function useSupabaseProgress() {
           };
           const parentId = idToParentId.get(row.book_id);
           if (parentId == null) {
-            const existing = next[title] || {};
-            next[title] = { ...existing, ...entry, contents: existing.contents || {} };
+            const existing = next[entryId] || {};
+            next[entryId] = { ...existing, ...entry, contents: existing.contents || {} };
           } else {
-            const parentTitle = idToTitle.get(parentId);
-            if (!parentTitle) {
+            const parentEntryId = idToEntryId.get(parentId);
+            if (!parentEntryId) {
               console.warn('[useSupabaseProgress] sub-item parent_book_id not found:', parentId);
               continue;
             }
-            const parent = next[parentTitle] || { contents: {} };
-            parent.contents = { ...(parent.contents || {}), [title]: entry };
-            next[parentTitle] = parent;
+            const parent = next[parentEntryId] || { contents: {} };
+            parent.contents = { ...(parent.contents || {}), [entryId]: entry };
+            next[parentEntryId] = parent;
           }
         }
         completedAtByIdRef.current = completedAtById;
@@ -122,18 +122,18 @@ export function useSupabaseProgress() {
 
     flushingRef.current = true;
     try {
-      const titleToId = titleToIdRef.current;
+      const entryIdToId = entryIdToIdRef.current;
       const completedAtById = completedAtByIdRef.current;
       const lastSynced = lastSyncedRef.current;
 
       const payloads = [];
       const seen = new Set();
-      const topTitles = new Set([...Object.keys(next), ...Object.keys(lastSynced)]);
+      const topEntryIds = new Set([...Object.keys(next), ...Object.keys(lastSynced)]);
 
       const isPureContainer = (e) =>
         e && e.isRead === undefined && e.rating === undefined && e.notes === undefined;
 
-      const buildPayload = (title, nextEntry, prevEntry) => {
+      const buildPayload = (entryId, nextEntry, prevEntry) => {
         // Toggling a sub-item creates a parent `{ contents: {...} }` with no
         // progress fields of its own. Don't write a phantom default parent row.
         if (isPureContainer(nextEntry) && (prevEntry === undefined || isPureContainer(prevEntry))) {
@@ -142,9 +142,9 @@ export function useSupabaseProgress() {
         const nextNorm = normalizeEntry(nextEntry);
         const prevNorm = normalizeEntry(prevEntry);
         if (!entryChanged(nextNorm, prevNorm)) return;
-        const bookId = titleToId.get(title);
+        const bookId = entryIdToId.get(entryId);
         if (!bookId) {
-          console.warn('[useSupabaseProgress] unknown title on write:', title);
+          console.warn('[useSupabaseProgress] unknown entry_id on write:', entryId);
           return;
         }
         if (seen.has(bookId)) return;
@@ -163,16 +163,16 @@ export function useSupabaseProgress() {
         seen.add(bookId);
       };
 
-      for (const title of topTitles) {
-        const nextEntry = next[title];
-        const prevEntry = lastSynced[title];
-        buildPayload(title, nextEntry, prevEntry);
+      for (const entryId of topEntryIds) {
+        const nextEntry = next[entryId];
+        const prevEntry = lastSynced[entryId];
+        buildPayload(entryId, nextEntry, prevEntry);
 
         const nextContents = nextEntry?.contents || {};
         const prevContents = prevEntry?.contents || {};
-        const subTitles = new Set([...Object.keys(nextContents), ...Object.keys(prevContents)]);
-        for (const subTitle of subTitles) {
-          buildPayload(subTitle, nextContents[subTitle], prevContents[subTitle]);
+        const subEntryIds = new Set([...Object.keys(nextContents), ...Object.keys(prevContents)]);
+        for (const subEntryId of subEntryIds) {
+          buildPayload(subEntryId, nextContents[subEntryId], prevContents[subEntryId]);
         }
       }
 

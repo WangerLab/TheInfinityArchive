@@ -12,19 +12,19 @@ const PROJECT_DESCRIPTION =
 // Shape produced:
 //   { projectTitle, description, totalPhases,
 //     phases: [ { id, title, subtitle, theme, color,
-//       books: [ { title, author, pages, type, tags, contents? } ] } ] }
+//       books: [ { entryId, title, author, pages, type, tags, contents? } ] } ] }
 // where contents (only present when an entry has children) is:
-//       [ { title, pages, type } ]
-// description is a static display constant (not DB data); totalPhases is
-// derived from the phase count.
+//       [ { entryId, title, pages, type } ]
+// entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
+// state key (E-2b). description is a static display constant (not DB data);
+// totalPhases is derived from the phase count.
 //
-// This commit (E-1) only defines the hook; it is not yet wired into App.js.
+// The hook is defined here; App.js consumes it for the catalog render.
 
 export function useCatalog() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [titleCollisions, setTitleCollisions] = useState(() => new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -50,17 +50,6 @@ export function useCatalog() {
         const phaseRows = phases || [];
         const bookRows = books || [];
 
-        // Title-collision detection (for E-2). Derive from the data — never
-        // hardcode. Count every book row's title; collisions are count > 1.
-        const titleCounts = new Map();
-        for (const b of bookRows) {
-          titleCounts.set(b.title, (titleCounts.get(b.title) || 0) + 1);
-        }
-        const collisions = new Set();
-        for (const [title, count] of titleCounts) {
-          if (count > 1) collisions.add(title);
-        }
-
         // Index children by their parent entry id. bookRows are already sorted
         // by sort_order ASC, so each children array stays in sort_order order.
         const childrenByParentId = new Map();
@@ -85,6 +74,7 @@ export function useCatalog() {
           const entries = entriesByPhaseId.get(phase.id) || [];
           const booksOut = entries.map((entry) => {
             const book = {
+              entryId: entry.entry_id,
               title: entry.title,
               author: entry.author,
               pages: entry.pages ?? 0,
@@ -94,6 +84,7 @@ export function useCatalog() {
             const children = childrenByParentId.get(entry.id) || [];
             if (children.length > 0) {
               book.contents = children.map((sub) => ({
+                entryId: sub.entry_id,
                 title: sub.title,
                 pages: sub.pages ?? 0,
                 type: sub.type,
@@ -118,7 +109,6 @@ export function useCatalog() {
           totalPhases: phasesOut.length,
           phases: phasesOut,
         });
-        setTitleCollisions(collisions);
       } catch (e) {
         if (cancelled) return;
         console.error('[useCatalog] load failed:', e);
@@ -131,7 +121,7 @@ export function useCatalog() {
     return () => { cancelled = true; };
   }, []);
 
-  return { data, loading, error, titleCollisions };
+  return { data, loading, error };
 }
 
 export default useCatalog;
