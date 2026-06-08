@@ -253,3 +253,21 @@ only `'sub_item'` undercounts by 40. Use
 .sql landed in the `db/` root instead of `db/migrations/`. Add an explicit
 path check (`test -f db/migrations/<file>`) at the start of any migration-
 commit prompt before `git add`.
+
+### Sprint E: Title-keyed frontend state breaks on non-unique titles
+
+The frontend keyed all progress state by book title (bookProgress[title],
+contents[subItemTitle]) — fine for the 161-row JSON catalog, where titles
+happened to be unique. The 349-row DB catalog has non-unique titles across
+phases ('Apocalypse' P3-30 & P5-13, 'Leviathan' P3-13.5 & P5-31). Rendering
+the DB catalog under title-keying would collapse two distinct books onto one
+state key — toggling one marks the other.
+
+**Lesson:** never key client state by a human-facing string that isn't
+guaranteed unique. Use entry_id — already the DB join-key since B-3c, complete
+and unique across all 349 rows incl. sub-items. The fix (E-2a/E-2b) moved the
+in-memory progress key and all handler arguments from title to entry_id;
+user_progress still stores book_id (UUID) — only the in-memory indexing
+changed. JSX keys and displayed titles stay on title (display-only, unique
+among siblings). Verified live: marking 'Apocalypse' P3 left 'Apocalypse' P5
+untouched (two distinct user_progress rows).

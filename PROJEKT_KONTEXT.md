@@ -15,7 +15,19 @@ architecture.
 
 ## Current Sprint
 
-**Sprint B-3c — full BL-GRP metadata seed into Supabase (COMPLETE)**
+**Sprint E — catalog render from Supabase (COMPLETE)**
+
+The frontend now renders the catalog from Supabase (phases + books) via the
+new `useCatalog` hook, replacing the static project_data.json fetch. This
+closes the frontend<->DB divergence from B-3c: the DB is now the single source
+of truth for BOTH catalog and progress. Shipped in five commits: E-1 (52d4a00)
+useCatalog hook; E-2a (af0099c) + E-2b (126e61f) move progress state keying
+from title to entry_id (titles are non-unique in the 349-row catalog); E-3
+(4986d6a) swap App.js catalog source JSON->useCatalog; E-4 (074864b) remove
+the static project_data.json. Runtime-verified before the E-3 commit; Vercel
+production READY on 074864b.
+
+**Prior: Sprint B-3c — full BL-GRP metadata seed into Supabase (COMPLETE)**
 
 Brought `public.books` from the partial 161-row B-2 catalog to the full,
 metadata-enriched 349-row master from `BLGRPMasterMetadatav2.csv`. The
@@ -74,11 +86,14 @@ no phantom parent rows.
 
 ## Data Structure
 
-Reading list lives in `frontend/public/data/project_data.json`. Static
-JSON, drives the entire app render. 8 phases (id 0-7), each with
-`books[]`. Books are either single novels
-(`{title, author, pages, type, tags}`) or omnibuses with nested
-`contents[]` for sub-items.
+The catalog render is sourced from Supabase (`public.phases` +
+`public.books`) via the `useCatalog` hook, which reassembles the relational
+rows into the `projectData` shape App.js renders from. 8 phases (id 0-7),
+each with `books[]`. Books are either single novels
+(`{entryId, title, author, pages, type, tags}`) or omnibuses with nested
+`contents[]` for sub-items (`{entryId, title, pages, type}`). The static
+`frontend/public/data/project_data.json` that previously drove the render
+was removed in Sprint E (E-4).
 
 Supabase `public.books` now holds the full master catalog: 349 rows
 (176 entries + 173 sub-items) seeded from `BLGRPMasterMetadatav2.csv`
@@ -87,22 +102,22 @@ location, protagonist, key_characters, faction, mood_tags, semantic_tags,
 spoiler_free_summary, etc.). The stable join-key is `entry_id`
 (e.g. `P0-01`, `P6-32.5`); sub-items link to parents via `parent_book_id`.
 
-**Frontend↔DB divergence (intentional, known — not a bug):** the frontend
-still renders the catalog from the static `frontend/public/data/project_data.json`
-(the older 161-row structure), while the DB now carries the richer 349-row
-truth. Per-book progress reads/writes already go through Supabase
-(`user_progress`, since B-2). Switching the catalog render from JSON to the
-seeded Supabase tables is a later sprint (E). Until then: DB = rich truth,
-frontend = legacy JSON. Do not mistake this gap for a regression.
+**Frontend↔DB divergence — CLOSED in Sprint E.** The frontend previously
+rendered the catalog from the static 161-row `project_data.json` while the DB
+carried the richer 349-row truth. Sprint E closed this gap: the catalog render
+now comes from `public.phases` + `public.books` via `useCatalog`, and
+`project_data.json` was removed (E-4). The DB is now the single source of
+truth for both catalog and progress.
 
 Per-book user progress is persisted in Supabase `public.user_progress`,
 read and written via the `useSupabaseProgress` hook. The hook
-reconstructs a title-keyed in-memory object (the same shape the old
-localStorage layer used, so the rest of App is unchanged) from the
-relational rows, and writes back via debounced diff-based upsert keyed
-on `(user_id, book_id)`. Sub-items resolve to their own `book_id` via
-the globally-unique title; the hook skips writing phantom parent rows
-for omnibus containers that have no progress of their own. The
+reconstructs an `entry_id`-keyed in-memory object (since E-2a; titles are
+non-unique in the 349-row catalog) from the relational rows, and writes
+back via debounced diff-based upsert keyed on `(user_id, book_id)`. Each
+entry/sub-item resolves to its `book_id` via `entry_id`; user_progress
+still stores `book_id` (UUID) — only the in-memory indexing changed. The
+hook skips writing phantom parent rows for omnibus containers that have no
+progress of their own. The
 `isSubItemRead()` helper in App.js still normalizes the old boolean
 sub-item format for the in-memory shape.
 
@@ -134,8 +149,8 @@ writes `status`; `is_read` follows automatically.
   integration).
 - **Sprint D:** Statistics dashboard (recharts likely needs re-adding,
   was removed in B-0 as unused).
-- **Sprint E:** BL-GRP-data-sync exploration — pull phase structure
-  from BL-GRP project docs rather than hard-coded JSON.
+- **Future:** deeper BL-GRP doc-sync — auto-pull phase structure from
+  BL-GRP docs into the Supabase catalog (manual for now).
 
 ## Cross-Project Note
 
@@ -143,6 +158,6 @@ The Infinity Archive consumes data curated in the BL-GRP project (in
 Claude.ai). The BL-GRP phase files (`BL-GRP-NN-*.docx`) are the source
 of truth for the reading list. When phase files change in ways that
 affect the app's data shape (new books, restructured phases, new
-factions), update both `frontend/public/data/project_data.json` AND
-the Supabase seed (`public.phases` + `public.books` tables). This sync
-is manual for now — Sprint E may automate it.
+factions), update the Supabase catalog (`public.phases` + `public.books`
+tables) — the single source of truth for the app render since Sprint E.
+This sync is manual for now.

@@ -5,9 +5,8 @@ const PROJECT_TITLE = 'The Infinity Archive';
 const PROJECT_DESCRIPTION =
   'A curated Warhammer 40k reading journey covering the decline and transformation of the Imperium.';
 
-// Reassembles the read-catalog (phases + books) from Supabase into the exact
-// `projectData` shape App.js currently loads from /data/project_data.json, so
-// the E-3 swap is a pure data-source change with no render-layer edits.
+// Reassembles the read-catalog (phases + books) from Supabase into the
+// `projectData` shape App.js renders from.
 //
 // Shape produced:
 //   { projectTitle, description, totalPhases,
