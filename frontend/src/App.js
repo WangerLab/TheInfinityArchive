@@ -1,38 +1,19 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { GlobalHeader } from 'components/GlobalHeader';
 import { AuthGate } from 'components/AuthGate';
 import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
+import { useCatalog } from 'hooks/useCatalog';
 import { useSupabaseProgress } from 'hooks/useSupabaseProgress';
 import { Loader2, AlertTriangle, Database } from 'lucide-react';
 import { cn } from 'lib/utils';
 
 function ArchiveApp() {
-  const [projectData, setProjectData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: projectData, loading, error } = useCatalog();
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
-  
-  const [bookProgress, setBookProgress, { loading: progressLoading, error: progressError }] = useSupabaseProgress();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/data/project_data.json');
-        if (!response.ok) throw new Error('Failed to load archive data');
-        const data = await response.json();
-        setProjectData(data);
-      } catch (err) {
-        console.error('Error loading data:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  const [bookProgress, setBookProgress, { loading: progressLoading, error: progressError }] = useSupabaseProgress();
 
   // Calculate global stats recursively - sum all pages
   const globalStats = useMemo(() => {
