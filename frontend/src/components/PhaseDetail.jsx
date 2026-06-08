@@ -40,7 +40,7 @@ export const PhaseDetail = ({
         book.contents.forEach(subItem => {
           totalPages += subItem.pages || 0;
           totalItems++;
-          const subData = data?.contents?.[subItem.title];
+          const subData = data?.contents?.[subItem.entryId];
           if (isSubItemRead(subData)) {
             readPages += subItem.pages || 0;
             completedItems++;
@@ -67,7 +67,7 @@ export const PhaseDetail = ({
     };
 
     books.forEach(book => {
-      const data = bookData[book.title] || {};
+      const data = bookData[book.entryId] || {};
       processBook(book, data);
     });
 
@@ -179,10 +179,10 @@ export const PhaseDetail = ({
               key={book.title}
               book={book}
               index={index}
-              bookData={bookData[book.title] || {}}
-              onReadChange={(isRead) => onBookReadChange(book.title, isRead)}
-              onRatingChange={(rating) => onBookRatingChange(book.title, rating)}
-              onNotesChange={(notes) => onBookNotesChange(book.title, notes)}
+              bookData={bookData[book.entryId] || {}}
+              onReadChange={(isRead) => onBookReadChange(book.entryId, isRead)}
+              onRatingChange={(rating) => onBookRatingChange(book.entryId, rating)}
+              onNotesChange={(notes) => onBookNotesChange(book.entryId, notes)}
               onSubItemReadChange={onSubItemReadChange}
               onSubItemRatingChange={onSubItemRatingChange}
               onSubItemNotesChange={onSubItemNotesChange}

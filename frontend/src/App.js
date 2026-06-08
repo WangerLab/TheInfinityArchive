@@ -56,14 +56,14 @@ function ArchiveApp() {
 
     projectData.phases.forEach(phase => {
       phase.books.forEach(book => {
-        const progress = bookProgress[book.title];
+        const progress = bookProgress[book.entryId];
         
         if (book.contents && book.contents.length > 0) {
           // Omnibus/Anthology - count sub-items
           book.contents.forEach(subItem => {
             totalPages += subItem.pages || 0;
             totalItems++;
-            const subData = progress?.contents?.[subItem.title];
+            const subData = progress?.contents?.[subItem.entryId];
             if (isSubItemRead(subData)) {
               readPages += subItem.pages || 0;
               completedItems++;
@@ -116,13 +116,13 @@ function ArchiveApp() {
     };
 
     books.forEach(book => {
-      const progress = bookProgress[book.title];
+      const progress = bookProgress[book.entryId];
       
       if (book.contents && book.contents.length > 0) {
         book.contents.forEach(subItem => {
           totalPages += subItem.pages || 0;
           totalItems++;
-          if (isSubItemRead(progress?.contents?.[subItem.title])) {
+          if (isSubItemRead(progress?.contents?.[subItem.entryId])) {
             readPages += subItem.pages || 0;
             completedItems++;
           }
@@ -147,71 +147,71 @@ function ArchiveApp() {
   }, [bookProgress]);
 
   // Handlers
-  const handleBookReadChange = useCallback((bookTitle, isRead) => {
+  const handleBookReadChange = useCallback((entryId, isRead) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         isRead,
-        rating: isRead ? (prev[bookTitle]?.rating || 0) : 0
+        rating: isRead ? (prev[entryId]?.rating || 0) : 0
       }
     }));
   }, [setBookProgress]);
 
-  const handleSubItemReadChange = useCallback((bookTitle, subItemTitle, isRead) => {
+  const handleSubItemReadChange = useCallback((entryId, subEntryId, isRead) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         contents: {
-          ...prev[bookTitle]?.contents,
-          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), isRead }
+          ...prev[entryId]?.contents,
+          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), isRead }
         }
       }
     }));
   }, [setBookProgress]);
 
-  const handleSubItemRatingChange = useCallback((bookTitle, subItemTitle, rating) => {
+  const handleSubItemRatingChange = useCallback((entryId, subEntryId, rating) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         contents: {
-          ...prev[bookTitle]?.contents,
-          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), rating }
+          ...prev[entryId]?.contents,
+          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), rating }
         }
       }
     }));
   }, [setBookProgress]);
 
-  const handleSubItemNotesChange = useCallback((bookTitle, subItemTitle, notes) => {
+  const handleSubItemNotesChange = useCallback((entryId, subEntryId, notes) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         contents: {
-          ...prev[bookTitle]?.contents,
-          [subItemTitle]: { ...(prev[bookTitle]?.contents?.[subItemTitle] || {}), notes }
+          ...prev[entryId]?.contents,
+          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), notes }
         }
       }
     }));
   }, [setBookProgress]);
 
-  const handleBookRatingChange = useCallback((bookTitle, rating) => {
+  const handleBookRatingChange = useCallback((entryId, rating) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         rating
       }
     }));
   }, [setBookProgress]);
 
-  const handleBookNotesChange = useCallback((bookTitle, notes) => {
+  const handleBookNotesChange = useCallback((entryId, notes) => {
     setBookProgress(prev => ({
       ...prev,
-      [bookTitle]: {
-        ...prev[bookTitle],
+      [entryId]: {
+        ...prev[entryId],
         notes
       }
     }));

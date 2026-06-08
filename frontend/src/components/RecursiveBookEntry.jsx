@@ -75,7 +75,7 @@ export const RecursiveBookEntry = ({
   const getReadStatus = () => {
     if (hasContents) {
       const contentData = bookData.contents || {};
-      const readCount = book.contents.filter(c => isSubItemRead(contentData[c.title])).length;
+      const readCount = book.contents.filter(c => isSubItemRead(contentData[c.entryId])).length;
       return readCount === book.contents.length;
     }
     return bookData.isRead || false;
@@ -87,7 +87,7 @@ export const RecursiveBookEntry = ({
   const getChildProgress = () => {
     if (!hasContents) return null;
     const contentData = bookData.contents || {};
-    const readCount = book.contents.filter(c => isSubItemRead(contentData[c.title])).length;
+    const readCount = book.contents.filter(c => isSubItemRead(contentData[c.entryId])).length;
     return { read: readCount, total: book.contents.length };
   };
   
@@ -269,7 +269,7 @@ export const RecursiveBookEntry = ({
           {book.contents.map((subItem, subIndex) => {
             const SubIcon = typeIcons[subItem.type] || ScrollText;
             const subStyle = typeStyles[subItem.type] || typeStyles.short;
-            const subItemData = bookData.contents?.[subItem.title];
+            const subItemData = bookData.contents?.[subItem.entryId];
             const subIsRead = isSubItemRead(subItemData);
             const subRating = (typeof subItemData === 'object' ? subItemData?.rating : 0) || 0;
             const subNotes = (typeof subItemData === 'object' ? subItemData?.notes : '') || '';
@@ -288,7 +288,7 @@ export const RecursiveBookEntry = ({
                 <div className="flex items-start gap-2">
                   <GrimdarkCheckbox
                     checked={subIsRead}
-                    onCheckedChange={(checked) => onSubItemReadChange(book.title, subItem.title, checked)}
+                    onCheckedChange={(checked) => onSubItemReadChange(book.entryId, subItem.entryId, checked)}
                     type={subItem.type}
                   />
                   
@@ -327,7 +327,7 @@ export const RecursiveBookEntry = ({
                       <div className="mt-2 pt-2 border-t border-slate-700/30">
                         <SkullRating
                           rating={subRating}
-                          onRatingChange={(rating) => onSubItemRatingChange(book.title, subItem.title, rating)}
+                          onRatingChange={(rating) => onSubItemRatingChange(book.entryId, subItem.entryId, rating)}
                           size="sm"
                         />
                       </div>
@@ -338,7 +338,7 @@ export const RecursiveBookEntry = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveSubNotes(subItem.title);
+                      setActiveSubNotes(subItem.entryId);
                     }}
                     className="touch-checkbox flex items-center justify-center shrink-0"
                     title="Remembrancer's Log"
@@ -373,9 +373,9 @@ export const RecursiveBookEntry = ({
         <NotesModal
           isOpen={true}
           onClose={() => setActiveSubNotes(null)}
-          bookTitle={activeSubNotes}
+          bookTitle={book.contents?.find(c => c.entryId === activeSubNotes)?.title || ''}
           notes={(typeof bookData.contents?.[activeSubNotes] === 'object' ? bookData.contents[activeSubNotes]?.notes : '') || ''}
-          onNotesChange={(notes) => onSubItemNotesChange(book.title, activeSubNotes, notes)}
+          onNotesChange={(notes) => onSubItemNotesChange(book.entryId, activeSubNotes, notes)}
         />
       )}
     </>
