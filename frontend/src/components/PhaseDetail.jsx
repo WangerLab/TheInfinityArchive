@@ -1,9 +1,8 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { RecursiveBookEntry } from './RecursiveBookEntry';
-import { ProgressRing } from './ProgressRing';
 import { ScrollArea } from 'components/ui/scroll-area';
-import { ChevronUp, Trophy, FileText, Zap, Skull } from 'lucide-react';
+import { ChevronUp, Skull } from 'lucide-react';
 
 export const PhaseDetail = ({ 
   phase,
@@ -96,64 +95,27 @@ export const PhaseDetail = ({
         "p-4 border-b border-gold/20",
         isPacified && "bg-auspex/5"
       )}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className={cn(
-                "w-7 h-7 rounded-md flex items-center justify-center text-sm font-display font-bold border",
-                isPacified 
-                  ? "bg-auspex/20 text-auspex border-auspex/50" 
-                  : "bg-gold/20 text-gold border-gold/50"
-              )}>
-                {phase.id}
-              </span>
-              <h3 className={cn(
-                "font-display text-sm tracking-wide",
-                isPacified ? "text-auspex" : "text-gold"
-              )}>
-                {phase.title}
-              </h3>
-              {isPacified && (
-                <span className="flex items-center gap-1 bg-auspex/20 text-auspex px-2 py-0.5 rounded text-[10px] font-bold border border-auspex/40">
-                  <Trophy className="w-3 h-3" />
-                  PACIFIED
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-400 font-medium">{phase.theme}</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Stats */}
-            <div className="flex flex-col items-end gap-1 text-xs">
-              <div className="flex items-center gap-1.5">
-                <FileText className={cn("w-3.5 h-3.5", isPacified ? "text-auspex/60" : "text-gold/60")} />
-                <span className="font-data text-slate-200 font-bold">
-                  {stats.readPages.toLocaleString()}/{stats.totalPages.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-auspex/60" />
-                <span className="font-bold text-slate-300">
-                  {stats.completedItems}/{stats.totalItems}
-                </span>
-              </div>
-              {stats.averageRating > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Skull className="w-3.5 h-3.5 text-gold/60" />
-                  <span className="font-bold text-gold">
-                    {stats.averageRating.toFixed(1)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <ProgressRing 
-              progress={stats.progress}
-              size={56}
-              strokeWidth={4}
-            />
-          </div>
+        <div className="flex items-center gap-2 pr-12">
+          <span className={cn(
+            "w-6 h-6 rounded flex items-center justify-center text-xs font-display font-bold border shrink-0",
+            isPacified
+              ? "bg-auspex/20 text-auspex border-auspex/50"
+              : "bg-gold/20 text-gold border-gold/50"
+          )}>
+            {phase.id}
+          </span>
+          <h3 className={cn(
+            "font-display text-xs tracking-wide truncate",
+            isPacified ? "text-auspex" : "text-gold"
+          )}>
+            {phase.title}
+          </h3>
+          {stats.averageRating > 0 && (
+            <span className="flex items-center gap-1 text-xs ml-auto shrink-0">
+              <Skull className="w-3.5 h-3.5 text-gold/60" />
+              <span className="font-bold text-gold">{stats.averageRating.toFixed(1)}</span>
+            </span>
+          )}
         </div>
 
         {/* Close button */}
