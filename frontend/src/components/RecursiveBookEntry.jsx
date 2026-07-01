@@ -6,7 +6,7 @@ import { NotesModal } from './NotesModal';
 import {
   Book, ScrollText, Library, Layers,
   ChevronRight, Feather, User, FileText,
-  Sparkles, Crown, MapPin, Clock
+  Sparkles, Crown, MapPin, Clock, BookMarked
 } from 'lucide-react';
 
 // Type icon mapping
@@ -41,7 +41,28 @@ const typeStyles = {
   }
 };
 
-export const RecursiveBookEntry = ({ 
+// Formats a series order_label for display. Numeric/#n labels show as-is;
+// 'omnibus' is title-cased; sort-only pseudo-labels ('short','standalone',
+// empty/null) render no suffix (they carry no reader-facing position).
+const formatOrderLabel = (label) => {
+  if (!label) return null;
+  if (label === 'omnibus') return 'Omnibus';
+  if (/^#?\d/.test(label)) return label.startsWith('#') ? label : `#${label}`;
+  return null; // short, standalone, short-prequel, short-bridge -> no suffix
+};
+
+const SeriesBadge = ({ series }) => {
+  if (!series?.name) return null;
+  const suffix = formatOrderLabel(series.orderLabel);
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 text-gold/90 border border-gold/30 rounded text-[10px] font-medium max-w-full">
+      <BookMarked className="w-3 h-3 shrink-0" />
+      <span className="truncate">{series.name}{suffix ? ` · ${suffix}` : ''}</span>
+    </span>
+  );
+};
+
+export const RecursiveBookEntry = ({
   book, 
   index,
   depth = 0,
@@ -184,6 +205,13 @@ export const RecursiveBookEntry = ({
                         {book.pages.toLocaleString()}p
                       </span>
                     )}
+                  </div>
+                )}
+
+                {/* Series membership */}
+                {depth === 0 && book.series && (
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <SeriesBadge series={book.series} />
                   </div>
                 )}
 
@@ -366,6 +394,13 @@ export const RecursiveBookEntry = ({
                         {subItem.type === 'short' ? 'SHORT' : 'NOVEL'}
                       </span>
                     </div>
+
+                    {/* Series membership */}
+                    {subItem.series && (
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <SeriesBadge series={subItem.series} />
+                      </div>
+                    )}
 
                     {/* Location / Date / Protagonist */}
                     {(subItem.locationPrimary || subItem.inUniverseDate || subItem.protagonist) && (
