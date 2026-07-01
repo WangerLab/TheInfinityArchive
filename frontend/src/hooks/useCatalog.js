@@ -11,7 +11,10 @@ const PROJECT_DESCRIPTION =
 // Shape produced:
 //   { projectTitle, description, totalPhases,
 //     phases: [ { id, title, subtitle, theme, color,
-//       books: [ { entryId, title, author, pages, type, tags, contents? } ] } ] }
+//       books: [ { entryId, title, author, pages, type, tags,
+//                  locationPrimary, locationSegmentum, inUniverseDate,
+//                  protagonist, keyCharacters, subFaction, factionPrimary,
+//                  moodTags, semanticTags, summary, contents? } ] } ] }
 // where contents (only present when an entry has children) is:
 //       [ { entryId, title, pages, type } ]
 // entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
@@ -38,7 +41,7 @@ export function useCatalog() {
               .order('sort_order', { ascending: true }),
             supabase
               .from('books')
-              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id')
+              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary')
               .order('sort_order', { ascending: true }),
           ]);
 
@@ -79,6 +82,16 @@ export function useCatalog() {
               pages: entry.pages ?? 0,
               type: entry.type,
               tags: Array.isArray(entry.tags) ? entry.tags : [],
+              locationPrimary: entry.location_primary ?? null,
+              locationSegmentum: entry.location_segmentum ?? null,
+              inUniverseDate: entry.in_universe_date ?? null,
+              protagonist: entry.protagonist ?? null,
+              keyCharacters: Array.isArray(entry.key_characters) ? entry.key_characters : [],
+              subFaction: entry.sub_faction ?? null,
+              factionPrimary: entry.faction_primary ?? null,
+              moodTags: Array.isArray(entry.mood_tags) ? entry.mood_tags : [],
+              semanticTags: Array.isArray(entry.semantic_tags) ? entry.semantic_tags : [],
+              summary: entry.spoiler_free_summary ?? null,
             };
             const children = childrenByParentId.get(entry.id) || [];
             if (children.length > 0) {
