@@ -3,10 +3,10 @@ import { cn } from 'lib/utils';
 import { TouchCheckbox } from './TouchCheckbox';
 import { SkullRating } from './SkullRating';
 import { NotesModal } from './NotesModal';
-import { 
-  Book, ScrollText, Library, Layers, 
+import {
+  Book, ScrollText, Library, Layers,
   ChevronRight, PenLine, User, FileText,
-  Shield, Swords, Bug
+  Shield, Swords, Bug, MapPin, Clock
 } from 'lucide-react';
 
 // Type icon mapping
@@ -136,6 +136,37 @@ export const BookEntry = ({
                   </div>
                 )}
 
+                {/* Location / Date / Protagonist */}
+                {!isSubItem && (book.locationPrimary || book.inUniverseDate || book.protagonist) && (
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {book.locationPrimary && (
+                      <span className="flex items-center gap-1 text-xs text-slate-400">
+                        <MapPin className="w-3 h-3" />
+                        {book.locationPrimary}{book.locationSegmentum ? ` · ${book.locationSegmentum}` : ''}
+                      </span>
+                    )}
+                    {book.inUniverseDate && (
+                      <span className="flex items-center gap-1 text-xs text-accent">
+                        <Clock className="w-3 h-3" />
+                        {book.inUniverseDate}
+                      </span>
+                    )}
+                    {book.protagonist && (
+                      <span className="flex items-center gap-1 text-xs text-slate-400">
+                        <User className="w-3 h-3" />
+                        {book.protagonist}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Spoiler-free summary */}
+                {!isSubItem && book.summary && (
+                  <p className="text-xs text-slate-400 leading-relaxed mt-2">
+                    {book.summary}
+                  </p>
+                )}
+
                 {/* Type badge for omnibus/anthology */}
                 {hasContents && (
                   <div className="flex items-center gap-2 mt-1.5">
@@ -163,9 +194,23 @@ export const BookEntry = ({
                 {book.tags && book.tags.length > 0 && !isSubItem && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {book.tags.map((tag, i) => (
-                      <span 
+                      <span
                         key={i}
                         className="text-[10px] px-2 py-0.5 bg-white/5 text-slate-400 rounded-full font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mood tags */}
+                {!isSubItem && book.moodTags && book.moodTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {book.moodTags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] px-2 py-0.5 bg-accent/10 text-accent rounded-full font-medium"
                       >
                         {tag}
                       </span>
