@@ -14,11 +14,14 @@ const PROJECT_DESCRIPTION =
 //       books: [ { entryId, title, author, pages, type, tags,
 //                  locationPrimary, locationSegmentum, inUniverseDate,
 //                  protagonist, keyCharacters, subFaction, factionPrimary,
-//                  moodTags, semanticTags, summary, contents? } ] } ] }
+//                  moodTags, semanticTags, summary,
+//                  series: { name, orderLabel, sortPosition } | null,
+//                  contents? } ] } ] }
 // where contents (only present when an entry has children) is:
 //       [ { entryId, title, pages, type,
 //           locationPrimary, locationSegmentum, inUniverseDate,
-//           protagonist, moodTags, summary } ]
+//           protagonist, moodTags, summary,
+//           series: { name, orderLabel, sortPosition } | null } ]
 // entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
 // state key (E-2b). description is a static display constant (not DB data);
 // totalPhases is derived from the phase count.
@@ -35,8 +38,11 @@ export function useCatalog() {
 
     (async () => {
       try {
-        const [{ data: phases, error: phasesError }, { data: books, error: booksError }] =
-          await Promise.all([
+        const [
+          { data: phases, error: phasesError },
+          { data: books, error: booksError },
+          { data: bookSeriesRows, error: bookSeriesError },
+        ] = await Promise.all([
             supabase
               .from('phases')
               .select('id, title, subtitle, theme, color, sort_order')
@@ -45,14 +51,36 @@ export function useCatalog() {
               .from('books')
               .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary')
               .order('sort_order', { ascending: true }),
+            supabase
+              .from('book_series')
+              .select('book_id, order_label, sort_position, series:series_id ( name )'),
           ]);
 
         if (phasesError) throw phasesError;
         if (booksError) throw booksError;
+        if (bookSeriesError) throw bookSeriesError;
         if (cancelled) return;
 
         const phaseRows = phases || [];
         const bookRows = books || [];
+
+        // Build series lookup keyed by book UUID. When a book belongs to multiple
+        // series, pick the one with the lowest sort_position (NULL = Infinity, loses).
+        const sortedSeries = [...(bookSeriesRows || [])].sort((a, b) => {
+          const ap = a.sort_position ?? Infinity;
+          const bp = b.sort_position ?? Infinity;
+          return ap - bp;
+        });
+        const seriesByBookId = new Map();
+        for (const row of sortedSeries) {
+          if (!seriesByBookId.has(row.book_id)) {
+            seriesByBookId.set(row.book_id, {
+              name: row.series?.name ?? null,
+              orderLabel: row.order_label ?? null,
+              sortPosition: row.sort_position ?? null,
+            });
+          }
+        }
 
         // Index children by their parent entry id. bookRows are already sorted
         // by sort_order ASC, so each children array stays in sort_order order.
@@ -94,6 +122,7 @@ export function useCatalog() {
               moodTags: Array.isArray(entry.mood_tags) ? entry.mood_tags : [],
               semanticTags: Array.isArray(entry.semantic_tags) ? entry.semantic_tags : [],
               summary: entry.spoiler_free_summary ?? null,
+              series: seriesByBookId.get(entry.id) ?? null,
             };
             const children = childrenByParentId.get(entry.id) || [];
             if (children.length > 0) {
@@ -108,6 +137,7 @@ export function useCatalog() {
                 protagonist: sub.protagonist ?? null,
                 moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
                 summary: sub.spoiler_free_summary ?? null,
+                series: seriesByBookId.get(sub.id) ?? null,
               }));
             }
             return book;
