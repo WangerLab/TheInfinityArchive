@@ -15,6 +15,28 @@ architecture.
 
 ## Current Sprint
 
+**Sprint F — series/saga M:N model + phase-view badge (COMPLETE)**
+
+Introduced first-class series identity, the M:N model deliberately deferred
+since B-3c (flat series/series_order columns were never added to books to avoid
+implying a 1:1 model). Two tables: `public.series` (55 rows, UNIQUE name) and
+`public.book_series` (234 links, PK (book_id, series_id), RLS read-only for
+authenticated like phases/books). Seeded from BLGRPMasterMetadatav2.csv via
+entry_id/name joins (UUIDs resolved at runtime, no hardcoded ids). order_label
+preserves the raw CSV series_order losslessly; sort_position is derived
+(omnibus=-100, short-prequel=-1, #n/n=n, short=9000, standalone=9999,
+empty=NULL) with books.sort_order as runtime tiebreaker. Two CSV spelling
+variants were canonicalised (The Twice-Dead King; Jarnhamar). The one true
+work-level M:N case is the also_in cross-phase 'Apocalypse' (P3-30 & P5-13,
+both #5 in Space Marine Conquests) — two book rows, one series position, which
+a flat column could not have represented. useCatalog threads
+series: { name, orderLabel, sortPosition } | null onto every book and sub-item;
+RecursiveBookEntry renders a subtle gold SeriesBadge (#n / Omnibus shown,
+sort-only pseudo-labels suppressed). Shipped in six commits: F-1 (433c630)
+tables+RLS; F-2 (2aef069) seed 55 series; F-3 (41a01ec) seed 234 junction
+links; F-4 (fd51cb5) thread series into useCatalog shape; F-5 (484431c) render
+badge; F-6 (this) docs. Vercel production READY on 484431c.
+
 **Sprint E.1 — catalog enrichment in Phase/Archive views (COMPLETE)**
 
 Surfaced the enriched metadata from Sprint E's 349-row catalog in the UI:
@@ -100,7 +122,7 @@ no phantom parent rows.
 | Dependencies| 12 (cleaned in B-0, down from 52)            | +1 (@supabase/supabase-js in B-1a)|
 | State       | Supabase only (`useSupabaseProgress`)        | — (B-2 complete)                  |
 | Auth        | None                                         | Supabase Magic Link (B-1b)        |
-| Backend     | Supabase active: auth + user_progress (lifecycle status, B-3a) + books with 22 metadata cols (B-3b) seeded full 349-row catalog (B-3c) | — |
+| Backend     | Supabase active: auth + user_progress (lifecycle status, B-3a) + books with 22 metadata cols (B-3b) seeded full 349-row catalog (B-3c) + series/book_series M:N (F) | — |
 | Hosting     | Vercel, live, auto-deploys main              | Unchanged                         |
 
 ## Data Structure

@@ -287,3 +287,23 @@ pick the target component by name similarity ("BookEntry sounds like the book
 row"). A green `npm run build` does not prove a component renders — only that it
 compiles. This is the render-path corollary to the Sprint E build-green !=
 runtime-green lesson.
+
+### Sprint F: M:N series model, and why a flat column would have lied
+
+Series data looked 1:1 on entry_id (no work maps to two different series names),
+which tempts a flat books.series column. Two structural facts made that wrong:
+(1) omnibus parents AND their children each carry the series, with level-specific
+non-numeric ordering (omnibus / #1 / short-prequel / standalone) that a single
+column cannot order sanely; (2) the also_in cross-phase duplicate 'Apocalypse'
+(P3-30 & P5-13) is one work listed as two book rows, both legitimately #5 of
+Space Marine Conquests — genuine work-level M:N. The dedicated book_series
+junction represents both cleanly.
+
+**Data-hygiene lessons carried forward:** the source CSV spells the same series
+two ways (Twice-Dead King / The Twice Dead King; Jarnhamar Pack / Space Wolves:
+Jarnhamar). Canonicalise BEFORE seeding the parent table, and map alias
+spellings onto the canonical id in the junction seed. Always dry-run a bulk seed
+as a LEFT JOIN count first (input_rows == book_join_hits == series_join_hits)
+before the real INSERT — it catches a single mistyped entry_id or series name
+that would otherwise be silently dropped. Apostrophes (Gaunt's Ghosts) still
+need '' escaping in every VALUES literal (B-3c §1).
