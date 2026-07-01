@@ -271,3 +271,19 @@ user_progress still stores book_id (UUID) — only the in-memory indexing
 changed. JSX keys and displayed titles stay on title (display-only, unique
 among siblings). Verified live: marking 'Apocalypse' P3 left 'Apocalypse' P5
 untouched (two distinct user_progress rows).
+
+### Sprint E.1: Verify the render chain before a UI commit
+
+Enrichment-rendering JSX was written into `BookEntry.jsx` on the assumption it
+was the component the phase view renders book rows with. It isn't — `PhaseDetail`
+renders via `RecursiveBookEntry`. `BookEntry.jsx` is not on the phase-view render
+path at all, so the code compiled clean and rendered nothing. The mistake cost a
+correction commit (aa799ac) plus a revert (79a9d44) to remove the dead code.
+
+**Lesson:** before writing UI into a component, confirm it is actually on the
+render path — `grep` the component name in the view/container files (here:
+`PhaseDetail.jsx`, `App.js`) and follow the chain from the screen down. Never
+pick the target component by name similarity ("BookEntry sounds like the book
+row"). A green `npm run build` does not prove a component renders — only that it
+compiles. This is the render-path corollary to the Sprint E build-green !=
+runtime-green lesson.

@@ -15,6 +15,25 @@ architecture.
 
 ## Current Sprint
 
+**Sprint E.1 — catalog enrichment in Phase/Archive views (COMPLETE)**
+
+Surfaced the enriched metadata from Sprint E's 349-row catalog in the UI:
+location (+ segmentum), in-universe date, protagonist, spoiler-free summary,
+and mood tags now render on catalog entries — on top-level books AND on
+expanded omnibus children (children carry full enrichment in the DB; the
+child render-shape was narrow). Also removed a redundant duplicate header in
+the expanded phase panel. Shipped in seven commits (one intentional revert):
+f032de1 top-level shape; f0f18a2 render into WRONG component (BookEntry.jsx,
+dead code, reverted); aa799ac render into RecursiveBookEntry (the component the
+phase view actually uses); 833d406 child shape; a0c6e3f render on expanded
+omnibus children; 5fd5694 collapse redundant PhaseDetail header to a slim bar;
+79a9d44 revert f0f18a2. Net over Sprint E: 3 files (useCatalog.js,
+RecursiveBookEntry.jsx, PhaseDetail.jsx) — BookEntry.jsx nets to zero.
+semantic_tags / key_characters / sub_faction / faction_primary are threaded
+into the shape but deliberately NOT rendered yet (reserved for Map View / AI
+Companion / faction filters). Vercel production READY on 79a9d44. Lesson in
+CLAUDE.md (verify the render chain before a UI commit).
+
 **Sprint E — catalog render from Supabase (COMPLETE)**
 
 The frontend now renders the catalog from Supabase (phases + books) via the
