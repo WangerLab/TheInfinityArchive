@@ -366,7 +366,52 @@ export const RecursiveBookEntry = ({
                         {subItem.type === 'short' ? 'SHORT' : 'NOVEL'}
                       </span>
                     </div>
-                    
+
+                    {/* Location / Date / Protagonist */}
+                    {(subItem.locationPrimary || subItem.inUniverseDate || subItem.protagonist) && (
+                      <div className="flex items-center gap-3 mt-1 flex-wrap">
+                        {subItem.locationPrimary && (
+                          <span className="flex items-center gap-1 text-xs text-slate-400">
+                            <MapPin className="w-3 h-3" />
+                            {subItem.locationPrimary}{subItem.locationSegmentum ? ` · ${subItem.locationSegmentum}` : ''}
+                          </span>
+                        )}
+                        {subItem.inUniverseDate && (
+                          <span className="flex items-center gap-1 text-xs text-plasma">
+                            <Clock className="w-3 h-3" />
+                            {subItem.inUniverseDate}
+                          </span>
+                        )}
+                        {subItem.protagonist && (
+                          <span className="flex items-center gap-1 text-xs text-slate-400">
+                            <User className="w-3 h-3" />
+                            {subItem.protagonist}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Spoiler-free summary */}
+                    {subItem.summary && (
+                      <p className="text-xs text-slate-400 leading-relaxed mt-2">
+                        {subItem.summary}
+                      </p>
+                    )}
+
+                    {/* Mood tags */}
+                    {subItem.moodTags && subItem.moodTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {subItem.moodTags.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-[9px] px-1.5 py-0.5 bg-plasma/20 text-plasma rounded border border-plasma/40 font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Rating for sub-items when read */}
                     {subIsRead && (
                       <div className="mt-2 pt-2 border-t border-slate-700/30">
