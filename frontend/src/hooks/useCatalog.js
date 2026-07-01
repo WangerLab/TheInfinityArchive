@@ -16,7 +16,9 @@ const PROJECT_DESCRIPTION =
 //                  protagonist, keyCharacters, subFaction, factionPrimary,
 //                  moodTags, semanticTags, summary, contents? } ] } ] }
 // where contents (only present when an entry has children) is:
-//       [ { entryId, title, pages, type } ]
+//       [ { entryId, title, pages, type,
+//           locationPrimary, locationSegmentum, inUniverseDate,
+//           protagonist, moodTags, summary } ]
 // entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
 // state key (E-2b). description is a static display constant (not DB data);
 // totalPhases is derived from the phase count.
@@ -100,6 +102,12 @@ export function useCatalog() {
                 title: sub.title,
                 pages: sub.pages ?? 0,
                 type: sub.type,
+                locationPrimary: sub.location_primary ?? null,
+                locationSegmentum: sub.location_segmentum ?? null,
+                inUniverseDate: sub.in_universe_date ?? null,
+                protagonist: sub.protagonist ?? null,
+                moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
+                summary: sub.spoiler_free_summary ?? null,
               }));
             }
             return book;
