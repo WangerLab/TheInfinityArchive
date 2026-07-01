@@ -3,10 +3,10 @@ import { cn } from 'lib/utils';
 import { GrimdarkCheckbox } from './GrimdarkCheckbox';
 import { SkullRating } from './SkullRating';
 import { NotesModal } from './NotesModal';
-import { 
-  Book, ScrollText, Library, Layers, 
+import {
+  Book, ScrollText, Library, Layers,
   ChevronRight, Feather, User, FileText,
-  Sparkles, Crown
+  Sparkles, Crown, MapPin, Clock
 } from 'lucide-react';
 
 // Type icon mapping
@@ -187,6 +187,37 @@ export const RecursiveBookEntry = ({
                   </div>
                 )}
 
+                {/* Location / Date / Protagonist */}
+                {depth === 0 && (book.locationPrimary || book.inUniverseDate || book.protagonist) && (
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    {book.locationPrimary && (
+                      <span className="flex items-center gap-1 text-xs text-slate-400">
+                        <MapPin className="w-3 h-3" />
+                        {book.locationPrimary}{book.locationSegmentum ? ` · ${book.locationSegmentum}` : ''}
+                      </span>
+                    )}
+                    {book.inUniverseDate && (
+                      <span className="flex items-center gap-1 text-xs text-plasma">
+                        <Clock className="w-3 h-3" />
+                        {book.inUniverseDate}
+                      </span>
+                    )}
+                    {book.protagonist && (
+                      <span className="flex items-center gap-1 text-xs text-slate-400">
+                        <User className="w-3 h-3" />
+                        {book.protagonist}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Spoiler-free summary */}
+                {depth === 0 && book.summary && (
+                  <p className="text-xs text-slate-400 leading-relaxed mt-2">
+                    {book.summary}
+                  </p>
+                )}
+
                 {/* Type badge + child progress */}
                 {hasContents && (
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -216,6 +247,20 @@ export const RecursiveBookEntry = ({
                       <span 
                         key={i}
                         className="text-[9px] px-1.5 py-0.5 bg-slate-800/80 text-slate-400 rounded border border-slate-700/50 font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mood tags */}
+                {depth === 0 && book.moodTags && book.moodTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {book.moodTags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-[9px] px-1.5 py-0.5 bg-plasma/20 text-plasma rounded border border-plasma/40 font-medium"
                       >
                         {tag}
                       </span>
