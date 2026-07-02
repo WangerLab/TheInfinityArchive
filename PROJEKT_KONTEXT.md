@@ -15,6 +15,32 @@ architecture.
 
 ## Current Sprint
 
+**Sprint F.1 — grand-alliance faction filter (COMPLETE)**
+
+Turned the never-wired "strategic filter" (dead UI since v1) into a working
+4-way faction filter. A curated CASE mapping collapses the 47 distinct
+`faction_primary` values to 4 alliances stored in a new NOT NULL,
+CHECK-constrained `books.grand_alliance` column
+(imperium 239 / chaos 34 / xenos 33 / unaligned 43 = 349). Mapping is
+Tim-approved: Soul Drinkers→imperium (start loyal), Genestealer Cults /
+Leagues of Votann→xenos; NULL / 'Multiple' / 'Warhammer Horror'→unaligned.
+The migration was applied live via Supabase MCP and verified before the
+repo commit. `grandAlliance` is threaded through `useCatalog` onto both
+entry and omnibus-child shapes; `PhaseDetail` filters the rendered list by
+it BEFORE the map (Rule A — per-row, parents match on their own alliance,
+children not individually inspected); phase stats keep using the full
+unfiltered list so progress is unaffected. `GlobalHeader` gains the fourth
+button (UNALIGNED, Skull icon) and is relabelled ALLEGIANCE; the first
+three button ids already matched grand_alliance. Shipped in six commits:
+FX-1 (6e04473) grand_alliance column + backfill; FX-2 (177edcb) thread into
+useCatalog; FX-3 (1f4138e) apply filter in PhaseDetail; FX-4 (d32ba42)
+alliance buttons; F.1-5 (487f4ca) CLAUDE.md lessons; F.1-6 (this)
+PROJEKT_KONTEXT. Vercel production READY on d32ba42 (verified by Tim).
+Lesson in CLAUDE.md: faction_primary is populated at every row level, not
+just children — the omnibus-empty rule is per-field, verify by query.
+Deferred (not F.1 scope): dead activeFilters prop on RecursiveBookEntry;
+key={book.title} in PhaseDetail should be entryId.
+
 **Sprint F — series/saga M:N model + phase-view badge (COMPLETE)**
 
 Introduced first-class series identity, the M:N model deliberately deferred
