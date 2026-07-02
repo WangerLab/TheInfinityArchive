@@ -307,3 +307,38 @@ as a LEFT JOIN count first (input_rows == book_join_hits == series_join_hits)
 before the real INSERT — it catches a single mistyped entry_id or series name
 that would otherwise be silently dropped. Apostrophes (Gaunt's Ghosts) still
 need '' escaping in every VALUES literal (B-3c §1).
+
+### Sprint F.1: faction_primary sits at every level, unlike pure enrichment fields
+
+Building the grand-alliance filter, the working assumption was that
+faction_primary follows the omnibus-enrichment rule (parent rows empty,
+data lives on children — true for location/date/protagonist/summary). A
+live column-population query disproved it: faction_primary is populated on
+169/176 entry rows AND 132/133 sub_items — it sits broadly at every level,
+not just on children. Had we trusted the enrichment-rule generalisation,
+the per-row filter would have treated most omnibus parents as unmatchable.
+
+**Lesson:** the "omnibus parents are empty for enrichment fields" rule is
+per-field, not universal. Before building logic that depends on which
+levels a column is populated at, query it directly
+(count(*) FILTER (WHERE col IS NOT NULL) GROUP BY row_type) rather than
+generalising from other fields' fill patterns.
+
+**grand_alliance data path (F.1):** a curated CASE mapping collapses the 47
+distinct faction_primary values to 4 alliances (imperium/chaos/xenos/
+unaligned), stored as a NOT NULL, CHECK-constrained books.grand_alliance
+column (migration FX-1_books_grand_alliance.sql), threaded through
+useCatalog onto both entry and child shapes, and applied as a per-row
+filter in PhaseDetail BEFORE the map (Rule A: parents match on their own
+alliance; children are not individually inspected). Phase stats
+deliberately keep using the full unfiltered list so progress reflects the
+true catalog. The filter buttons' ids (imperium/chaos/xenos) already
+matched grand_alliance values from the original dead strategic-filter UI —
+only 'unaligned' was added. Imperium is 239/349 rows (68%), so that button
+filters little by design; the filter's real use is isolating chaos/xenos/
+unaligned.
+
+**Deferred cleanup (not F.1 scope):** the activeFilters prop is still
+passed to RecursiveBookEntry but now unused (filtering moved up to
+PhaseDetail); and PhaseDetail still uses key={book.title} (fragile —
+titles are non-unique across phases, should be book.entryId).
