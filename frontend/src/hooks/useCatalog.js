@@ -49,7 +49,7 @@ export function useCatalog() {
               .order('sort_order', { ascending: true }),
             supabase
               .from('books')
-              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary')
+              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance')
               .order('sort_order', { ascending: true }),
             supabase
               .from('book_series')
@@ -119,6 +119,7 @@ export function useCatalog() {
               keyCharacters: Array.isArray(entry.key_characters) ? entry.key_characters : [],
               subFaction: entry.sub_faction ?? null,
               factionPrimary: entry.faction_primary ?? null,
+              grandAlliance: entry.grand_alliance ?? null,
               moodTags: Array.isArray(entry.mood_tags) ? entry.mood_tags : [],
               semanticTags: Array.isArray(entry.semantic_tags) ? entry.semantic_tags : [],
               summary: entry.spoiler_free_summary ?? null,
@@ -135,6 +136,7 @@ export function useCatalog() {
                 locationSegmentum: sub.location_segmentum ?? null,
                 inUniverseDate: sub.in_universe_date ?? null,
                 protagonist: sub.protagonist ?? null,
+                grandAlliance: sub.grand_alliance ?? null,
                 moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
                 summary: sub.spoiler_free_summary ?? null,
                 series: seriesByBookId.get(sub.id) ?? null,
