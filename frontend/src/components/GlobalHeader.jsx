@@ -21,6 +21,7 @@ export const GlobalHeader = ({
     { id: 'imperium', label: 'IMPERIUM', icon: Shield, color: 'border-gold text-gold hover:bg-gold/20' },
     { id: 'chaos', label: 'CHAOS', icon: Swords, color: 'border-purple-500 text-purple-400 hover:bg-purple-500/20' },
     { id: 'xenos', label: 'XENOS', icon: Bug, color: 'border-plasma text-plasma hover:bg-plasma/20' },
+    { id: 'unaligned', label: 'UNALIGNED', icon: Skull, color: 'border-slate-500 text-slate-400 hover:bg-slate-500/20' },
   ];
 
   const formatNumber = (num) => num.toLocaleString();
@@ -117,10 +118,10 @@ export const GlobalHeader = ({
           </div>
         </div>
 
-        {/* Strategic Filters */}
+        {/* Grand Alliance Filters */}
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-slate-500 font-tactical tracking-[0.15em] mr-1">
-            STRATEGIC FILTERS:
+            ALLEGIANCE:
           </span>
           {filters.map((filter) => {
             const Icon = filter.icon;
