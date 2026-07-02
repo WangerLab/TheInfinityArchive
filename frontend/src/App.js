@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { GlobalHeader } from 'components/GlobalHeader';
 import { AuthGate } from 'components/AuthGate';
 import { PhaseCard } from 'components/PhaseCard';
@@ -344,9 +345,13 @@ function ArchiveApp() {
 
 function App() {
   return (
-    <AuthGate>
-      <ArchiveApp />
-    </AuthGate>
+    <BrowserRouter>
+      <AuthGate>
+        <Routes>
+          <Route path="*" element={<ArchiveApp />} />
+        </Routes>
+      </AuthGate>
+    </BrowserRouter>
   );
 }
 
