@@ -15,6 +15,29 @@ architecture.
 
 ## Current Sprint
 
+**Sprint G — tags/book_tags M:N (mood scope) (COMPLETE)**
+
+Built the queryable tag M:N structure deferred since B-3b, scoped to mood only.
+Two tables mirroring the F series model: `public.tags` (id, name, type; type
+CHECK ('mood') only for now, OPEN value-list; UNIQUE(name,type)) and
+`public.book_tags` (book_id, tag_id, PK(book_id,tag_id), both FKs ON DELETE
+CASCADE, index on tag_id). RLS read-only for authenticated. Diagnosis drove the
+scope: mood_tags (249 distinct, shared vocabulary, avg 3.8/book) normalises
+well; semantic_tags (2004 distinct, 73% singletons, avg 12.6/book) is
+AI-companion context and stays a plain array; legacy tags[] is effectively
+empty. Seeded directly from books.mood_tags[] via unnest (no hand-typed VALUES).
+Dry-run verified before the junction insert (expected == book-join == tag-join
+== 1131); real insert 1131. Final: tags 249 / book_tags 1131 / 298 books linked.
+3 DB-only commits, all on main: 63d1019 (G-1 tables+RLS), 40ab391 (G-2 seed 249
+mood values), 2d40e9a (G-3 seed 1131 junction links). Vercel READY (no visible
+change — the UI does not consume the junction yet; moodTags already renders from
+the array since E.1). The mood-filter UI was deliberately NOT built: Tim opened
+an interface/navigation rework question (multi-area landing/browse/analysis
+structure) that must be settled against the Vision v1.1 four-view plan before
+more filter UI lands. Filter data is ready for whatever the UI becomes. Lesson
+in CLAUDE.md (normalise the shared-vocabulary field; leave the singleton field
+an array until its consumer exists).
+
 **Sprint F.1 — grand-alliance faction filter (COMPLETE)**
 
 Turned the never-wired "strategic filter" (dead UI since v1) into a working
@@ -148,7 +171,7 @@ no phantom parent rows.
 | Dependencies| 12 (cleaned in B-0, down from 52)            | +1 (@supabase/supabase-js in B-1a)|
 | State       | Supabase only (`useSupabaseProgress`)        | — (B-2 complete)                  |
 | Auth        | None                                         | Supabase Magic Link (B-1b)        |
-| Backend     | Supabase active: auth + user_progress (lifecycle status, B-3a) + books with 22 metadata cols (B-3b) seeded full 349-row catalog (B-3c) + series/book_series M:N (F) | — |
+| Backend     | Supabase active: auth + user_progress (lifecycle status, B-3a) + books with 22 metadata cols (B-3b) seeded full 349-row catalog (B-3c) + series/book_series M:N (F) + tags/book_tags M:N mood scope (G) | — |
 | Hosting     | Vercel, live, auto-deploys main              | Unchanged                         |
 
 ## Data Structure

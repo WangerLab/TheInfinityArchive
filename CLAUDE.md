@@ -342,3 +342,34 @@ unaligned.
 passed to RecursiveBookEntry but now unused (filtering moved up to
 PhaseDetail); and PhaseDetail still uses key={book.title} (fragile —
 titles are non-unique across phases, should be book.entryId).
+
+### Sprint G: normalise the shared-vocabulary field, leave the singleton field an array
+
+Sprint G built the tags/book_tags M:N structure but scoped it to mood_tags
+ONLY. The two array fields on books looked like one job (Schema §5.5 lumped
+mood_tags, semantic_tags, and legacy tags[] together) but measuring them first
+proved they are different animals: mood_tags = 249 distinct, 55 shared >=5x — a
+real shared vocabulary that a filter can group on (avg 3.8/book). semantic_tags
+= 2004 distinct, 1470 (73%) singletons — a dense per-book description layer
+whose consumer is the AI companion (which reads it as a context blob, not a
+join), avg 12.6/book. Legacy tags[] is effectively dead (2 of 176 entries).
+
+**Lesson:** normalise the field with a shared, repeated vocabulary; leave the
+singleton-heavy per-book field as an array until its actual consumer exists and
+dictates the shape. Building a junction for semantic_tags now would be work with
+no abnehmer — the same anti-pattern the F "build only what has an Abnehmer" rule
+guards against. Corollary: always MEASURE the distinct-count and singleton-ratio
+of an array field before deciding to normalise it; a spec written before the
+data was measured (here §5.5) can be wrong about scope.
+
+**mood tag data path (G):** tags (id, name, type — type CHECK ('mood') only,
+UNIQUE(name,type)) + book_tags (book_id, tag_id, PK, both FKs ON DELETE
+CASCADE, index on tag_id), RLS read-only for authenticated. Seeded directly
+from books.mood_tags[] via unnest (no hand-typed VALUES — deckungsgleich with
+the live MCP-applied state). Dry-run before the junction insert (F-Lektion):
+expected_pairs == book_join_hits == tag_join_hits == 1131, real insert 1131.
+Final: 249 tags / 1131 links / 298 books. 3 DB-only commits (63d1019 tables+RLS,
+40ab391 seed values, 2d40e9a seed junction). NOTE: moodTags was already in the
+useCatalog shape since E.1 (from the array), so the junction changed nothing
+visible — its value is queryability/filtering, unbuilt as of G (mood-filter UI
+deferred pending the interface rework).
