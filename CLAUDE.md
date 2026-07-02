@@ -373,3 +373,37 @@ Final: 249 tags / 1131 links / 298 books. 3 DB-only commits (63d1019 tables+RLS,
 useCatalog shape since E.1 (from the array), so the junction changed nothing
 visible — its value is queryability/filtering, unbuilt as of G (mood-filter UI
 deferred pending the interface rework).
+
+### Interface/Navigation Rework: view-shell + data-provider pattern
+
+The app moved from one hardcoded screen (Phase list = whole app) to a multi-view
+shell. Architecture, top down:
+
+    App
+    └── BrowserRouter          (routing is orthogonal to auth — OUTSIDE AuthGate)
+        └── AuthGate
+            └── ArchiveDataProvider   (src/context/ArchiveDataContext.jsx)
+                └── Routes            (pages under src/pages/)
+
+ArchiveDataProvider holds the whole data layer — useCatalog + useSupabaseProgress,
+globalStats, getPhaseStats, the six progress handlers, the loading/error screens —
+exposed via useArchiveData(). Every view consumes ONE fetch through this context
+instead of loading its own. The Black-Screen lesson now generalises: the provider
+(which calls the auth-dependent hooks) must sit as a CHILD of AuthGate, so
+getUser() never fires before auth is confirmed. Router outside AuthGate, data
+provider inside it. View-state stays local to each page (expandedPhase,
+activeFilters live in PhaseView, not the provider) — the provider is for shared
+DATA, not per-view UI state. react-router-dom is v7, used with the classic
+declarative API (BrowserRouter / Routes / Route element=…); no data-router/loaders
+by design.
+
+### Workflow change (2026-07-02): commit+push in one, live-test on Vercel
+
+Tim's standing preference from this session: every commit prompt commits AND
+pushes in one go (Desktop), then Tim live-tests on the Vercel deployment — he does
+NOT test locally. This SUPERSEDES the older "Claude Code stops and waits for go
+before push" rule for Tim's sessions. Keep the build check IN the prompt (npm run
+build before commit; broken build → no commit/push); Tim's live test catches
+runtime issues; forward-fix if something breaks (Vercel Instant Rollback + git
+revert are the nets). Vercel-live is the better runtime check for a single-user
+app anyway (real env vars, auth redirect URLs, real build).

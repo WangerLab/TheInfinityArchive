@@ -15,6 +15,25 @@ architecture.
 
 ## Current Sprint
 
+**Interface/Navigation Rework (IN PROGRESS)**
+
+Moving from the single-screen model (Phase list bolted to a header filter bar) to
+a multi-view shell. IA decided this session: FIVE views — Landing (new hub),
+Phase, Archive (catalog-wide browse/filter — new home for the allegiance filter
+AND the mood filter), Analysis (NEW — sober filterable stats, split OUT of Service
+Record), Map, Service Record (now immersion/lore only). This splits the Vision
+v1.1 four-view model → v1.2 (Analysis promoted); Vision doc update pending.
+
+Done (3 commits on main, all live-verified pixel-identical):
+- 0c664f4 — install react-router-dom (v7), wrap app in BrowserRouter, catch-all route
+- 610c4b4 — lift data layer into ArchiveDataProvider (context); view → pure consumer
+- 41a90d4 — extract PhaseView page from ArchiveApp; App.js = pure router wiring
+
+Next: Landing + Nav + real /phases route + Vercel SPA rewrite (first VISIBLE
+commit), then Archive View (where the deferred mood-filter lands). Per-view Claude
+Design briefs live in Project Knowledge (TIA-Design-Briefs.md), grounded in the
+real CSS tokens.
+
 **Sprint G — tags/book_tags M:N (mood scope) (COMPLETE)**
 
 Built the queryable tag M:N structure deferred since B-3b, scoped to mood only.
