@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { cn } from 'lib/utils';
 import { Archive as ArchiveIcon, Shield, Swords, Bug, Skull } from 'lucide-react';
 import { useArchiveData } from 'context/ArchiveDataContext';
@@ -13,6 +13,11 @@ const allianceFilters = [
   { id: 'unaligned', label: 'UNALIGNED', icon: Skull, color: 'border-slate-500 text-slate-400 hover:bg-slate-500/20' },
 ];
 
+// Only moods with >= this many entry-level hits become filter chips. Keeps the
+// cloud to the shared, filter-worthy vocabulary and drops the long tail of rare
+// moods (those belong to the AI-companion context blob, not a filter control).
+const MOOD_MIN_HITS = 8;
+
 export function Archive() {
   const {
     projectData,
@@ -26,6 +31,7 @@ export function Archive() {
   } = useArchiveData();
 
   const [activeAlliance, setActiveAlliance] = useState([]);
+  const [activeMoods, setActiveMoods] = useState([]);
 
   // Mirrors PhaseView.handleFilterToggle: multi-select toggle, empty = show all.
   const handleAllianceToggle = useCallback((id) => {
@@ -36,17 +42,50 @@ export function Archive() {
     });
   }, []);
 
+  const handleMoodToggle = useCallback((mood) => {
+    setActiveMoods((prev) =>
+      prev.includes(mood) ? prev.filter((m) => m !== mood) : [...prev, mood]
+    );
+  }, []);
+
   // Catalog-wide flat list of all entry-level books across every phase.
   // Keyed by entryId, not title: titles are non-unique across phases
   // (e.g. 'Apocalypse' in P3 and P5), so a title key would collapse two
-  // distinct books onto one React element (Sprint E lesson).
-  const allBooks = projectData.phases.flatMap((phase) => phase.books);
+  // distinct books onto one React element (Sprint E lesson). Memoised so the
+  // reference is stable across renders (the mood/visible memos depend on it).
+  const allBooks = useMemo(
+    () => projectData.phases.flatMap((phase) => phase.books),
+    [projectData]
+  );
 
-  // Rule A — per-row on the entry's own grandAlliance; children not inspected.
-  const visibleBooks =
-    activeAlliance.length === 0
-      ? allBooks
-      : allBooks.filter((book) => activeAlliance.includes(book.grandAlliance));
+  // Data-driven mood chips: count each mood over entry-level books (Rule A),
+  // keep the shared vocabulary (>= MOOD_MIN_HITS), sort by frequency desc.
+  const moodChips = useMemo(() => {
+    const counts = new Map();
+    allBooks.forEach((book) => {
+      (book.moodTags || []).forEach((m) => counts.set(m, (counts.get(m) || 0) + 1));
+    });
+    return [...counts.entries()]
+      .filter(([, n]) => n >= MOOD_MIN_HITS)
+      .sort((a, b) => b[1] - a[1])
+      .map(([mood, count]) => ({ mood, count }));
+  }, [allBooks]);
+
+  // Two independent filters, AND-combined. Allegiance: Rule A per-row on the
+  // entry's own grandAlliance. Mood: has-any-of (array intersection) the
+  // selected moods. An empty set means that filter is inactive.
+  const visibleBooks = useMemo(() => {
+    return allBooks.filter((book) => {
+      const allianceOk =
+        activeAlliance.length === 0 || activeAlliance.includes(book.grandAlliance);
+      const moodOk =
+        activeMoods.length === 0 ||
+        (book.moodTags || []).some((m) => activeMoods.includes(m));
+      return allianceOk && moodOk;
+    });
+  }, [allBooks, activeAlliance, activeMoods]);
+
+  const isFiltered = activeAlliance.length > 0 || activeMoods.length > 0;
 
   return (
     <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
@@ -60,9 +99,9 @@ export function Archive() {
             </h1>
           </div>
           <p className="text-sm text-slate-400 mt-2 font-data">
-            {activeAlliance.length === 0
-              ? `${allBooks.length} ENTRIES • CATALOG-WIDE BROWSE`
-              : `${visibleBooks.length} / ${allBooks.length} ENTRIES • FILTERED`}
+            {isFiltered
+              ? `${visibleBooks.length} / ${allBooks.length} ENTRIES • FILTERED`
+              : `${allBooks.length} ENTRIES • CATALOG-WIDE BROWSE`}
           </p>
 
           {/* Grand Alliance filter */}
@@ -89,6 +128,33 @@ export function Archive() {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{filter.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mood filter — data-driven chips */}
+          <div className="flex items-start gap-2 mt-3 flex-wrap">
+            <span className="text-[9px] text-slate-500 font-tactical tracking-[0.15em] mr-1 mt-1.5">
+              MOOD:
+            </span>
+            {moodChips.map(({ mood, count }) => {
+              const isSelected = activeMoods.includes(mood);
+              return (
+                <button
+                  key={mood}
+                  onClick={() => handleMoodToggle(mood)}
+                  className={cn(
+                    'touch-target flex items-center gap-1.5 px-2.5 py-1 rounded-md',
+                    'border transition-all duration-200 active:scale-95',
+                    'text-[10px] font-medium tracking-wide',
+                    isSelected
+                      ? 'bg-plasma/30 text-plasma border-plasma'
+                      : 'bg-plasma/10 text-plasma/70 border-plasma/30 hover:text-plasma hover:border-plasma/60'
+                  )}
+                >
+                  <span>{mood}</span>
+                  <span className="text-plasma/50 font-data">{count}</span>
                 </button>
               );
             })}
