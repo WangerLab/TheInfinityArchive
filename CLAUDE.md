@@ -407,3 +407,24 @@ build before commit; broken build → no commit/push); Tim's live test catches
 runtime issues; forward-fix if something breaks (Vercel Instant Rollback + git
 revert are the nets). Vercel-live is the better runtime check for a single-user
 app anyway (real env vars, auth redirect URLs, real build).
+
+### Interface/Navigation Rework — visible block: layout route + Outlet for nav
+
+The visible nav block (C1-C3) closed the shell rework, skeleton-first, three atomic
+commits. Order matters: vercel.json SPA rewrite FIRST (75cba88) — deep-links and
+hard-refresh on client routes 404 on Vercel without it, so it must land before any
+real route beyond the catch-all. Then real routes (56364ac): / -> Landing hub,
+/phases -> PhaseView, catch-all -> <Navigate to="/" replace/>. Then a persistent
+nav via a react-router v7 layout route (2591cda):
+
+    <Route element={<AppLayout/>}>      (AppLayout = <AppNav/> + <Outlet/>)
+      <Route path="/phases" .../>
+    </Route>
+
+Nav lives on the layout route, so it renders on app views but NOT on the Landing —
+Landing sits OUTSIDE the layout route, a clean nav-free hub. Further views attach to
+the same layout route. NavLink needs `end` on the "/" link or it stays active on
+every nested path. The nav strip is non-sticky to avoid a z-index clash with the
+still-untouched sticky GlobalHeader; the nav<->header visual relationship is a
+skinning decision, deferred. Skeleton-first paid off: routing, redirect, deep-link
+survival and nav were all verified live before any optics.

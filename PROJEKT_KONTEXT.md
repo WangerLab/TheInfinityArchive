@@ -15,7 +15,7 @@ architecture.
 
 ## Current Sprint
 
-**Interface/Navigation Rework (IN PROGRESS)**
+**Interface/Navigation Rework (COMPLETE)**
 
 Moving from the single-screen model (Phase list bolted to a header filter bar) to
 a multi-view shell. IA decided this session: FIVE views — Landing (new hub),
@@ -24,15 +24,24 @@ AND the mood filter), Analysis (NEW — sober filterable stats, split OUT of Ser
 Record), Map, Service Record (now immersion/lore only). This splits the Vision
 v1.1 four-view model → v1.2 (Analysis promoted); Vision doc update pending.
 
-Done (3 commits on main, all live-verified pixel-identical):
+Structural commits (3, live-verified pixel-identical):
 - 0c664f4 — install react-router-dom (v7), wrap app in BrowserRouter, catch-all route
 - 610c4b4 — lift data layer into ArchiveDataProvider (context); view → pure consumer
 - 41a90d4 — extract PhaseView page from ArchiveApp; App.js = pure router wiring
 
-Next: Landing + Nav + real /phases route + Vercel SPA rewrite (first VISIBLE
-commit), then Archive View (where the deferred mood-filter lands). Per-view Claude
-Design briefs live in Project Knowledge (TIA-Design-Briefs.md), grounded in the
-real CSS tokens.
+Visible nav block (3, skeleton-first, all live-verified on Vercel):
+- 75cba88 — vercel.json SPA rewrite (deep-link/hard-refresh survive client routes)
+- 56364ac — real routes: / → Landing skeleton, /phases → PhaseView, catch-all → redirect
+- 2591cda — persistent nav via layout route (AppLayout = AppNav + Outlet); nav on app views, not on Landing
+
+Sprint closed: routing, redirect, deep-link survival, and persistent nav all
+live-verified. GlobalHeader untouched (nav↔header relationship is a skinning
+decision). Next, in their own chats: (a) skin the Landing against
+TIA-Design-Briefs.md now the mechanics hold; (b) Archive View as the next route
+under AppLayout — new home for the deferred mood-filter. Still pending: Vision
+v1.1 → v1.2 doc update (Analysis promoted to its own fifth view). Per-view Design
+briefs live in Project Knowledge (TIA-Design-Briefs.md), grounded in the real CSS
+tokens.
 
 **Sprint G — tags/book_tags M:N (mood scope) (COMPLETE)**
 
