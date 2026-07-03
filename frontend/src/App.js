@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthGate } from 'components/AuthGate';
 import { ArchiveDataProvider } from 'context/ArchiveDataContext';
 import { Landing } from 'pages/Landing';
+import { AppLayout } from 'pages/AppLayout';
 import { PhaseView } from 'pages/PhaseView';
 
 function App() {
@@ -12,7 +13,9 @@ function App() {
         <ArchiveDataProvider>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/phases" element={<PhaseView />} />
+            <Route element={<AppLayout />}>
+              <Route path="/phases" element={<PhaseView />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ArchiveDataProvider>
