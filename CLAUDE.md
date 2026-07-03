@@ -428,3 +428,37 @@ every nested path. The nav strip is non-sticky to avoid a z-index clash with the
 still-untouched sticky GlobalHeader; the nav<->header visual relationship is a
 skinning decision, deferred. Skeleton-first paid off: routing, redirect, deep-link
 survival and nav were all verified live before any optics.
+
+### Sprint Archive View: reuse the recursive row, key cross-phase lists by entryId, chips from data
+
+The Archive view (catalog-wide browse, second view under AppLayout) was built with
+NO new row UI: it flat-maps every phase's books into one list and feeds each to the
+EXISTING RecursiveBookEntry, wired to the same ArchiveDataProvider context and
+progress handlers PhaseDetail uses. A whole view came for free because the row
+component was already self-contained and context-driven. Confirmed the reuse would
+work by reading the component's props and render path FIRST (E.1 corollary), not by
+assuming from its name.
+
+Three points worth carrying:
+
+1. **Cross-phase flat lists MUST key by entryId, never title.** Archive is the first
+   place a cross-phase list is actually rendered; titles are non-unique ('Apocalypse'
+   P3 & P5), so key={book.title} would collapse the two into one element. Done right
+   from the start here (key={book.entryId}) rather than repeating PhaseDetail's
+   still-open key={book.title}. Render-side twin of the Sprint E state-keying lesson.
+
+2. **Additive filter placement beats mid-skeleton relocate.** Archive got its own
+   allegiance filter (config mirrored from GlobalHeader for semantic identity) rather
+   than ripping the bar out of the header. Emptying the header would touch the
+   deferred-skin component and change Phase-view behavior during a skeleton pass —
+   more breakage surface for no skeleton-phase benefit. Build additively; fold the
+   header cleanup into the pass that reworks the header anyway.
+
+3. **Data-driven filter chips, not a hardcoded list.** The mood chips are computed
+   from the catalog (count each mood over entry-level books, keep those >= 8 hits,
+   sort desc) — so the control reflects the actual shared vocabulary, and the
+   threshold drops the long singleton tail (that belongs to the AI-companion context
+   blob per the Sprint G split, not to a filter). Contrast the 4 allegiance buttons,
+   legitimately hardcoded (a closed 4-value domain). Memoise the derived arrays
+   (allBooks/moodChips/visibleBooks): allBooks as a fresh flatMap each render would
+   otherwise defeat the downstream memos.

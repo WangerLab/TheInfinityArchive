@@ -15,6 +15,40 @@ architecture.
 
 ## Current Sprint
 
+**Archive View — catalog-wide browse + filters (COMPLETE)**
+
+The second view under the AppLayout shell (after Phase). A catalog-wide flat browse
+of all 176 entry-level books across every phase, with two AND-combined filters.
+Built skeleton-first in four atomic commits, each live-verified on Vercel before the
+next: C1 (4a6b73b) /archive route + ARCHIVE nav link + skeleton page; C2 (4527b2f)
+flat render phases.flatMap(books) -> RecursiveBookEntry, keyed by entryId
+(cross-phase titles non-unique); C3 (6e9df7a) grand-alliance filter in the Archive
+body (Rule A, entry-level), additive — GlobalHeader's allegiance bar left intact,
+not relocated; C4 (a27c6f2) data-driven mood filter, chips computed from the data
+(moods with >= 8 entry-level hits, sorted by frequency), array-intersection
+(has-any-of), AND-combined with allegiance, empty-state when no match.
+
+The whole view reuses RecursiveBookEntry unchanged — Archive is just a flat list fed
+to the existing recursive component, sharing the same ArchiveDataProvider context and
+progress handlers as Phase (marking read in Archive reflects in Phase, same
+user_progress rows). Both filters are local page state (activeAlliance, activeMoods);
+allBooks/moodChips/visibleBooks are memoised. Vercel production READY on a27c6f2
+(verified by Tim).
+
+Design decision — additive, not relocate: the nav-rework framed Archive as the "new
+home" for the allegiance filter (relocated from the header). Chosen instead: Archive
+builds its OWN allegiance filter; GlobalHeader stays untouched and keeps filtering the
+Phase view. Reason: emptying the header touches the deferred-skin component and changes
+Phase-view behavior mid-skeleton. The header relocate/cleanup folds into the later
+GlobalHeader/skin pass. Temporary two-place redundancy (two independent views,
+independent local state) is harmless.
+
+Still open (own chats): skin Landing + Archive + nav<->header together (design pass);
+the header allegiance relocate rides that pass; Analysis view content spec; Vision
+v1.1 -> v1.2 doc update (Analysis promoted to fifth view) still pending. F.1 deferred
+cleanup still open: dead activeFilters prop on RecursiveBookEntry; PhaseDetail's
+key={book.title} (Archive already uses entryId).
+
 **Interface/Navigation Rework (COMPLETE)**
 
 Moving from the single-screen model (Phase list bolted to a header filter bar) to
