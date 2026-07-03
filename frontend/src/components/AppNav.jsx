@@ -1,10 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Layers } from 'lucide-react';
+import { Home, Layers, Archive } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'HOME', icon: Home, end: true },
   { to: '/phases', label: 'PHASES', icon: Layers },
+  { to: '/archive', label: 'ARCHIVE', icon: Archive },
 ];
 
 export function AppNav() {

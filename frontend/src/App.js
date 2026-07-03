@@ -5,6 +5,7 @@ import { ArchiveDataProvider } from 'context/ArchiveDataContext';
 import { Landing } from 'pages/Landing';
 import { AppLayout } from 'pages/AppLayout';
 import { PhaseView } from 'pages/PhaseView';
+import { Archive } from 'pages/Archive';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route element={<AppLayout />}>
               <Route path="/phases" element={<PhaseView />} />
+              <Route path="/archive" element={<Archive />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
