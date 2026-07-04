@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Layers, Archive, Cpu, Award } from 'lucide-react';
 
 // Backdrop asset lives in frontend/public/ and is referenced from web root.
 const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
@@ -14,12 +13,15 @@ const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
 // pos = absolute placement over the backdrop, as % (top/left/width) via inline
 // style, calibrated against the real Vercel deploy (step 5, C2). Baked, not
 // placeholder — do not re-guess these without re-dialing against the deploy.
+// img = station artwork (verified filenames, step 5 C3) filling the bento box;
+// icon/sub are kept on the data object (not deleted) but no longer rendered —
+// the artwork carries the identity now.
 const stations = [
-  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: Globe,   accent: 'text-plasma', pos: { top: 26.7, left: 33.8, width: 32.0 } },
-  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: Layers,  accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 } },
-  { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: Archive, accent: 'text-auspex', pos: { top: 68.0, left: 4.0,  width: 22.0 } },
-  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: Cpu,     accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 } },
-  { id: 'record',     label: 'SERVICE RECORD', sub: 'HONOURS VITRINE',   to: '/record',     icon: Award,   accent: 'text-gold',   pos: { top: 68.0, left: 74.0, width: 22.0 } },
+  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 26.7, left: 33.8, width: 32.0 }, img: '/Rose-window_projector_casting_ga_2K_202607041801.jpeg' },
+  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: null, accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 }, img: '/War-table_projecting_battle-map_2K_202607041801.jpeg' },
+  { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: null, accent: 'text-auspex', pos: { top: 68.0, left: 4.0,  width: 22.0 }, img: '/Chart-console_with_skull-beacon2K_202607041801.jpeg' },
+  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: null, accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 }, img: '/Operator_console_with_sweep-scope_2K_202607041801.jpeg' },
+  { id: 'record',     label: 'SERVICE RECORD', sub: 'HONOURS VITRINE',   to: '/record',     icon: null, accent: 'text-gold',   pos: { top: 68.0, left: 74.0, width: 22.0 }, img: '/Gilded_reliquary_vitrine_with_skull_202607041801.jpeg' },
 ];
 
 export function Landing() {
@@ -76,17 +78,22 @@ export function Landing() {
 }
 
 function StationBox({ station, pos }) {
-  const { label, sub, to, icon: Icon, accent } = station;
+  const { label, to, img } = station;
   return (
     <Link
       to={to}
-      className="absolute grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-3 gap-1.5 transition-all hover:glow-gold"
+      className="absolute aspect-[3/2] grimdark-panel rounded-lg overflow-hidden transition-all hover:glow-gold"
       style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: `${pos.width}%` }}
     >
-      <Icon className={`w-6 h-6 ${accent}`} />
-      <div>
-        <h2 className={`font-display text-base tracking-wider ${accent}`}>{label}</h2>
-        <p className="text-[9px] text-slate-500 font-tactical tracking-[0.25em] mt-0.5">{sub}</p>
+      <img
+        src={img}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+      />
+      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+      <div className="relative z-10 flex h-full flex-col justify-end items-center text-center px-2 pb-2">
+        <h2 className="font-display text-sm md:text-base tracking-wider text-gold text-glow-gold">{label}</h2>
       </div>
     </Link>
   );
