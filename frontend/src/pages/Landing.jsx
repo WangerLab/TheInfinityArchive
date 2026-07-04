@@ -17,10 +17,10 @@ const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
 // icon/sub are kept on the data object (not deleted) but no longer rendered —
 // the artwork carries the identity now.
 const stations = [
-  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 22.2, left: 39,   width: 22.0 }, img: '/Oculus_hololith_galaxy_16x9_202607042230.jpeg' },
-  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: null, accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 }, img: '/War-table_projecting_battle-map_2K_202607041801.jpeg' },
+  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 18,   left: 39,   width: 22.0 }, img: '/Oculus_hololith_galaxy_16x9_202607042230.jpeg' },
+  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: null, accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 }, img: '/Chart-console_with_skull-beacon2K_202607041801.jpeg' },
   { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: null, accent: 'text-auspex', pos: { top: 68.0, left: 4.0,  width: 22.0 }, img: '/Operator_console_with_sweep-scope_2K_202607041801.jpeg' },
-  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: null, accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 }, img: '/Chart-console_with_skull-beacon2K_202607041801.jpeg' },
+  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: null, accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 }, img: '/War-table_projecting_battle-map_2K_202607041801.jpeg' },
   { id: 'record',     label: 'SERVICE RECORD', sub: 'HONOURS VITRINE',   to: '/record',     icon: null, accent: 'text-gold',   pos: { top: 68.0, left: 74.0, width: 22.0 }, img: '/Gilded_reliquary_vitrine_with_skull_202607041801.jpeg' },
 ];
 
