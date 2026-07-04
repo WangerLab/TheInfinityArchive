@@ -45,6 +45,39 @@ code that renders them lands (asset-with-consumer rule); a stale harness
 reference lingers in a Landing.jsx comment. Step 6 (live data — cogitator
 first) follows step 5.
 
+**Landing Bridge step 5 — station positioning + artwork + oculus rebuild (COMPLETE)**
+
+Step 5 dialed the five stations and masthead into place and gave each station
+real artwork. Positioning via the same drag/resize calibration harness as the
+cogitator (CALIB flag, dialed against the live Vercel deploy, baked, harness
+removed). Each station now fills its box with an art JPEG (object-cover) under a
+bottom gradient scrim, gold label below, icon+sublabel dropped (art carries the
+identity; icon field kept as null, not deleted). Assets committed with their
+consumer. The oculus art was rebuilt from a generic rose-window into a bespoke
+text-free 16:9 hololith galaxy (Flow-generated, several iterations; a 4:5
+portrait attempt was tried and reverted after it overlapped the cogitator — see
+CLAUDE.md aspect↔width lesson). A plasma-blue "SEGMENTUM SOLAR" CSS label marked
+data-oculus-segmentum is the step-6 dock point for that live zone.
+
+Final station art (never key by label — read the stations array): oculus→
+Oculus_hololith_galaxy_16x9; campaign→Chart-console; auspex→Operator-console
+(green scope); strategium→War-table (hololith map); record→Gilded-reliquary.
+Two swaps happened during the sprint (auspex/strategium in C3b, campaign/
+strategium in C3f) — the array is the truth.
+
+Commit chain: 45ec827 (calib harness) → 6eded7e (bake positions, remove harness)
+→ 1a09a15 (five station JPEGs) → 537e7e2 (oculus width 22 + auspex/strategium
+swap) → 8ababdf (oculus 3:4 art + segmentum label) → aa079ed (narrow oculus 4:5)
+→ edab732 (oculus back to 3:2, 16:9 art) → 82ab41a (oculus top 18, campaign/
+strategium swap). Vercel production READY on 82ab41a (verified by Tim).
+
+C4 (frame treatment) deliberately dropped — the artwork already carries the
+colour identity; frame question folds into the app-wide skin pass. Deferred to
+the skin pass (own chat), not bugs: palette migration v1.0→v1.3 (code still uses
+retired text-gold/plasma/auspex tokens); text-glow-plasma undefined in CSS
+(segmentum label has no glow); box frame treatment; v1.3 material-asset layer;
+grimdark-panel v1.3 recipe. Step 6 (live data — cogitator first) is next.
+
 **Archive View — catalog-wide browse + filters (COMPLETE)**
 
 The second view under the AppLayout shell (after Phase). A catalog-wide flat browse

@@ -500,3 +500,35 @@ patterns worth carrying:
    assets). Caught in this sprint only because Claude Code inspected `git status`
    before staging; the S1 prompt's `test -f` existence check was insufficient to
    prove tracking.
+
+### Sprint Landing Bridge step 5: aspect↔width coupling, live-zone text stays code, art retires the frame pass
+
+Positioning the five stations and swapping in real artwork. Three lessons:
+
+1. **aspect-[] couples height to width — change one, re-check the other.** The
+   oculus box was moved to a portrait 4:5 image but kept width 22 (calibrated
+   for the old flat 3:2 art). At 4:5, height = width × 5/4, so the box grew tall
+   enough to overlap the cogitator screen — build green, runtime broken. An
+   aspect-ratio change and the width that feeds it must be reasoned together;
+   the box height is derived, not independent. Fixed by returning oculus to
+   aspect-[3/2] like the four corners once a 16:9 image was available.
+
+2. **A live-zone label must never be baked into the asset.** The oculus
+   "SEGMENTUM SOLAR" caption is a step-6 live value (it changes with the current
+   book's segmentum). An early generated image had the text burned in — which
+   would have frozen it. The rule: any text destined to become live data stays a
+   CSS overlay over a text-free image, marked with a data-attribute
+   (data-oculus-segmentum) as the step-6 dock point — exactly mirroring the
+   cogitator screen's placeholder pattern. Generate art text-free; the code
+   supplies the label.
+
+3. **Rich per-item artwork retires a planned frame-differentiation pass.** Step 5
+   originally planned a C4 "warm/cool frame treatment" (gold framing vs
+   plasma/auspex glow per box). Once real art JPEGs filled the boxes, they
+   already carried the colour identity in-image (auspex green, oculus/campaign
+   blue, strategium/record warm-gold). A coloured CSS frame would compete with
+   the art rather than support it, and would use the retired v1.3 neon tokens.
+   C4 was deliberately dropped; frame treatment (if any) folds into the app-wide
+   skin pass, decided coherently in the v1.3 register. Lesson: when generated
+   assets already encode a distinction, a CSS mechanism planned to create that
+   distinction becomes redundant — reassess planned skin steps after art lands.
