@@ -462,3 +462,41 @@ Three points worth carrying:
    legitimately hardcoded (a closed 4-value domain). Memoise the derived arrays
    (allBooks/moodChips/visibleBooks): allBooks as a fresh flatMap each render would
    otherwise defeat the downstream memos.
+
+### Sprint Landing Bridge: img-as-sizer stage, calibration harness, asset-tracking
+
+The Landing was rebuilt as a command-bridge over a painted backdrop. Three
+patterns worth carrying:
+
+1. **img-as-sizer stage for art-anchored overlays.** A backdrop `<img>` with
+   `w-full h-auto` inside a centred max-width stage (`data-bridge-stage`) sizes
+   the stage itself; every zone is an absolute `%`-overlay resolving against
+   that box, so overlays scale WITH the art and never drift off their painted
+   feature on resize. Chosen over `object-cover` (crops → destroys the
+   %-mapping) and over a hardcoded aspect-ratio (guesswork). This is the pattern
+   for any layout that pins UI onto features of a background image. An earlier
+   CSS-grid layout was built first and then retired once the real backdrop
+   landed — grid is the wrong model the moment the art is the stage.
+
+2. **Calibration harness beats editor math.** To pin an overlay onto a painted
+   feature (here the black cogitator screen), do NOT compute pixel coordinates
+   in the editor. Ship a temporary drag/resize harness that reads live
+   top/left/width/height as % of the stage; dial it in the real browser against
+   the actual Vercel deploy, read four numbers, bake them as constants, remove
+   the harness. Browser-against-real-render accounts for the actual rendered
+   stage (crop, max-width, scaling) that editor math cannot. Make the harness
+   loud (fuchsia) so it can never ship silently, and verify removal with
+   `git grep CalibrationHarness` / `git grep fuchsia` before the bake commit.
+   Cogitator screen baked at top 57.4% / left 38.4% / w 23.1% / h 27.4%.
+
+3. **On-disk is not in-repo; commit the asset with its consumer.** `test -f`
+   passing means the file exists in the working tree, NOT that git tracks it —
+   a fresh-clone Vercel build only sees committed files. Any commit whose code
+   references a new asset MUST commit that asset (in its own prior commit for
+   atomicity). Verify "in repo" with `git ls-files --error-unmatch <path>`, not
+   `test -f`. Corollary: do NOT bundle assets that have no code consumer yet —
+   the five station PNGs stayed deliberately untracked until the code that
+   renders them lands (the F "build only what has an Abnehmer" rule, applied to
+   assets). Caught in this sprint only because Claude Code inspected `git status`
+   before staging; the S1 prompt's `test -f` existence check was insufficient to
+   prove tracking.

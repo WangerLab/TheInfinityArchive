@@ -15,6 +15,36 @@ architecture.
 
 ## Current Sprint
 
+**Landing Bridge — command-bridge skeleton + calibrated cogitator (COMPLETE)**
+
+The Landing (the nav-free hub at `/`, outside AppLayout) was rebuilt from a
+placeholder card into the void-ship command bridge from the locked six-station
+manifest. Built skeleton-first, nav before skin, each commit live-verified on
+Vercel. Final architecture: an img-as-sizer stage (`data-bridge-stage`) sized by
+the real backdrop `<img>` (`data-bridge-backdrop`,
+`frontend/public/Imperial_void-ship_command_bridge_2K_202607041950.jpeg`); the
+six manifest zones are absolute %-overlays that scale with the art. Five
+navigable stations (Oculus→/map, Campaign→/phases, Auspex→/archive,
+Strategium→/strategium, Service Record→/record) plus the parked Command
+Cogitator centre hero (no route). The cogitator readout sits directly IN the
+painted black console screen — frameless green phosphor (auspex + text-glow),
+calibrated via a temporary drag/resize harness to top 57.4% / left 38.4% /
+w 23.1% / h 27.4% (`data-cogitator-screen`). Three new skeleton destination
+pages under AppLayout (MapView/Strategium/ServiceRecord) and three AppNav
+entries (plain labels MAP/STRATEGIUM/RECORD) completed the five-destination set.
+
+Commit chain: c99eb3d (routes+nav) → 06d8773 (bridge grid skeleton, later
+retired) → 4c4a01e (backdrop asset) → 2d4dc99 (backdrop-as-stage + overlays) →
+61d0f6a (cogitator phosphor + calib harness) → 8e89f8f (bake coords, remove
+harness). Vercel production READY on 8e89f8f (verified by Tim).
+
+Deferred to step 5 (own chat), not bugs: the five stations sit in placeholder
+positions and overlap painted art; the masthead is overlapped by the Oculus
+station; the five station PNGs stay untracked in frontend/public/ until the
+code that renders them lands (asset-with-consumer rule); a stale harness
+reference lingers in a Landing.jsx comment. Step 6 (live data — cogitator
+first) follows step 5.
+
 **Archive View — catalog-wide browse + filters (COMPLETE)**
 
 The second view under the AppLayout shell (after Phase). A catalog-wide flat browse
