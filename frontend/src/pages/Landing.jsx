@@ -17,7 +17,7 @@ const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
 // icon/sub are kept on the data object (not deleted) but no longer rendered —
 // the artwork carries the identity now.
 const stations = [
-  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 26.7, left: 39,  width: 22.0 }, img: '/Oculus_hololith_galaxy_3x4_202607042200.jpeg', aspect: '4/5' },
+  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 26.7, left: 43.5, width: 13.0 }, img: '/Oculus_hololith_galaxy_3x4_202607042200.jpeg', aspect: '4/5' },
   { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: null, accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 }, img: '/War-table_projecting_battle-map_2K_202607041801.jpeg' },
   { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: null, accent: 'text-auspex', pos: { top: 68.0, left: 4.0,  width: 22.0 }, img: '/Operator_console_with_sweep-scope_2K_202607041801.jpeg' },
   { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: null, accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 }, img: '/Chart-console_with_skull-beacon2K_202607041801.jpeg' },
