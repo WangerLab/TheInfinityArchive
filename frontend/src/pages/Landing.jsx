@@ -17,7 +17,7 @@ const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
 // icon/sub are kept on the data object (not deleted) but no longer rendered —
 // the artwork carries the identity now.
 const stations = [
-  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 26.7, left: 39,  width: 22.0 }, img: '/Rose-window_projector_casting_ga_2K_202607041801.jpeg' },
+  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: null, accent: 'text-plasma', pos: { top: 26.7, left: 39,  width: 22.0 }, img: '/Oculus_hololith_galaxy_3x4_202607042200.jpeg', aspect: '4/5' },
   { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: null, accent: 'text-gold',   pos: { top: 40.0, left: 4.0,  width: 22.0 }, img: '/War-table_projecting_battle-map_2K_202607041801.jpeg' },
   { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: null, accent: 'text-auspex', pos: { top: 68.0, left: 4.0,  width: 22.0 }, img: '/Operator_console_with_sweep-scope_2K_202607041801.jpeg' },
   { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: null, accent: 'text-plasma', pos: { top: 40.0, left: 74.0, width: 22.0 }, img: '/Chart-console_with_skull-beacon2K_202607041801.jpeg' },
@@ -78,11 +78,14 @@ export function Landing() {
 }
 
 function StationBox({ station, pos }) {
-  const { label, to, img } = station;
+  const { id, label, to, img, aspect } = station;
+  // Explicit fallback, not a template-string class — Tailwind JIT only picks
+  // up class names it can see written out in full in the source.
+  const aspectClass = aspect === '4/5' ? 'aspect-[4/5]' : 'aspect-[3/2]';
   return (
     <Link
       to={to}
-      className="absolute aspect-[3/2] grimdark-panel rounded-lg overflow-hidden transition-all hover:glow-gold"
+      className={`absolute ${aspectClass} grimdark-panel rounded-lg overflow-hidden transition-all hover:glow-gold`}
       style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: `${pos.width}%` }}
     >
       <img
@@ -92,7 +95,15 @@ function StationBox({ station, pos }) {
         className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
       />
       <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
-      <div className="relative z-10 flex h-full flex-col justify-end items-center text-center px-2 pb-2">
+      <div className="relative z-10 flex h-full flex-col justify-end items-center text-center px-2 pb-2 gap-0.5">
+        {id === 'oculus' && (
+          <div
+            data-oculus-segmentum
+            className="relative z-10 text-plasma text-glow-plasma font-tactical text-[10px] md:text-xs tracking-[0.25em] text-center"
+          >
+            SEGMENTUM SOLAR
+          </div>
+        )}
         <h2 className="font-display text-sm md:text-base tracking-wider text-gold text-glow-gold">{label}</h2>
       </div>
     </Link>
