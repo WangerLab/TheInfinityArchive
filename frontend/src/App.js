@@ -6,6 +6,9 @@ import { Landing } from 'pages/Landing';
 import { AppLayout } from 'pages/AppLayout';
 import { PhaseView } from 'pages/PhaseView';
 import { Archive } from 'pages/Archive';
+import { MapView } from 'pages/MapView';
+import { Strategium } from 'pages/Strategium';
+import { ServiceRecord } from 'pages/ServiceRecord';
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
             <Route element={<AppLayout />}>
               <Route path="/phases" element={<PhaseView />} />
               <Route path="/archive" element={<Archive />} />
+              <Route path="/map" element={<MapView />} />
+              <Route path="/strategium" element={<Strategium />} />
+              <Route path="/record" element={<ServiceRecord />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

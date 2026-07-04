@@ -1,11 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Layers, Archive } from 'lucide-react';
+import { Home, Layers, Archive, Globe, Cpu, Award } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'HOME', icon: Home, end: true },
   { to: '/phases', label: 'PHASES', icon: Layers },
   { to: '/archive', label: 'ARCHIVE', icon: Archive },
+  { to: '/map', label: 'MAP', icon: Globe },
+  { to: '/strategium', label: 'STRATEGIUM', icon: Cpu },
+  { to: '/record', label: 'RECORD', icon: Award },
 ];
 
 export function AppNav() {
