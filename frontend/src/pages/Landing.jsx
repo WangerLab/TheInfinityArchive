@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Layers, Archive, Cpu, Award, Terminal } from 'lucide-react';
+import { Globe, Layers, Archive, Cpu, Award } from 'lucide-react';
 
 // Backdrop asset lives in frontend/public/ and is referenced from web root.
 const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
@@ -54,28 +54,24 @@ export function Landing() {
           <StationBox key={s.id} station={s} />
         ))}
 
-        {/* Command Cogitator — parked centre hero. NOT a Link.
-            Placeholder centre position; S2 calibrates the screen zone. */}
+        {/* Command Cogitator screen — live text sits directly IN the painted
+            black screen of the backdrop console. No panel, no frame, no icon:
+            the backdrop already paints the brass gear-frame. Green phosphor
+            on pure black = a real cogitator readout. NOT a Link (parked).
+            Coordinates are CALIBRATION START VALUES — Tim dials them via the
+            harness below, S2b bakes the final numbers and removes the harness. */}
         <div
-          className="absolute grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-4 gap-2"
-          style={{ top: '44%', left: '36%', width: '28%' }}
+          data-cogitator-screen
+          className="absolute flex flex-col items-center justify-center text-center gap-1 text-auspex font-tactical text-glow-auspex pointer-events-none"
+          style={{ top: '58%', left: '38%', width: '24%', height: '28%' }}
         >
-          <Terminal className="w-7 h-7 text-gold" />
-          <div>
-            <h2 className="font-display text-lg text-gold tracking-wider">COMMAND COGITATOR</h2>
-            <p className="text-[10px] text-slate-500 font-tactical tracking-[0.25em] mt-1">
-              CURRENT ASSIGNMENT
-            </p>
-          </div>
-          {/* Screen-zone marker — S2 maps this to the backdrop console nische
-              for live text. Do not remove the data attr. */}
-          <div
-            data-cogitator-screen
-            className="mt-1 w-full border border-gold/20 rounded px-3 py-3 text-[11px] text-slate-500 font-tactical tracking-widest"
-          >
-            STANDBY — NO SIGNAL
-          </div>
+          <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
+          <p className="text-sm md:text-base tracking-widest">STANDBY</p>
+          <p className="text-[11px] tracking-widest text-auspex/80">NO SIGNAL</p>
         </div>
+
+        {/* === TEMPORARY CALIBRATION HARNESS — removed in S2b === */}
+        <CalibrationHarness />
       </div>
     </div>
   );
@@ -95,5 +91,62 @@ function StationBox({ station }) {
         <p className="text-[9px] text-slate-500 font-tactical tracking-[0.25em] mt-0.5">{sub}</p>
       </div>
     </Link>
+  );
+}
+
+// === TEMPORARY — CalibrationHarness (removed in S2b) ===
+// Drag the box body to move; drag the bottom-right handle to resize. The
+// readout shows top/left/width/height as % of the stage. Tim: line this box
+// up over the painted black cogitator screen, read the four numbers, report
+// them back. Then S2b bakes them into data-cogitator-screen and deletes this.
+function CalibrationHarness() {
+  const [box, setBox] = React.useState({ top: 58, left: 38, width: 24, height: 28 });
+  const drag = React.useRef(null);
+
+  const pct = (e, stage) => {
+    const r = stage.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 };
+  };
+
+  const onDown = (mode) => (e) => {
+    e.preventDefault();
+    const stage = e.currentTarget.closest('[data-bridge-stage]');
+    const start = pct(e, stage);
+    drag.current = { mode, start, box: { ...box }, stage };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+  const onMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const p = pct(e, d.stage);
+    const dx = p.x - d.start.x;
+    const dy = p.y - d.start.y;
+    if (d.mode === 'move') {
+      setBox({ ...d.box, left: +(d.box.left + dx).toFixed(1), top: +(d.box.top + dy).toFixed(1) });
+    } else {
+      setBox({ ...d.box, width: +Math.max(2, d.box.width + dx).toFixed(1), height: +Math.max(2, d.box.height + dy).toFixed(1) });
+    }
+  };
+  const onUp = () => {
+    drag.current = null;
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  };
+
+  return (
+    <div
+      className="absolute border-2 border-fuchsia-500 bg-fuchsia-500/10 z-50"
+      style={{ top: `${box.top}%`, left: `${box.left}%`, width: `${box.width}%`, height: `${box.height}%` }}
+      onMouseDown={onDown('move')}
+    >
+      <div className="absolute -top-6 left-0 whitespace-nowrap bg-fuchsia-600 text-white text-[11px] font-mono px-2 py-0.5">
+        top {box.top}% · left {box.left}% · w {box.width}% · h {box.height}%
+      </div>
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 bg-fuchsia-500 cursor-se-resize"
+        onMouseDown={(e) => { e.stopPropagation(); onDown('resize')(e); }}
+      />
+    </div>
   );
 }
