@@ -2,66 +2,78 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Layers, Archive, Cpu, Award, Terminal } from 'lucide-react';
 
-// Six-station bridge manifest (locked in STATE.md). Five navigable stations
-// overlay the bridge; the Command Cogitator is the parked centre hero (no
-// route — book-detail unspecced). Accent follows the locked colour-logic:
-// plasma = the two hololith poles (Oculus, Strategium), gold = warm framing
-// (Campaign, Service Record), auspex-green = working terminal (Auspex).
-// Grid placement is explicit per station, so map order is irrelevant.
+// Backdrop asset lives in frontend/public/ and is referenced from web root.
+const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
+
+// Six-station bridge manifest (STATE.md, locked). Five navigable stations
+// overlay the bridge art; the Command Cogitator is the parked centre hero
+// (no route). Accent follows the locked colour-logic: plasma = hololith poles
+// (Oculus, Strategium), gold = warm framing (Campaign, Service Record),
+// auspex-green = working terminal (Auspex).
+//
+// pos = absolute placement over the backdrop, as % (top/left/width) via inline
+// style. These are PLACEHOLDER coordinates for S1 — rough edge positions so the
+// stage reads and every link is reachable. Exact per-station calibration is a
+// later step; the Cogitator screen gets calibrated in S2. Do not treat these
+// numbers as final.
 const stations = [
-  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: Globe,   accent: 'text-plasma', pos: 'col-start-1 col-span-3 row-start-1' },
-  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: Layers,  accent: 'text-gold',   pos: 'col-start-1 row-start-2' },
-  { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: Archive, accent: 'text-auspex', pos: 'col-start-1 row-start-3' },
-  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: Cpu,     accent: 'text-plasma', pos: 'col-start-3 row-start-2' },
-  { id: 'record',     label: 'SERVICE RECORD', sub: 'HONOURS VITRINE',   to: '/record',     icon: Award,   accent: 'text-gold',   pos: 'col-start-3 row-start-3' },
+  { id: 'oculus',     label: 'OCULUS',         sub: 'HOLOLITHIC VIEWER', to: '/map',        icon: Globe,   accent: 'text-plasma', pos: { top: 6,  left: 34, width: 32 } },
+  { id: 'campaign',   label: 'CAMPAIGN',       sub: 'THE PLAN',          to: '/phases',     icon: Layers,  accent: 'text-gold',   pos: { top: 40, left: 4,  width: 22 } },
+  { id: 'auspex',     label: 'AUSPEX',         sub: 'THE LIBRARY',       to: '/archive',    icon: Archive, accent: 'text-auspex', pos: { top: 68, left: 4,  width: 22 } },
+  { id: 'strategium', label: 'STRATEGIUM',     sub: 'THE ADVISOR',       to: '/strategium', icon: Cpu,     accent: 'text-plasma', pos: { top: 40, left: 74, width: 22 } },
+  { id: 'record',     label: 'SERVICE RECORD', sub: 'HONOURS VITRINE',   to: '/record',     icon: Award,   accent: 'text-gold',   pos: { top: 68, left: 74, width: 22 } },
 ];
 
 export function Landing() {
   return (
     <div className="relative min-h-screen bg-slate-950 scanlines safe-top safe-bottom overflow-hidden">
-      {/* Backdrop layer — skeleton placeholder. Skin pass drops bridge-backdrop.png here (absolute inset-0, behind content). */}
-      <div
-        className="absolute inset-0 z-0 bg-gradient-to-b from-slate-900/40 via-slate-950 to-black"
-        data-bridge-backdrop
-        aria-hidden="true"
-      />
+      {/* Stage — sized by the backdrop image itself (img-as-sizer). Absolute
+          overlays resolve as % of THIS box, so they scale with the art and
+          never drift off their painted feature on resize. */}
+      <div className="relative w-full max-w-6xl mx-auto" data-bridge-stage>
+        <img
+          src={BACKDROP_SRC}
+          alt=""
+          aria-hidden="true"
+          className="block w-full h-auto select-none pointer-events-none"
+          data-bridge-backdrop
+        />
 
-      {/* Content layer */}
-      <div className="relative z-10 flex flex-col min-h-screen px-6 py-6">
-        {/* Masthead */}
-        <header className="text-center mb-6">
-          <h1 className="font-display text-3xl md:text-4xl text-gold tracking-wider text-glow-gold">
+        {/* Masthead — overlaid on the upper backdrop */}
+        <header className="absolute top-0 left-0 right-0 text-center pt-4 pointer-events-none">
+          <h1 className="font-display text-2xl md:text-4xl text-gold tracking-wider text-glow-gold">
             THE INFINITY ARCHIVE
           </h1>
-          <p className="text-[11px] text-slate-500 font-tactical tracking-[0.3em] mt-1">
+          <p className="text-[10px] md:text-[11px] text-slate-400 font-tactical tracking-[0.3em] mt-1">
             COMMAND BRIDGE — COGITATOR INTERFACE v.M41
           </p>
         </header>
 
-        {/* Bridge grid: Oculus top (full width); Campaign/Auspex left column;
-            Command Cogitator centre hero (parked); Strategium/Service Record right column. */}
-        <div className="flex-1 grid grid-cols-3 grid-rows-[auto_1fr_1fr] gap-4 max-w-6xl w-full mx-auto">
-          {stations.map((s) => (
-            <StationBox key={s.id} station={s} />
-          ))}
+        {/* Five navigable stations */}
+        {stations.map((s) => (
+          <StationBox key={s.id} station={s} />
+        ))}
 
-          {/* Command Cogitator — parked centre hero. NOT a Link. */}
-          <div className="col-start-2 row-start-2 row-span-2 grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-6 gap-3">
-            <Terminal className="w-8 h-8 text-gold" />
-            <div>
-              <h2 className="font-display text-xl text-gold tracking-wider">COMMAND COGITATOR</h2>
-              <p className="text-[10px] text-slate-500 font-tactical tracking-[0.25em] mt-1">
-                CURRENT ASSIGNMENT
-              </p>
-            </div>
-            {/* Screen-zone marker — step 4 maps this to the backdrop console nische
-                for live text (current book / % / folio). Do not remove the data attr. */}
-            <div
-              data-cogitator-screen
-              className="mt-2 w-full max-w-[16rem] border border-gold/20 rounded px-3 py-4 text-[11px] text-slate-500 font-tactical tracking-widest"
-            >
-              STANDBY — NO SIGNAL
-            </div>
+        {/* Command Cogitator — parked centre hero. NOT a Link.
+            Placeholder centre position; S2 calibrates the screen zone. */}
+        <div
+          className="absolute grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-4 gap-2"
+          style={{ top: '44%', left: '36%', width: '28%' }}
+        >
+          <Terminal className="w-7 h-7 text-gold" />
+          <div>
+            <h2 className="font-display text-lg text-gold tracking-wider">COMMAND COGITATOR</h2>
+            <p className="text-[10px] text-slate-500 font-tactical tracking-[0.25em] mt-1">
+              CURRENT ASSIGNMENT
+            </p>
+          </div>
+          {/* Screen-zone marker — S2 maps this to the backdrop console nische
+              for live text. Do not remove the data attr. */}
+          <div
+            data-cogitator-screen
+            className="mt-1 w-full border border-gold/20 rounded px-3 py-3 text-[11px] text-slate-500 font-tactical tracking-widest"
+          >
+            STANDBY — NO SIGNAL
           </div>
         </div>
       </div>
@@ -74,12 +86,13 @@ function StationBox({ station }) {
   return (
     <Link
       to={to}
-      className={`${pos} grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-5 gap-2 transition-all hover:glow-gold`}
+      className="absolute grimdark-panel rounded-lg flex flex-col items-center justify-center text-center p-3 gap-1.5 transition-all hover:glow-gold"
+      style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: `${pos.width}%` }}
     >
-      <Icon className={`w-7 h-7 ${accent}`} />
+      <Icon className={`w-6 h-6 ${accent}`} />
       <div>
-        <h2 className={`font-display text-lg tracking-wider ${accent}`}>{label}</h2>
-        <p className="text-[10px] text-slate-500 font-tactical tracking-[0.25em] mt-1">{sub}</p>
+        <h2 className={`font-display text-base tracking-wider ${accent}`}>{label}</h2>
+        <p className="text-[9px] text-slate-500 font-tactical tracking-[0.25em] mt-0.5">{sub}</p>
       </div>
     </Link>
   );
