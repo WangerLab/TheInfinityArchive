@@ -63,15 +63,12 @@ export function Landing() {
         <div
           data-cogitator-screen
           className="absolute flex flex-col items-center justify-center text-center gap-1 text-auspex font-tactical text-glow-auspex pointer-events-none"
-          style={{ top: '58%', left: '38%', width: '24%', height: '28%' }}
+          style={{ top: '57.4%', left: '38.4%', width: '23.1%', height: '27.4%' }}
         >
           <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
           <p className="text-sm md:text-base tracking-widest">STANDBY</p>
           <p className="text-[11px] tracking-widest text-auspex/80">NO SIGNAL</p>
         </div>
-
-        {/* === TEMPORARY CALIBRATION HARNESS — removed in S2b === */}
-        <CalibrationHarness />
       </div>
     </div>
   );
@@ -91,62 +88,5 @@ function StationBox({ station }) {
         <p className="text-[9px] text-slate-500 font-tactical tracking-[0.25em] mt-0.5">{sub}</p>
       </div>
     </Link>
-  );
-}
-
-// === TEMPORARY — CalibrationHarness (removed in S2b) ===
-// Drag the box body to move; drag the bottom-right handle to resize. The
-// readout shows top/left/width/height as % of the stage. Tim: line this box
-// up over the painted black cogitator screen, read the four numbers, report
-// them back. Then S2b bakes them into data-cogitator-screen and deletes this.
-function CalibrationHarness() {
-  const [box, setBox] = React.useState({ top: 58, left: 38, width: 24, height: 28 });
-  const drag = React.useRef(null);
-
-  const pct = (e, stage) => {
-    const r = stage.getBoundingClientRect();
-    return { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 };
-  };
-
-  const onDown = (mode) => (e) => {
-    e.preventDefault();
-    const stage = e.currentTarget.closest('[data-bridge-stage]');
-    const start = pct(e, stage);
-    drag.current = { mode, start, box: { ...box }, stage };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
-  const onMove = (e) => {
-    const d = drag.current;
-    if (!d) return;
-    const p = pct(e, d.stage);
-    const dx = p.x - d.start.x;
-    const dy = p.y - d.start.y;
-    if (d.mode === 'move') {
-      setBox({ ...d.box, left: +(d.box.left + dx).toFixed(1), top: +(d.box.top + dy).toFixed(1) });
-    } else {
-      setBox({ ...d.box, width: +Math.max(2, d.box.width + dx).toFixed(1), height: +Math.max(2, d.box.height + dy).toFixed(1) });
-    }
-  };
-  const onUp = () => {
-    drag.current = null;
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onUp);
-  };
-
-  return (
-    <div
-      className="absolute border-2 border-fuchsia-500 bg-fuchsia-500/10 z-50"
-      style={{ top: `${box.top}%`, left: `${box.left}%`, width: `${box.width}%`, height: `${box.height}%` }}
-      onMouseDown={onDown('move')}
-    >
-      <div className="absolute -top-6 left-0 whitespace-nowrap bg-fuchsia-600 text-white text-[11px] font-mono px-2 py-0.5">
-        top {box.top}% · left {box.left}% · w {box.width}% · h {box.height}%
-      </div>
-      <div
-        className="absolute bottom-0 right-0 w-4 h-4 bg-fuchsia-500 cursor-se-resize"
-        onMouseDown={(e) => { e.stopPropagation(); onDown('resize')(e); }}
-      />
-    </div>
   );
 }
