@@ -91,20 +91,14 @@ export function useSupabaseProgress() {
             continue;
           }
           const parentId = idToParentId.get(row.book_id);
-          const entry = parentId == null
-            ? {
-                status: row.status ?? (row.is_read ? 'read' : 'unread'),
-                isRead: row.is_read ?? false,
-                rating: row.rating ?? 0,
-                notes: row.notes ?? '',
-                personalTake: row.personal_take ?? '',
-                startedAt: row.started_at ?? null,
-              }
-            : {
-                isRead: row.is_read ?? false,
-                rating: row.rating ?? 0,
-                notes: row.notes ?? '',
-              };
+          const entry = {
+            status: row.status ?? (row.is_read ? 'read' : 'unread'),
+            isRead: row.is_read ?? false,
+            rating: row.rating ?? 0,
+            notes: row.notes ?? '',
+            personalTake: row.personal_take ?? '',
+            startedAt: row.started_at ?? null,
+          };
           if (parentId == null) {
             const existing = next[entryId] || {};
             next[entryId] = { ...existing, ...entry, contents: existing.contents || {} };
@@ -117,6 +111,10 @@ export function useSupabaseProgress() {
             const parent = next[parentEntryId] || { contents: {} };
             parent.contents = { ...(parent.contents || {}), [entryId]: entry };
             next[parentEntryId] = parent;
+
+            // Bridge: also store the sub-item flat under its own entry_id, full
+            // ternary shape, alongside the existing nested contents[] storage.
+            next[entryId] = { ...(next[entryId] || {}), ...entry };
           }
         }
         completedAtByIdRef.current = completedAtById;
