@@ -246,45 +246,6 @@ export function ArchiveDataProvider({ children }) {
     }));
   }, [setBookProgress]);
 
-  const handleSubItemReadChange = useCallback((entryId, subEntryId, isRead) => {
-    setBookProgress(prev => ({
-      ...prev,
-      [entryId]: {
-        ...prev[entryId],
-        contents: {
-          ...prev[entryId]?.contents,
-          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), isRead }
-        }
-      }
-    }));
-  }, [setBookProgress]);
-
-  const handleSubItemRatingChange = useCallback((entryId, subEntryId, rating) => {
-    setBookProgress(prev => ({
-      ...prev,
-      [entryId]: {
-        ...prev[entryId],
-        contents: {
-          ...prev[entryId]?.contents,
-          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), rating }
-        }
-      }
-    }));
-  }, [setBookProgress]);
-
-  const handleSubItemNotesChange = useCallback((entryId, subEntryId, notes) => {
-    setBookProgress(prev => ({
-      ...prev,
-      [entryId]: {
-        ...prev[entryId],
-        contents: {
-          ...prev[entryId]?.contents,
-          [subEntryId]: { ...(prev[entryId]?.contents?.[subEntryId] || {}), notes }
-        }
-      }
-    }));
-  }, [setBookProgress]);
-
   const handleBookRatingChange = useCallback((entryId, rating) => {
     setBookProgress(prev => ({
       ...prev,
@@ -372,9 +333,6 @@ export function ArchiveDataProvider({ children }) {
     handleBookNotesChange,
     handleBookPersonalTakeChange,
     isReflectionPending,
-    handleSubItemReadChange,
-    handleSubItemRatingChange,
-    handleSubItemNotesChange,
   };
 
   return (

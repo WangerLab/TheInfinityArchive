@@ -101,19 +101,14 @@ export function useSupabaseProgress() {
           };
           if (parentId == null) {
             const existing = next[entryId] || {};
-            next[entryId] = { ...existing, ...entry, contents: existing.contents || {} };
+            next[entryId] = { ...existing, ...entry };
           } else {
             const parentEntryId = idToEntryId.get(parentId);
             if (!parentEntryId) {
               console.warn('[useSupabaseProgress] sub-item parent_book_id not found:', parentId);
               continue;
             }
-            const parent = next[parentEntryId] || { contents: {} };
-            parent.contents = { ...(parent.contents || {}), [entryId]: entry };
-            next[parentEntryId] = parent;
-
-            // Bridge: also store the sub-item flat under its own entry_id, full
-            // ternary shape, alongside the existing nested contents[] storage.
+            // Sub-items store flat under their own entry_id, full ternary shape.
             next[entryId] = { ...(next[entryId] || {}), ...entry };
           }
         }
