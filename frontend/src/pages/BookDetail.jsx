@@ -10,16 +10,15 @@ import {
   ChevronLeft, MapPin, Clock, User, BookOpen, Check, BookMarked, Feather,
 } from 'lucide-react';
 
-// Resolve an entryId to its ENTRY-level book. A sub-item id resolves to its
-// parent entry (the dossier is entry-level; sub-items have no own dossier).
+// Resolve an entryId to its own book. A sub-item id resolves to the sub-item
+// itself, with a reference to its omnibus parent for back-navigation/context.
 function resolveEntry(phases, entryId) {
   for (const phase of phases) {
     for (const book of phase.books) {
-      if (book.entryId === entryId) return { book, phase };
+      if (book.entryId === entryId) return { book, phase, parent: null };
       if (Array.isArray(book.contents)) {
-        if (book.contents.some((c) => c.entryId === entryId)) {
-          return { book, phase };
-        }
+        const sub = book.contents.find((c) => c.entryId === entryId);
+        if (sub) return { book: sub, phase, parent: book };
       }
     }
   }
@@ -77,7 +76,7 @@ export function BookDetail() {
     );
   }
 
-  const { book, phase } = resolved;
+  const { book, phase, parent } = resolved;
   const progress = bookProgress[book.entryId] || {};
   const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
 
@@ -152,6 +151,15 @@ export function BookDetail() {
               <h1 className="font-display text-2xl text-gold leading-tight text-glow-gold">
                 {book.title}
               </h1>
+              {parent && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/book/${parent.entryId}`)}
+                  className="block text-[11px] text-slate-500 font-data tracking-wide mt-1 hover:text-gold transition-colors"
+                >
+                  PART OF {parent.title}
+                </button>
+              )}
               {book.author && (
                 <p className="text-sm text-slate-300 mt-1">{book.author}</p>
               )}
@@ -288,19 +296,22 @@ export function BookDetail() {
                 {book.contents.map((c) => {
                   const read = isSubRead(progress.contents?.[c.entryId]);
                   return (
-                    <li key={c.entryId}>
+                    <li key={c.entryId} className="flex items-center gap-2 -mx-2 rounded-md hover:bg-slate-800/50">
                       <button
                         type="button"
                         onClick={() => handleSubItemReadChange(book.entryId, c.entryId, !read)}
-                        className={cn(
-                          'w-full text-left flex items-center gap-2 text-sm rounded-md px-2 py-1.5',
-                          '-mx-2 transition-colors hover:bg-slate-800/50 active:scale-[0.99]'
-                        )}
+                        className="shrink-0 px-2 py-1.5 -mr-2 transition-colors active:scale-[0.99]"
                       >
                         {read
                           ? <Check className="w-4 h-4 text-auspex shrink-0" />
-                          : <span className="w-4 h-4 shrink-0 rounded border border-slate-600" />}
-                        <span className={cn(read ? 'text-auspex' : 'text-slate-300', c.type === 'short' && 'italic')}>
+                          : <span className="w-4 h-4 shrink-0 rounded border border-slate-600 block" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/book/${c.entryId}`)}
+                        className="flex-1 min-w-0 text-left flex items-center gap-2 text-sm py-1.5 pr-2 transition-colors active:scale-[0.99]"
+                      >
+                        <span className={cn(read ? 'text-auspex' : 'text-slate-300', c.type === 'short' && 'italic', 'truncate')}>
                           {c.title}
                         </span>
                         {c.series?.name && (
