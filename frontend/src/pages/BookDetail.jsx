@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { FactionMark } from 'components/FactionMark';
 import { SkullRating } from 'components/SkullRating';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog';
 import {
   ChevronLeft, MapPin, Clock, User, BookOpen, Check, BookMarked,
 } from 'lucide-react';
@@ -37,12 +38,15 @@ export function BookDetail() {
     projectData, bookProgress,
     handleBookStatusChange, handleBookRatingChange,
     handleSubItemReadChange,
+    currentReading, handleStartReading,
   } = useArchiveData();
 
   const resolved = useMemo(
     () => resolveEntry(projectData.phases, entryId),
     [projectData, entryId]
   );
+
+  const [readingPrompt, setReadingPrompt] = useState(false);
 
   if (!resolved) {
     return (
@@ -89,6 +93,32 @@ export function BookDetail() {
       ? (book.series.orderLabel.startsWith('#') ? book.series.orderLabel : `#${book.series.orderLabel}`)
       : null,
   ].filter(Boolean).join('  ·  ');
+
+  // Starting THIS book as reading. If another book is already the current
+  // assignment, ask how to handle it first (enforce one-book invariant).
+  const otherReading =
+    currentReading && currentReading.book.entryId !== book.entryId
+      ? currentReading
+      : null;
+
+  const onSetReading = () => {
+    if (otherReading) {
+      setReadingPrompt(true);
+    } else {
+      handleBookStatusChange(book.entryId, 'reading');
+    }
+  };
+
+  // Three resolutions for the "other book still reading" case.
+  const startAndMarkOldRead = () => {
+    handleStartReading(book.entryId, otherReading.book.entryId, 'read');
+    setReadingPrompt(false);
+  };
+  const startAndMarkOldUnread = () => {
+    handleStartReading(book.entryId, otherReading.book.entryId, 'unread');
+    setReadingPrompt(false);
+  };
+  const cancelStart = () => setReadingPrompt(false);
 
   return (
     <div className="min-h-screen bg-slate-950 scanlines safe-bottom">
@@ -242,7 +272,7 @@ export function BookDetail() {
           <div className="grimdark-panel rounded-lg p-4 mt-4 flex items-center gap-3">
             {status === 'unread' && (
               <button
-                onClick={() => handleBookStatusChange(book.entryId, 'reading')}
+                onClick={onSetReading}
                 className="flex-1 px-4 py-3 rounded-lg font-bold tracking-wider bg-gold/15 text-gold border border-gold/40 hover:bg-gold/25 transition-all flex items-center justify-center gap-2"
               >
                 <BookOpen className="w-4 h-4" />
@@ -269,6 +299,45 @@ export function BookDetail() {
           </div>
         )}
       </main>
+
+      <Dialog open={readingPrompt} onOpenChange={(o) => !o && cancelStart()}>
+        <DialogContent className="grimdark-panel border-gold/40 bg-card max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle className="font-display text-base text-gold tracking-wider text-glow-gold">
+              CURRENT ASSIGNMENT ACTIVE
+            </DialogTitle>
+          </DialogHeader>
+          {otherReading && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-300 leading-relaxed">
+                <span className="text-gold font-semibold">{otherReading.book.title}</span> is
+                still marked as your current reading. You read one book at a time — what
+                happened to it?
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={startAndMarkOldRead}
+                  className="w-full px-4 py-3 rounded-lg font-bold tracking-wider bg-auspex/15 text-auspex border border-auspex/40 hover:bg-auspex/25 transition-all"
+                >
+                  MARK IT READ &amp; START THIS
+                </button>
+                <button
+                  onClick={startAndMarkOldUnread}
+                  className="w-full px-4 py-3 rounded-lg font-bold tracking-wider bg-slate-800/50 text-slate-300 border border-slate-600 hover:border-gold/40 hover:text-gold transition-all"
+                >
+                  RESET IT TO UNREAD &amp; START THIS
+                </button>
+                <button
+                  onClick={cancelStart}
+                  className="w-full px-4 py-2.5 rounded-lg font-tactical text-xs tracking-widest text-slate-500 border border-transparent hover:text-slate-300 transition-all"
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

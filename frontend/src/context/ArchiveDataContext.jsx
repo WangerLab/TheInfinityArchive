@@ -155,6 +155,29 @@ export function ArchiveDataProvider({ children }) {
     }));
   }, [setBookProgress]);
 
+  // Atomically start reading `entryId`, optionally transitioning a previously
+  // reading book in the SAME update so the "one book reading" invariant never
+  // breaks mid-flight. prevEntryId/prevStatus are null when nothing else was reading.
+  const handleStartReading = useCallback((entryId, prevEntryId = null, prevStatus = null) => {
+    setBookProgress(prev => {
+      const next = { ...prev };
+      if (prevEntryId && prevEntryId !== entryId && prevStatus) {
+        next[prevEntryId] = {
+          ...prev[prevEntryId],
+          status: prevStatus,
+          isRead: prevStatus === 'read',
+          rating: prevStatus === 'read' ? (prev[prevEntryId]?.rating || 0) : 0,
+        };
+      }
+      next[entryId] = {
+        ...prev[entryId],
+        status: 'reading',
+        isRead: false,
+      };
+      return next;
+    });
+  }, [setBookProgress]);
+
   const handleBookReadChange = useCallback((entryId, isRead) => {
     setBookProgress(prev => ({
       ...prev,
@@ -277,6 +300,7 @@ export function ArchiveDataProvider({ children }) {
     getPhaseStats,
     handleBookReadChange,
     handleBookStatusChange,
+    handleStartReading,
     handleBookRatingChange,
     handleBookNotesChange,
     handleSubItemReadChange,
