@@ -9,6 +9,7 @@ import { Archive } from 'pages/Archive';
 import { MapView } from 'pages/MapView';
 import { Strategium } from 'pages/Strategium';
 import { ServiceRecord } from 'pages/ServiceRecord';
+import { BookDetail } from 'pages/BookDetail';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="/map" element={<MapView />} />
               <Route path="/strategium" element={<Strategium />} />
               <Route path="/record" element={<ServiceRecord />} />
+              <Route path="/book/:entryId" element={<BookDetail />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
