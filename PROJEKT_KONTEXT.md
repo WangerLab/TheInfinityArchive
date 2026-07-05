@@ -15,6 +15,45 @@ architecture.
 
 ## Current Sprint
 
+**Book-Detail / Dossier — ternary status + one-book invariant (COMPLETE)**
+
+Turned the binary progress layer into a ternary state machine
+(unread/reading/read) and built the Book-Detail dossier plus the
+current-assignment feature. Seven commits, each live-verified on Vercel:
+
+- `d1f3732` progress: ternary status in the data layer (hydration reads
+  status/started_at/completed_at; started_at set once and preserved; completed_at
+  read-only; is_read stays DB-generated, never written). reading is entry-level;
+  sub-items stay binary.
+- `05911df` row: FactionMark (centralised grand-alliance icon+tint) + lean BookRow
+  (glimpse row, router-free via onOpen), built unwired.
+- `fc5cb92` dossier: /book/:entryId route under AppLayout, keyed by entryId
+  (sub-item id resolves to parent entry — dossier is entry-level only). Three-state
+  render + status-driven action strip. First UI that produces status='reading'.
+- `6eea2d9` list: Phase + Archive render BookRow -> dossier; fat RecursiveBookEntry
+  off the render path (kept in repo, unused); PhaseDetail key title->entryId.
+- `f1357ff` fix: omnibus sub-items toggleable again in the dossier CONTENTS list.
+- `5820da8` current: currentReading derivation in context + CurrentAssignment
+  banner atop Phase view (router-free, reusable on the Landing cogitator later).
+- `14cc0ae` current: one-book invariant via a three-way confirm dialog; the
+  transition runs through an atomic handleStartReading (both books in one write).
+
+DB-verified at sprint end: reading_count = 1 (invariant holds), read 23, unread 4.
+grand_alliance confirmed NOT NULL on all 349 rows (4 values), so FactionMark maps
+on grandAlliance directly — no derive-from-children. Vercel production READY on
+14cc0ae (verified by Tim).
+
+Deferred to their own chats (optical/immersive, not functional core): ViewBackdrop
+shell (blurred station-art per route; /book/:id gets its own fixed Auspex backdrop,
+not inherited); Landing cogitator live-zone (the data-cogitator-screen dock point
+consumes the same currentReading source via the router-free CurrentAssignment).
+Reflection capture (personal_take/free_notes + PENDING marker) stays gated to
+Sprint C — the only remaining schema work; the READ dossier currently shows rating
+only. Cleanup pending: delete unused RecursiveBookEntry.jsx; drop dead
+activeFilters/handler props from PhaseDetail's signature.
+
+---
+
 **Landing Bridge — command-bridge skeleton + calibrated cogitator (COMPLETE)**
 
 The Landing (the nav-free hub at `/`, outside AppLayout) was rebuilt from a
