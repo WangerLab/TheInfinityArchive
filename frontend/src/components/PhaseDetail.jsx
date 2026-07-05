@@ -1,10 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
-import { RecursiveBookEntry } from './RecursiveBookEntry';
+import { BookRow } from './BookRow';
 import { ScrollArea } from 'components/ui/scroll-area';
 import { ChevronUp, Skull } from 'lucide-react';
 
-export const PhaseDetail = ({ 
+export const PhaseDetail = ({
   phase,
   bookData,
   onBookReadChange,
@@ -15,8 +16,9 @@ export const PhaseDetail = ({
   onSubItemNotesChange,
   onClose,
   activeFilters = [],
-  className 
+  className
 }) => {
+  const navigate = useNavigate();
   const books = phase.books || [];
 
   // Faction filter (FX-3): when activeFilters is non-empty, show only
@@ -145,19 +147,12 @@ export const PhaseDetail = ({
       {/* Book list */}
       <div className="overflow-y-auto max-h-[80vh]">
         <div className="p-3 pb-40 space-y-2">
-          {visibleBooks.map((book, index) => (
-            <RecursiveBookEntry
-              key={book.title}
+          {visibleBooks.map((book) => (
+            <BookRow
+              key={book.entryId}
               book={book}
-              index={index}
-              bookData={bookData[book.entryId] || {}}
-              onReadChange={(isRead) => onBookReadChange(book.entryId, isRead)}
-              onRatingChange={(rating) => onBookRatingChange(book.entryId, rating)}
-              onNotesChange={(notes) => onBookNotesChange(book.entryId, notes)}
-              onSubItemReadChange={onSubItemReadChange}
-              onSubItemRatingChange={onSubItemRatingChange}
-              onSubItemNotesChange={onSubItemNotesChange}
-              activeFilters={activeFilters}
+              progress={bookData[book.entryId] || {}}
+              onOpen={(entryId) => navigate('/book/' + entryId)}
             />
           ))}
         </div>

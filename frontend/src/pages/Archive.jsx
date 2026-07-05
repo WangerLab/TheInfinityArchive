@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
 import { Archive as ArchiveIcon, Shield, Swords, Bug, Skull } from 'lucide-react';
 import { useArchiveData } from 'context/ArchiveDataContext';
-import { RecursiveBookEntry } from 'components/RecursiveBookEntry';
+import { BookRow } from 'components/BookRow';
 
 // Grand-alliance filter config — mirrors GlobalHeader's allegiance bar so the
 // two surfaces stay semantically identical. ids match books.grandAlliance.
@@ -19,16 +20,8 @@ const allianceFilters = [
 const MOOD_MIN_HITS = 8;
 
 export function Archive() {
-  const {
-    projectData,
-    bookProgress,
-    handleBookReadChange,
-    handleBookRatingChange,
-    handleBookNotesChange,
-    handleSubItemReadChange,
-    handleSubItemRatingChange,
-    handleSubItemNotesChange,
-  } = useArchiveData();
+  const { projectData, bookProgress } = useArchiveData();
+  const navigate = useNavigate();
 
   const [activeAlliance, setActiveAlliance] = useState([]);
   const [activeMoods, setActiveMoods] = useState([]);
@@ -170,18 +163,12 @@ export function Archive() {
           </div>
         ) : (
           <div className="space-y-2">
-            {visibleBooks.map((book, index) => (
-              <RecursiveBookEntry
+            {visibleBooks.map((book) => (
+              <BookRow
                 key={book.entryId}
                 book={book}
-                index={index}
-                bookData={bookProgress[book.entryId] || {}}
-                onReadChange={(isRead) => handleBookReadChange(book.entryId, isRead)}
-                onRatingChange={(rating) => handleBookRatingChange(book.entryId, rating)}
-                onNotesChange={(notes) => handleBookNotesChange(book.entryId, notes)}
-                onSubItemReadChange={handleSubItemReadChange}
-                onSubItemRatingChange={handleSubItemRatingChange}
-                onSubItemNotesChange={handleSubItemNotesChange}
+                progress={bookProgress[book.entryId] || {}}
+                onOpen={(entryId) => navigate('/book/' + entryId)}
               />
             ))}
           </div>
