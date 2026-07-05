@@ -532,3 +532,57 @@ Positioning the five stations and swapping in real artwork. Three lessons:
    skin pass, decided coherently in the v1.3 register. Lesson: when generated
    assets already encode a distinction, a CSS mechanism planned to create that
    distinction becomes redundant — reassess planned skin steps after art lands.
+
+### Sprint Book-Detail: ternary status, entry-level dossier, one-book invariant, hooks-order
+
+The Book-Detail sprint turned the binary progress layer into a ternary state
+machine and added the dossier + current-assignment feature. Points worth carrying:
+
+1. **is_read is a GENERATED column — never write it.** user_progress.is_read is
+   `GENERATED ALWAYS AS (status = 'read')`. The upsert payload writes `status`
+   plus timestamps; writing is_read would be rejected by Postgres. Verified via
+   information_schema before touching the hook. Generalises: before extending a
+   write path, query information_schema.columns for generated/default columns —
+   don't assume a column is writable because it's selectable.
+
+2. **started_at must survive the reading→read transition.** The value of the
+   ternary status is that started_at is set once (first reading OR read) and
+   preserved across later transitions, while completed_at is set only at read.
+   buildPayload keeps a startedAtById map (parallel to completedAtById) and reuses
+   the prior started_at rather than overwriting it. A direct unread→read checkbox
+   click sets both timestamps ~identically; a dossier reading→read flow sets them
+   seconds apart — the timestamp gap is the signature that distinguishes the two
+   paths in the DB.
+
+3. **reading is entry-level only; sub-items stay binary.** An omnibus is "being
+   read" as a whole; individual shorts are just checked off. Not giving sub-items
+   a third state kept the sub-item write path (the phantom-parent-guard, the
+   binary hydration) completely untouched — smaller change surface on the
+   auth-dependent hook, which is exactly where the B-2 black-screen class of bug
+   lives. Match the state model to the mental model AND to the risk surface.
+
+4. **A hook must never sit after a conditional early return (Rules of Hooks).**
+   A sprint prompt placed `useState` after `if (!resolved) return (...)` in
+   BookDetail — that makes the hook conditional and crashes when navigating from a
+   valid book to an unknown entryId. Claude Code caught it and moved the useState
+   above the early return; the plain-value derivations (otherReading, the resolver
+   handlers) legitimately stay below it because they are not hooks. Lesson: all
+   hooks go at the very top of the component, before any conditional return; only
+   non-hook values/functions may follow a guard clause. Chat-authored prompts can
+   get this wrong — the executor must check hook order independently.
+
+5. **Enforce a single-value invariant in the app layer via one atomic write, not
+   a DB constraint.** "Exactly one book reading" is enforced by handleStartReading,
+   which sets the new book to reading AND the previous reading book to read/unread
+   in the SAME setState updater — so two books are never reading mid-flight. No
+   partial-unique-index gymnastics on the DB. A confirmation dialog (three
+   resolutions: mark-old-read / reset-old-unread / cancel) makes the transition a
+   deliberate choice, not a silent automation. Caveat: the invariant only holds
+   because the dossier is the ONLY reading entry point; any second entry point
+   (e.g. a cogitator quick-action) must repeat the "is another book reading" check.
+
+6. **Router-free presentational components stay reusable across mounts.** BookRow
+   and CurrentAssignment take an onOpen(entryId) callback instead of importing
+   useNavigate, so the same component works in a list, in the phase header, and
+   later on the Landing cogitator without knowing about routes. The caller supplies
+   navigation. Costs one line at each call site, buys cross-context reuse.
