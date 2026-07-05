@@ -11,6 +11,7 @@ function entryChanged(next, prev) {
   if (!next) return false;
   if (!prev) return true;
   return (
+    (next.status ?? 'unread') !== (prev.status ?? 'unread') ||
     (next.isRead ?? false) !== (prev.isRead ?? false) ||
     (next.rating ?? 0) !== (prev.rating ?? 0) ||
     (next.notes ?? '') !== (prev.notes ?? '')
@@ -19,7 +20,13 @@ function entryChanged(next, prev) {
 
 function normalizeEntry(e) {
   if (!e) return null;
-  return { isRead: e.isRead, rating: e.rating, notes: e.notes };
+  return {
+    status: e.status,
+    isRead: e.isRead,
+    rating: e.rating,
+    notes: e.notes,
+    startedAt: e.startedAt,
+  };
 }
 
 export function useSupabaseProgress() {
@@ -31,6 +38,7 @@ export function useSupabaseProgress() {
   const idToEntryIdRef = useRef(new Map());
   const idToParentIdRef = useRef(new Map());
   const completedAtByIdRef = useRef(new Map());
+  const startedAtByIdRef = useRef(new Map());
   const lastSyncedRef = useRef({});
   const pendingRef = useRef(null);
   const userIdRef = useRef(null);
@@ -66,24 +74,34 @@ export function useSupabaseProgress() {
 
         const { data: progressRows, error: progressError } = await supabase
           .from('user_progress')
-          .select('book_id, is_read, rating, notes, completed_at');
+          .select('book_id, status, is_read, rating, notes, started_at, completed_at');
         if (progressError) throw progressError;
 
         const next = {};
         const completedAtById = new Map();
+        const startedAtById = new Map();
         for (const row of progressRows || []) {
           completedAtById.set(row.book_id, row.completed_at || null);
+          startedAtById.set(row.book_id, row.started_at || null);
           const entryId = idToEntryId.get(row.book_id);
           if (!entryId) {
             console.warn('[useSupabaseProgress] orphan progress row, unknown book_id:', row.book_id);
             continue;
           }
-          const entry = {
-            isRead: row.is_read ?? false,
-            rating: row.rating ?? 0,
-            notes: row.notes ?? '',
-          };
           const parentId = idToParentId.get(row.book_id);
+          const entry = parentId == null
+            ? {
+                status: row.status ?? (row.is_read ? 'read' : 'unread'),
+                isRead: row.is_read ?? false,
+                rating: row.rating ?? 0,
+                notes: row.notes ?? '',
+                startedAt: row.started_at ?? null,
+              }
+            : {
+                isRead: row.is_read ?? false,
+                rating: row.rating ?? 0,
+                notes: row.notes ?? '',
+              };
           if (parentId == null) {
             const existing = next[entryId] || {};
             next[entryId] = { ...existing, ...entry, contents: existing.contents || {} };
@@ -99,6 +117,7 @@ export function useSupabaseProgress() {
           }
         }
         completedAtByIdRef.current = completedAtById;
+        startedAtByIdRef.current = startedAtById;
         if (cancelled) return;
         lastSyncedRef.current = JSON.parse(JSON.stringify(next));
         setBookProgressState(next);
@@ -124,6 +143,7 @@ export function useSupabaseProgress() {
     try {
       const entryIdToId = entryIdToIdRef.current;
       const completedAtById = completedAtByIdRef.current;
+      const startedAtById = startedAtByIdRef.current;
       const lastSynced = lastSyncedRef.current;
 
       const payloads = [];
@@ -148,16 +168,27 @@ export function useSupabaseProgress() {
           return;
         }
         if (seen.has(bookId)) return;
-        const isRead = nextNorm?.isRead ?? false;
-        const completedAt = isRead
-          ? (completedAtById.get(bookId) || new Date().toISOString())
-          : null;
+        const status = nextNorm?.status ?? (nextNorm?.isRead ? 'read' : 'unread');
+
+        // started_at: einmal gesetzt bei erstem reading/read, danach erhalten.
+        // completed_at: nur bei 'read' gesetzt, sonst null.
+        const prevStartedAt = startedAtById.get(bookId) || null;
+        const startedAt =
+          status === 'unread'
+            ? null
+            : (prevStartedAt || new Date().toISOString());
+        const completedAt =
+          status === 'read'
+            ? (completedAtById.get(bookId) || new Date().toISOString())
+            : null;
+
         payloads.push({
           user_id: userId,
           book_id: bookId,
-          status: isRead ? 'read' : 'unread',
+          status,
           rating: ratingForDb(nextNorm?.rating),
           notes: nextNorm?.notes ?? null,
+          started_at: startedAt,
           completed_at: completedAt,
         });
         seen.add(bookId);
@@ -191,7 +222,10 @@ export function useSupabaseProgress() {
         return;
       }
 
-      for (const p of payloads) completedAtById.set(p.book_id, p.completed_at);
+      for (const p of payloads) {
+        completedAtById.set(p.book_id, p.completed_at);
+        startedAtById.set(p.book_id, p.started_at);
+      }
       lastSyncedRef.current = JSON.parse(JSON.stringify(next));
       setError(null);
       if (pendingRef.current === next) {

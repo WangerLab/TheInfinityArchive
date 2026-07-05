@@ -125,14 +125,27 @@ export function ArchiveDataProvider({ children }) {
   }, [bookProgress]);
 
   // Progress handlers
+  const handleBookStatusChange = useCallback((entryId, status) => {
+    setBookProgress(prev => ({
+      ...prev,
+      [entryId]: {
+        ...prev[entryId],
+        status,
+        isRead: status === 'read',
+        rating: status === 'read' ? (prev[entryId]?.rating || 0) : 0,
+      },
+    }));
+  }, [setBookProgress]);
+
   const handleBookReadChange = useCallback((entryId, isRead) => {
     setBookProgress(prev => ({
       ...prev,
       [entryId]: {
         ...prev[entryId],
+        status: isRead ? 'read' : 'unread',
         isRead,
-        rating: isRead ? (prev[entryId]?.rating || 0) : 0
-      }
+        rating: isRead ? (prev[entryId]?.rating || 0) : 0,
+      },
     }));
   }, [setBookProgress]);
 
@@ -244,6 +257,7 @@ export function ArchiveDataProvider({ children }) {
     globalStats,
     getPhaseStats,
     handleBookReadChange,
+    handleBookStatusChange,
     handleBookRatingChange,
     handleBookNotesChange,
     handleSubItemReadChange,
