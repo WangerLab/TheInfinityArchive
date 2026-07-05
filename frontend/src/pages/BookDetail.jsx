@@ -35,10 +35,9 @@ export function BookDetail() {
   const { entryId } = useParams();
   const navigate = useNavigate();
   const {
-    projectData, bookProgress,
+    projectData, bookProgress, getEntryProgress,
     handleBookStatusChange, handleBookRatingChange,
     handleBookNotesChange, handleBookPersonalTakeChange, isReflectionPending,
-    handleSubItemReadChange,
     currentReading, handleStartReading,
   } = useArchiveData();
 
@@ -80,21 +79,12 @@ export function BookDetail() {
   const progress = bookProgress[book.entryId] || {};
   const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
 
-  // Omnibus status derives from sub-item completion (sub-items stay binary);
-  // single books use their own ternary status.
-  const isSubRead = (d) => (typeof d === 'boolean' ? d : d?.isRead || false);
-  const childRead = hasContents
-    ? book.contents.filter((c) => isSubRead(progress.contents?.[c.entryId])).length
-    : 0;
-  const childTotal = hasContents ? book.contents.length : 0;
-  const omnibusComplete = hasContents && childTotal > 0 && childRead === childTotal;
-
-  const status = hasContents
-    ? (omnibusComplete ? 'read' : 'unread')
-    : (progress.status ?? (progress.isRead ? 'read' : 'unread'));
+  // Single source of truth for status (ternary for single books, derived
+  // ternary for omnibuses from flat sub-item statuses) — see getEntryProgress.
+  const ep = getEntryProgress(book);
+  const { status, childRead, childTotal, rating } = ep;
 
   const meta = STATUS_META[status] || STATUS_META.unread;
-  const rating = progress.rating || 0;
 
   // FILE REF line: Phase · Series · Position
   const fileRef = [
@@ -294,12 +284,12 @@ export function BookDetail() {
               </h2>
               <ul className="space-y-1.5">
                 {book.contents.map((c) => {
-                  const read = isSubRead(progress.contents?.[c.entryId]);
+                  const read = getEntryProgress(c).status === 'read';
                   return (
                     <li key={c.entryId} className="flex items-center gap-2 -mx-2 rounded-md hover:bg-slate-800/50">
                       <button
                         type="button"
-                        onClick={() => handleSubItemReadChange(book.entryId, c.entryId, !read)}
+                        onClick={() => handleBookStatusChange(c.entryId, read ? 'unread' : 'read')}
                         className="shrink-0 px-2 py-1.5 -mr-2 transition-colors active:scale-[0.99]"
                       >
                         {read
