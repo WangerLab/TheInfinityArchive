@@ -36,6 +36,7 @@ export function BookDetail() {
   const {
     projectData, bookProgress,
     handleBookStatusChange, handleBookRatingChange,
+    handleSubItemReadChange,
   } = useArchiveData();
 
   const resolved = useMemo(
@@ -206,19 +207,28 @@ export function BookDetail() {
                 {book.contents.map((c) => {
                   const read = isSubRead(progress.contents?.[c.entryId]);
                   return (
-                    <li key={c.entryId} className="flex items-center gap-2 text-sm">
-                      {read
-                        ? <Check className="w-4 h-4 text-auspex shrink-0" />
-                        : <span className="w-4 h-4 shrink-0 rounded border border-slate-600" />}
-                      <span className={cn(read ? 'text-auspex' : 'text-slate-300', c.type === 'short' && 'italic')}>
-                        {c.title}
-                      </span>
-                      {c.series?.name && (
-                        <span className="inline-flex items-center gap-1 text-[10px] text-gold/70 ml-auto shrink-0">
-                          <BookMarked className="w-3 h-3" />
-                          {c.series.name}
+                    <li key={c.entryId}>
+                      <button
+                        type="button"
+                        onClick={() => handleSubItemReadChange(book.entryId, c.entryId, !read)}
+                        className={cn(
+                          'w-full text-left flex items-center gap-2 text-sm rounded-md px-2 py-1.5',
+                          '-mx-2 transition-colors hover:bg-slate-800/50 active:scale-[0.99]'
+                        )}
+                      >
+                        {read
+                          ? <Check className="w-4 h-4 text-auspex shrink-0" />
+                          : <span className="w-4 h-4 shrink-0 rounded border border-slate-600" />}
+                        <span className={cn(read ? 'text-auspex' : 'text-slate-300', c.type === 'short' && 'italic')}>
+                          {c.title}
                         </span>
-                      )}
+                        {c.series?.name && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-gold/70 ml-auto shrink-0">
+                            <BookMarked className="w-3 h-3" />
+                            {c.series.name}
+                          </span>
+                        )}
+                      </button>
                     </li>
                   );
                 })}
