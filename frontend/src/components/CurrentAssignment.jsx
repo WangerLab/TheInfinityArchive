@@ -30,7 +30,9 @@ export function CurrentAssignment({ current, onOpen, className }) {
           <span className="font-display text-base text-gold truncate">{book.title}</span>
         </div>
         <p className="text-[11px] text-slate-400 font-data mt-0.5 truncate">
-          PHASE {phase.id}{book.author ? `  ·  ${book.author}` : ''}
+          {book.parentTitle
+            ? `${book.parentTitle}  ·  PHASE ${phase.id}`
+            : `PHASE ${phase.id}${book.author ? `  ·  ${book.author}` : ''}`}
         </p>
       </div>
       <ChevronRight className="w-5 h-5 text-gold/60 shrink-0" />

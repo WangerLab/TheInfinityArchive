@@ -80,9 +80,11 @@ export function ArchiveDataProvider({ children }) {
     };
   }, [projectData, bookProgress]);
 
-  // The single "current assignment" — the entry-level book with status='reading'.
+  // The single "current assignment" — the entry OR sub-item with status='reading'.
   // The user reads one book at a time; if multiple are reading (invariant not yet
-  // enforced), pick the most recently started. Returns { book, phase } | null.
+  // enforced), pick the most recently started, globally across entries and
+  // sub-items. Returns { book, phase } | null. A sub-item winner carries
+  // parentTitle/parentEntryId for display context.
   const currentReading = useMemo(() => {
     if (!projectData) return null;
     let best = null;
@@ -90,9 +92,22 @@ export function ArchiveDataProvider({ children }) {
     for (const phase of projectData.phases) {
       for (const book of phase.books) {
         const p = bookProgress[book.entryId];
-        if (p?.status !== 'reading') continue;
-        const t = p.startedAt ? Date.parse(p.startedAt) : 0;
-        if (t >= bestStarted) { bestStarted = t; best = { book, phase }; }
+        if (p?.status === 'reading') {
+          const t = p.startedAt ? Date.parse(p.startedAt) : 0;
+          if (t >= bestStarted) { bestStarted = t; best = { book, phase }; }
+        }
+
+        if (Array.isArray(book.contents)) {
+          for (const sub of book.contents) {
+            const sp = bookProgress[sub.entryId];
+            if (sp?.status !== 'reading') continue;
+            const t = sp.startedAt ? Date.parse(sp.startedAt) : 0;
+            if (t >= bestStarted) {
+              bestStarted = t;
+              best = { book: { ...sub, parentTitle: book.title, parentEntryId: book.entryId }, phase };
+            }
+          }
+        }
       }
     }
     return best;
