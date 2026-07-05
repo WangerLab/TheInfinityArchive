@@ -80,6 +80,24 @@ export function ArchiveDataProvider({ children }) {
     };
   }, [projectData, bookProgress]);
 
+  // The single "current assignment" — the entry-level book with status='reading'.
+  // The user reads one book at a time; if multiple are reading (invariant not yet
+  // enforced), pick the most recently started. Returns { book, phase } | null.
+  const currentReading = useMemo(() => {
+    if (!projectData) return null;
+    let best = null;
+    let bestStarted = -Infinity;
+    for (const phase of projectData.phases) {
+      for (const book of phase.books) {
+        const p = bookProgress[book.entryId];
+        if (p?.status !== 'reading') continue;
+        const t = p.startedAt ? Date.parse(p.startedAt) : 0;
+        if (t >= bestStarted) { bestStarted = t; best = { book, phase }; }
+      }
+    }
+    return best;
+  }, [projectData, bookProgress]);
+
   // Per-phase stats
   const getPhaseStats = useCallback((phase) => {
     const books = phase.books || [];
@@ -255,6 +273,7 @@ export function ArchiveDataProvider({ children }) {
     projectData,
     bookProgress,
     globalStats,
+    currentReading,
     getPhaseStats,
     handleBookReadChange,
     handleBookStatusChange,

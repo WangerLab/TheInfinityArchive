@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GlobalHeader } from 'components/GlobalHeader';
 import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
+import { CurrentAssignment } from 'components/CurrentAssignment';
 import { useArchiveData } from 'context/ArchiveDataContext';
 
 export function PhaseView() {
@@ -9,6 +11,7 @@ export function PhaseView() {
     projectData,
     bookProgress,
     globalStats,
+    currentReading,
     getPhaseStats,
     handleBookReadChange,
     handleBookRatingChange,
@@ -18,6 +21,7 @@ export function PhaseView() {
     handleSubItemNotesChange,
   } = useArchiveData();
 
+  const navigate = useNavigate();
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
 
@@ -49,6 +53,14 @@ export function PhaseView() {
       />
 
       <main className="px-4 py-4 pb-32">
+        {/* Current assignment */}
+        <div className="mb-4">
+          <CurrentAssignment
+            current={currentReading}
+            onOpen={(entryId) => navigate('/book/' + entryId)}
+          />
+        </div>
+
         {/* Description */}
         <div className="grimdark-panel rounded-lg p-4 mb-4">
           <p className="text-sm text-slate-200 leading-relaxed font-medium">
