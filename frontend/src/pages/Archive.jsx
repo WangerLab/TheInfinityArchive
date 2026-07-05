@@ -20,7 +20,7 @@ const allianceFilters = [
 const MOOD_MIN_HITS = 8;
 
 export function Archive() {
-  const { projectData, bookProgress } = useArchiveData();
+  const { projectData, getEntryProgress } = useArchiveData();
   const navigate = useNavigate();
 
   const [activeAlliance, setActiveAlliance] = useState([]);
@@ -167,7 +167,7 @@ export function Archive() {
               <BookRow
                 key={book.entryId}
                 book={book}
-                progress={bookProgress[book.entryId] || {}}
+                entryProgress={getEntryProgress(book)}
                 onOpen={(entryId) => navigate('/book/' + entryId)}
               />
             ))}

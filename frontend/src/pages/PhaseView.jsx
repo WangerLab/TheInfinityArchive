@@ -13,6 +13,7 @@ export function PhaseView() {
     globalStats,
     currentReading,
     getPhaseStats,
+    getEntryProgress,
     handleBookReadChange,
     handleBookRatingChange,
     handleBookNotesChange,
@@ -104,6 +105,7 @@ export function PhaseView() {
                   <PhaseDetail
                     phase={phase}
                     bookData={bookProgress}
+                    getEntryProgress={getEntryProgress}
                     onBookReadChange={handleBookReadChange}
                     onBookRatingChange={handleBookRatingChange}
                     onBookNotesChange={handleBookNotesChange}

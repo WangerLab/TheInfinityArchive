@@ -6,29 +6,18 @@ import { SkullRating } from './SkullRating';
 
 // Lean list row — a status GLIMPSE, not depth. Click opens the dossier via
 // onOpen(entryId); the row itself imports no router. Depth (summary, mood
-// tags, sub-items) lives in the dossier, not here.
+// tags, sub-items) lives in the dossier, not here. Purely presentational:
+// status derivation lives in the data layer (see getEntryProgress).
 //
-// progress shape (per entryId, from the data layer):
-//   { status, isRead, rating, startedAt, contents? }  — entry-level
-// For omnibuses, sub-item read state lives in progress.contents[subEntryId].
-export function BookRow({ book, progress = {}, onOpen }) {
+// entryProgress shape (from ArchiveDataContext.getEntryProgress(book)):
+//   { status, childRead, childTotal, rating }
+export function BookRow({ book, entryProgress, onOpen }) {
   const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
 
-  // Omnibus completion from sub-item progress (sub-items stay binary).
-  const isSubRead = (d) => (typeof d === 'boolean' ? d : d?.isRead || false);
-  const childRead = hasContents
-    ? book.contents.filter((c) => isSubRead(progress.contents?.[c.entryId])).length
-    : 0;
-  const childTotal = hasContents ? book.contents.length : 0;
-  const omnibusComplete = hasContents && childTotal > 0 && childRead === childTotal;
-
-  const status = hasContents
-    ? (omnibusComplete ? 'read' : 'unread')
-    : (progress.status ?? (progress.isRead ? 'read' : 'unread'));
-
+  const { status, childRead, childTotal, rating } = entryProgress;
   const isRead = status === 'read';
   const isReading = status === 'reading';
-  const rating = progress.rating || 0;
+  const omnibusComplete = hasContents && childTotal > 0 && childRead === childTotal;
 
   return (
     <button

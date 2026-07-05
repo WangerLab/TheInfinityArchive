@@ -8,6 +8,7 @@ import { ChevronUp, Skull } from 'lucide-react';
 export const PhaseDetail = ({
   phase,
   bookData,
+  getEntryProgress,
   onBookReadChange,
   onBookRatingChange,
   onBookNotesChange,
@@ -151,7 +152,7 @@ export const PhaseDetail = ({
             <BookRow
               key={book.entryId}
               book={book}
-              progress={bookData[book.entryId] || {}}
+              entryProgress={getEntryProgress(book)}
               onOpen={(entryId) => navigate('/book/' + entryId)}
             />
           ))}

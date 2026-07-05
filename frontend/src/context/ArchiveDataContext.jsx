@@ -123,6 +123,39 @@ export function ArchiveDataProvider({ children }) {
     return p.status === 'read' && take.length === 0;
   }, [bookProgress]);
 
+  // The single derivation of a book's displayed status. Single books read their
+  // own flat entry; omnibuses derive a TERNARY status from their sub-items' flat
+  // progress (sub-items are stored flat since the Commit-1 bridge). The parent's
+  // own status is never written, only derived here — always call this instead of
+  // re-deriving in a view component.
+  const getEntryProgress = useCallback((book) => {
+    const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
+
+    if (!hasContents) {
+      const p = bookProgress[book.entryId] || {};
+      return {
+        status: p.status ?? (p.isRead ? 'read' : 'unread'),
+        childRead: 0,
+        childTotal: 0,
+        rating: p.rating ?? 0,
+      };
+    }
+
+    const subs = book.contents;
+    const childTotal = subs.length;
+    const flat = (c) => bookProgress[c.entryId] || {};
+    const isRead = (c) => (flat(c).status ?? (flat(c).isRead ? 'read' : 'unread')) === 'read';
+    const isReading = (c) => flat(c).status === 'reading';
+    const childRead = subs.filter(isRead).length;
+    const anyReading = subs.some(isReading);
+    const status =
+      childTotal > 0 && childRead === childTotal ? 'read'
+      : (anyReading || childRead > 0) ? 'reading'
+      : 'unread';
+
+    return { status, childRead, childTotal, rating: 0 };
+  }, [bookProgress]);
+
   // Per-phase stats
   const getPhaseStats = useCallback((phase) => {
     const books = phase.books || [];
@@ -333,6 +366,7 @@ export function ArchiveDataProvider({ children }) {
     globalStats,
     currentReading,
     getPhaseStats,
+    getEntryProgress,
     handleBookReadChange,
     handleBookStatusChange,
     handleStartReading,
