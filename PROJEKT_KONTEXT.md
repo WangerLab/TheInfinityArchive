@@ -15,6 +15,46 @@ architecture.
 
 ## Current Sprint
 
+**Sprint C — Reflection Capture (COMPLETE)**
+
+Added a personal reflection layer to the READ dossier. Four commits, each
+live-verified on Vercel:
+
+- `1273670` docs(db): record the personal_take migration. One additive nullable
+  column on user_progress; DDL applied live via Supabase MCP, recorded in
+  db/migrations/C-1_user_progress_personal_take.sql for traceability. No backfill —
+  all existing READ books become legitimately PENDING reflection.
+- `61ea507` progress: thread personal_take through useSupabaseProgress, 1:1 parallel
+  to notes (SELECT, hydration entry-branch, entryChanged, normalizeEntry, payload).
+  Entry-level only; the sub-item hydration branch and isPureContainer stayed
+  byte-identical — reflection is entry-level like reading, keeping the risky
+  auth-dependent sub-item write path untouched.
+- `df8cff4` context: handleBookPersonalTakeChange + derived isReflectionPending
+  helper (status='read' AND personal_take empty), both router-free. handleBookNotes-
+  Change already existed and was reused unchanged.
+- `9c54981` dossier: READ block now shows PERSONAL TAKE (verdict) + MARGINALIA
+  (reuses notes) textareas, both commit-on-blur, plus a soft "REFLECTION PENDING"
+  badge gated on isReflectionPending. Reflection is a soft trigger, not a hard gate —
+  marking read never blocks on it; the badge simply persists until a take is written.
+  The `notes` column is now surfaced in the UI for the first time.
+
+DB state after sprint: user_progress carries notes + personal_take (both nullable,
+both entry-level in practice). PENDING is derived, never stored. Vercel production
+READY on 9c54981 (verified by Tim: both fields render on READ books, badge clears
+after a take + reload, MARGINALIA does not affect the badge, UNREAD/READING books
+show no reflection block).
+
+Deferred / carried forward: the NotesModal footer still reads "LOCAL STORAGE"
+(stale since B-2 — progress is Supabase-backed); harmless dead label, folds into a
+later cleanup. The two Book-Detail cleanups from the prior sprint remain open
+(delete unused RecursiveBookEntry.jsx; drop dead activeFilters/handler props from
+PhaseDetail's signature). Instruction-doc conflict noted for next Mobile session:
+the closing Mobile paragraph (Claude Code runs gh pr merge --squash itself) conflicts
+with the Mobile mode rules above it (Tim merges via GitHub Web UI) — must be resolved
+before the next Mobile sprint; irrelevant on Desktop.
+
+---
+
 **Book-Detail / Dossier — ternary status + one-book invariant (COMPLETE)**
 
 Turned the binary progress layer into a ternary state machine

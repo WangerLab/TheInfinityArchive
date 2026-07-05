@@ -586,3 +586,37 @@ machine and added the dossier + current-assignment feature. Points worth carryin
    useNavigate, so the same component works in a list, in the phase header, and
    later on the Landing cogitator without knowing about routes. The caller supplies
    navigation. Costs one line at each call site, buys cross-context reuse.
+
+### Sprint C: reflection capture — reuse the dead column, derive the marker
+
+Sprint C added personal_take (distilled verdict) to user_progress and surfaced
+reflection in the READ dossier. Points worth carrying:
+
+1. **Reuse a wired-but-dead column before adding a parallel one.** user_progress
+   already had a `notes` column, fully threaded through the hook (hydration,
+   entryChanged, buildPayload) but never surfaced in any UI. Sprint C added ONE
+   new column (personal_take) for the distilled verdict and reused `notes` as the
+   loose marginalia field, rather than adding both personal_take AND free_notes.
+   Same instinct as the G-series normalise-don't-duplicate lesson: a second
+   identically-typed dead column next to an existing one is duplication. Before
+   adding a field, grep the hook — the write path may already carry it.
+
+2. **The context handler for it may already exist too.** handleBookNotesChange was
+   already defined and exported in ArchiveDataContext, wired to nothing. Sprint C
+   only added handleBookPersonalTakeChange; the notes handler needed zero work.
+   Check the context exports before writing a "new" handler.
+
+3. **Derive the PENDING marker, never store it.** isReflectionPending(entryId) is
+   `status === 'read' && personal_take is empty`, computed in context from
+   bookProgress — not a DB column, not a stored flag. Same principle as the is_read
+   generated column: a marker that is derived can never diverge from its source. The
+   badge clears reactively the instant a take is written, because the blur-commit
+   updates bookProgress and the derivation re-runs. No manual clearing, no race.
+
+4. **Inline free-text commits on blur, not on change.** The two dossier textareas
+   hold local state (useState) and call the context handler onBlur, mirroring the
+   NotesModal local-state pattern. One write per edit session, then the hook's own
+   600ms debounce on top — not one write per keystroke. For inline (non-modal)
+   fields, blur is the commit point; local state is seeded from bookProgress via a
+   useEffect that lives ABOVE the early return (Rules of Hooks — the Book-Detail
+   sprint's hook-order lesson applies to every new hook added to that component).
