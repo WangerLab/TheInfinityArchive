@@ -164,19 +164,17 @@ export function ArchiveDataProvider({ children }) {
     let totalItems = 0;
     let completedItems = 0;
 
-    const isSubItemRead = (data) => {
-      if (typeof data === 'boolean') return data;
-      return data?.isRead || false;
+    const isFlatRead = (entryId) => {
+      const p = bookProgress[entryId] || {};
+      return (p.status ?? (p.isRead ? 'read' : 'unread')) === 'read';
     };
 
     books.forEach(book => {
-      const progress = bookProgress[book.entryId];
-
       if (book.contents && book.contents.length > 0) {
         book.contents.forEach(subItem => {
           totalPages += subItem.pages || 0;
           totalItems++;
-          if (isSubItemRead(progress?.contents?.[subItem.entryId])) {
+          if (isFlatRead(subItem.entryId)) {
             readPages += subItem.pages || 0;
             completedItems++;
           }
@@ -184,7 +182,7 @@ export function ArchiveDataProvider({ children }) {
       } else {
         totalPages += book.pages || 0;
         totalItems++;
-        if (progress?.isRead) {
+        if (isFlatRead(book.entryId)) {
           readPages += book.pages || 0;
           completedItems++;
         }
