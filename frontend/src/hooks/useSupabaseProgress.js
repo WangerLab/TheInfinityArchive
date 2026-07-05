@@ -14,7 +14,8 @@ function entryChanged(next, prev) {
     (next.status ?? 'unread') !== (prev.status ?? 'unread') ||
     (next.isRead ?? false) !== (prev.isRead ?? false) ||
     (next.rating ?? 0) !== (prev.rating ?? 0) ||
-    (next.notes ?? '') !== (prev.notes ?? '')
+    (next.notes ?? '') !== (prev.notes ?? '') ||
+    (next.personalTake ?? '') !== (prev.personalTake ?? '')
   );
 }
 
@@ -25,6 +26,7 @@ function normalizeEntry(e) {
     isRead: e.isRead,
     rating: e.rating,
     notes: e.notes,
+    personalTake: e.personalTake,
     startedAt: e.startedAt,
   };
 }
@@ -74,7 +76,7 @@ export function useSupabaseProgress() {
 
         const { data: progressRows, error: progressError } = await supabase
           .from('user_progress')
-          .select('book_id, status, is_read, rating, notes, started_at, completed_at');
+          .select('book_id, status, is_read, rating, notes, personal_take, started_at, completed_at');
         if (progressError) throw progressError;
 
         const next = {};
@@ -95,6 +97,7 @@ export function useSupabaseProgress() {
                 isRead: row.is_read ?? false,
                 rating: row.rating ?? 0,
                 notes: row.notes ?? '',
+                personalTake: row.personal_take ?? '',
                 startedAt: row.started_at ?? null,
               }
             : {
@@ -188,6 +191,7 @@ export function useSupabaseProgress() {
           status,
           rating: ratingForDb(nextNorm?.rating),
           notes: nextNorm?.notes ?? null,
+          personal_take: nextNorm?.personalTake ?? null,
           started_at: startedAt,
           completed_at: completedAt,
         });
