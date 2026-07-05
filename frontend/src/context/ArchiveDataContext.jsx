@@ -98,6 +98,16 @@ export function ArchiveDataProvider({ children }) {
     return best;
   }, [projectData, bookProgress]);
 
+  // A read book with no personal_take yet is PENDING reflection. Derived, never
+  // stored — same principle as is_read: a marker must not diverge from its source.
+  // Entry-level only (reflection is entry-level, like reading status).
+  const isReflectionPending = useCallback((entryId) => {
+    const p = bookProgress[entryId];
+    if (!p) return false;
+    const take = (p.personalTake ?? '').trim();
+    return p.status === 'read' && take.length === 0;
+  }, [bookProgress]);
+
   // Per-phase stats
   const getPhaseStats = useCallback((phase) => {
     const books = phase.books || [];
@@ -249,6 +259,16 @@ export function ArchiveDataProvider({ children }) {
     }));
   }, [setBookProgress]);
 
+  const handleBookPersonalTakeChange = useCallback((entryId, personalTake) => {
+    setBookProgress(prev => ({
+      ...prev,
+      [entryId]: {
+        ...prev[entryId],
+        personalTake
+      }
+    }));
+  }, [setBookProgress]);
+
   // Loading state — Cogitator boot
   if (loading || progressLoading) {
     return (
@@ -303,6 +323,8 @@ export function ArchiveDataProvider({ children }) {
     handleStartReading,
     handleBookRatingChange,
     handleBookNotesChange,
+    handleBookPersonalTakeChange,
+    isReflectionPending,
     handleSubItemReadChange,
     handleSubItemRatingChange,
     handleSubItemNotesChange,
