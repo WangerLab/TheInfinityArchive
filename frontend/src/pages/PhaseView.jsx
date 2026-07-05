@@ -17,9 +17,6 @@ export function PhaseView() {
     handleBookReadChange,
     handleBookRatingChange,
     handleBookNotesChange,
-    handleSubItemReadChange,
-    handleSubItemRatingChange,
-    handleSubItemNotesChange,
   } = useArchiveData();
 
   const navigate = useNavigate();
@@ -109,9 +106,6 @@ export function PhaseView() {
                     onBookReadChange={handleBookReadChange}
                     onBookRatingChange={handleBookRatingChange}
                     onBookNotesChange={handleBookNotesChange}
-                    onSubItemReadChange={handleSubItemReadChange}
-                    onSubItemRatingChange={handleSubItemRatingChange}
-                    onSubItemNotesChange={handleSubItemNotesChange}
                     onClose={() => setExpandedPhase(null)}
                     activeFilters={activeFilters}
                   />
