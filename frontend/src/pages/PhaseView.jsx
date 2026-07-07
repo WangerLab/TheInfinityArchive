@@ -35,19 +35,13 @@ export function PhaseView() {
         completedItems={globalStats.completedItems}
         totalRated={globalStats.totalRated}
         averageRating={globalStats.averageRating}
-      />
+      >
+        <CurrentAssignment
+          current={currentReading}
+          onOpen={(entryId) => navigate('/book/' + entryId)}
+        />
 
-      <main className="px-4 py-4 pb-32">
-        {/* Current assignment */}
-        <div className="mb-4">
-          <CurrentAssignment
-            current={currentReading}
-            onOpen={(entryId) => navigate('/book/' + entryId)}
-          />
-        </div>
-
-        {/* Description */}
-        <div className="grimdark-panel rounded-lg p-4 mb-4">
+        <div className="grimdark-panel rounded-lg p-4">
           <p className="text-sm text-slate-200 leading-relaxed font-medium">
             <span className="text-gold font-bold">{'>'}</span> {projectData.description}
           </p>
@@ -59,7 +53,9 @@ export function PhaseView() {
             <span>{globalStats.totalItems} ITEMS</span>
           </div>
         </div>
+      </GlobalHeader>
 
+      <main className="px-4 py-4 pb-32">
         {/* Phase cards */}
         <div className="space-y-3">
           {projectData.phases.map((phase) => {

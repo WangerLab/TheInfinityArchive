@@ -11,6 +11,7 @@ export const GlobalHeader = ({
   completedItems = 0, 
   totalRated = 0,
   averageRating = 0,
+  children,
   className
 }) => {
   const progress = totalPages > 0 ? (readPages / totalPages) * 100 : 0;
@@ -109,6 +110,12 @@ export const GlobalHeader = ({
           </div>
         </div>
       </div>
+
+      {children && (
+        <div className="px-4 pb-3 pt-3 space-y-3 border-t border-gold/15">
+          {children}
+        </div>
+      )}
 
       {/* Bottom accent */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
