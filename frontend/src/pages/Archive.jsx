@@ -4,6 +4,7 @@ import { cn } from 'lib/utils';
 import { Archive as ArchiveIcon, Shield, Swords, Bug, Skull } from 'lucide-react';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { BookRow } from 'components/BookRow';
+import { ViewBackdrop } from 'components/ViewBackdrop';
 
 // Grand-alliance filter config — mirrors GlobalHeader's allegiance bar so the
 // two surfaces stay semantically identical. ids match books.grandAlliance.
@@ -81,7 +82,7 @@ export function Archive() {
   const isFiltered = activeAlliance.length > 0 || activeMoods.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
+    <ViewBackdrop art="/Operator_console_with_sweep-scope_2K_202607041801.jpeg" accent="auspex">
       <main className="px-4 py-4 pb-32">
         {/* Header */}
         <div className="grimdark-panel rounded-lg p-4 mb-4">
@@ -174,6 +175,6 @@ export function Archive() {
           </div>
         )}
       </main>
-    </div>
+    </ViewBackdrop>
   );
 }
