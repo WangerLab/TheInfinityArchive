@@ -13,20 +13,10 @@ export const PhaseDetail = ({
   onBookRatingChange,
   onBookNotesChange,
   onClose,
-  activeFilters = [],
   className
 }) => {
   const navigate = useNavigate();
   const books = phase.books || [];
-
-  // Faction filter (FX-3): when activeFilters is non-empty, show only
-  // books whose own grandAlliance is selected. Rule A — per-row, parents
-  // match on their own alliance; children are not individually inspected.
-  // Stats below intentionally use the FULL list, not this filtered view.
-  const visibleBooks =
-    activeFilters.length === 0
-      ? books
-      : books.filter((book) => activeFilters.includes(book.grandAlliance));
 
   // Calculate stats recursively
   const calculateStats = () => {
@@ -143,7 +133,7 @@ export const PhaseDetail = ({
       {/* Book list */}
       <div className="overflow-y-auto max-h-[80vh]">
         <div className="p-3 pb-40 space-y-2">
-          {visibleBooks.map((book) => (
+          {books.map((book) => (
             <BookRow
               key={book.entryId}
               book={book}

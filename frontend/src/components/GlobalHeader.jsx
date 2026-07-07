@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { ProgressRing } from './ProgressRing';
-import { Shield, Swords, Bug, FileText, Skull, Zap, Award, LogOut } from 'lucide-react';
+import { FileText, Skull, Zap, Award, LogOut } from 'lucide-react';
 import { supabase } from 'lib/supabase';
 
 export const GlobalHeader = ({ 
@@ -11,18 +11,9 @@ export const GlobalHeader = ({
   completedItems = 0, 
   totalRated = 0,
   averageRating = 0,
-  activeFilters = [],
-  onFilterToggle,
-  className 
+  className
 }) => {
   const progress = totalPages > 0 ? (readPages / totalPages) * 100 : 0;
-
-  const filters = [
-    { id: 'imperium', label: 'IMPERIUM', icon: Shield, color: 'border-gold text-gold hover:bg-gold/20' },
-    { id: 'chaos', label: 'CHAOS', icon: Swords, color: 'border-purple-500 text-purple-400 hover:bg-purple-500/20' },
-    { id: 'xenos', label: 'XENOS', icon: Bug, color: 'border-plasma text-plasma hover:bg-plasma/20' },
-    { id: 'unaligned', label: 'UNALIGNED', icon: Skull, color: 'border-slate-500 text-slate-400 hover:bg-slate-500/20' },
-  ];
 
   const formatNumber = (num) => num.toLocaleString();
 
@@ -117,37 +108,8 @@ export const GlobalHeader = ({
             />
           </div>
         </div>
-
-        {/* Grand Alliance Filters */}
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] text-slate-500 font-tactical tracking-[0.15em] mr-1">
-            ALLEGIANCE:
-          </span>
-          {filters.map((filter) => {
-            const Icon = filter.icon;
-            const isActive = activeFilters.length === 0 || activeFilters.includes(filter.id);
-            
-            return (
-              <button
-                key={filter.id}
-                onClick={() => onFilterToggle(filter.id)}
-                className={cn(
-                  "touch-target flex items-center gap-1.5 px-3 py-1.5 rounded-md",
-                  "border-2 transition-all duration-200",
-                  "text-[10px] font-bold tracking-wider",
-                  "active:scale-95",
-                  filter.color,
-                  !isActive && "opacity-25 grayscale"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{filter.label}</span>
-              </button>
-            );
-          })}
-        </div>
       </div>
-      
+
       {/* Bottom accent */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
     </header>

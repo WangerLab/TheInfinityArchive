@@ -21,17 +21,6 @@ export function PhaseView() {
 
   const navigate = useNavigate();
   const [expandedPhase, setExpandedPhase] = useState(null);
-  const [activeFilters, setActiveFilters] = useState([]);
-
-  const handleFilterToggle = useCallback((faction) => {
-    setActiveFilters(prev => {
-      if (prev.length === 0) return [faction];
-      if (prev.includes(faction)) {
-        return prev.filter(f => f !== faction);
-      }
-      return [...prev, faction];
-    });
-  }, []);
 
   const handlePhaseClick = useCallback((phaseId) => {
     setExpandedPhase(prev => prev === phaseId ? null : phaseId);
@@ -46,8 +35,6 @@ export function PhaseView() {
         completedItems={globalStats.completedItems}
         totalRated={globalStats.totalRated}
         averageRating={globalStats.averageRating}
-        activeFilters={activeFilters}
-        onFilterToggle={handleFilterToggle}
       />
 
       <main className="px-4 py-4 pb-32">
@@ -107,7 +94,6 @@ export function PhaseView() {
                     onBookRatingChange={handleBookRatingChange}
                     onBookNotesChange={handleBookNotesChange}
                     onClose={() => setExpandedPhase(null)}
-                    activeFilters={activeFilters}
                   />
                 )}
               </div>
