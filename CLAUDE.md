@@ -654,3 +654,42 @@ retains data access and navigation. Props-through (giving the header currentRead
 when a filter is removed and its host component is rendered in exactly one place,
 delete the markup from the host, don't just stop passing the props — verified via
 grep that GlobalHeader had no other render site before removing its ALLEGIANCE block.
+
+### Sprint ViewBackdrop-Shell: one backdrop primitive, per-view accent, skeleton before skin
+
+Introduced `components/ViewBackdrop.jsx` — a `position: fixed`, full-viewport station
+photo rendered behind the view (content scrolls over it: "window into the room"). Props
+are only `art` (a `/public` JPEG path) and `accent` (`'auspex' | 'plasma' | 'gold'`).
+Blur and overlay are deliberately NOT props but fixed module constants
+(`BACKDROP_BLUR = '2px'`, `OVERLAY_OPACITY = 0.3`) — the single tuning point, so no route
+can drift out of the shared system. The fixed layer sits at `zIndex: -10`, `pointer-events:
+none`; `.scanlines` (global, z 9997/9998) stays on top as intended.
+
+Locked backdrop tokens (verified live): backdrop blur `2px`, overlay `hsl(var(--void) /
+0.3)`, and `.grimdark-panel` made translucent — `card 0.6 / void 0.68` alpha fill plus
+`backdrop-filter: blur(6px)`. Data legibility is carried by the panel's own translucent
+fill, INDEPENDENT of the global overlay; that is why a light 30% overlay reads fine without
+hurting readability. The opaque page root (`bg-slate-950`) was what previously hid any
+backdrop — the ViewBackdrop swap removes it, and panels stay legible because they own their
+fill.
+
+Accent is plumbed as CSS vars on the wrapper (`--acc: hsl(var(--{accent}))`, `--glow:
+hsl(var(--{accent}) / 0.5)`). Nothing consumes them yet — intentional wiring for the Skin-Pass.
+
+Wiring pattern, two shapes: content views (Archive, Phases) swap their `min-h-screen
+bg-slate-950 … scanlines` root directly for `<ViewBackdrop>` (which owns
+min-h-screen / scanlines / safe-bottom). Centered placeholder views (Strategium, Map,
+Service Record) keep an inner `min-h-screen flex flex-col items-center justify-center px-6`
+wrapper INSIDE `<ViewBackdrop>`, because ViewBackdrop's own root is a block, not a flex
+centering container.
+
+Accents in use: Archive→auspex, Strategium→plasma, Map→plasma, Phases→gold, Record→gold
+(distinct Map/Campaign tones still open, deferred to the Skin-Pass).
+
+BookDetail deliberately has NO backdrop: it is a text-dense dossier, not a station, and is
+reached from multiple views (no "correct" room). Rule: every station view gets a backdrop;
+the detail view deliberately does not.
+
+Next track (own chat): Skin-Pass v1.3 — retire Cinzel→Orbitron for display type, make
+components consume `--acc`, assign distinct Map/Campaign accent tones, and amplify Service
+Record into the "achievement hall" grammar. Skeleton is done; skin is last.
