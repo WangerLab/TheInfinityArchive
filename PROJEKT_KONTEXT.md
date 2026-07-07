@@ -15,6 +15,49 @@ architecture.
 
 ## Current Sprint
 
+**Sprint Omnibus Sub-Items — first-class sub-books (COMPLETE)**
+
+Gave books inside an omnibus full parity with standalone books: own ternary
+status, own dossier at /book/:subEntryId, Current-Assignment eligibility, and
+inclusion in the global single-reading invariant. Eight commits, each live-
+verified on Vercel, none broke the running app. HEAD after sprint: 2b42825.
+
+Four locked design decisions:
+- Single-reading invariant is global and strict: exactly ONE book (entry OR
+  sub-item) is `reading` across the whole catalog. The "most recently started"
+  tiebreak (startedAt) spans both levels. The confirm dialog (mark-old-read /
+  reset-unread / cancel) fires when a sub-item is started while another book reads.
+- Parent omnibus status stays purely DERIVED, never written. Ternary: all
+  children read → parent read; any child reading OR some-but-not-all read →
+  parent reading (IN PROGRESS); else unread.
+- Current Assignment shows the child with parent context (parentTitle/
+  parentEntryId on currentReading.book), e.g. "GREY KNIGHTS OMNIBUS · PHASE 1".
+- Sub-item gets its own route /book/:subEntryId. Sole entry point is the title
+  click in the omnibus CONTENTS list — sub-items do NOT appear as their own rows
+  in Archive/Phase lists (the omnibus is one row with an X/Y glimpse).
+
+Key architecture: flat-not-nested store (sub-item progress at bookProgress[sub],
+same shape as entry-level; parent_book_id in DB is the only membership marker).
+Bridge strategy for the move (dual-write flat + nested, migrate consumers one at
+a time readers-before-writers, tear the bridge down last). Central ternary
+derivation getEntryProgress(book) → { status, childRead, childTotal, rating } in
+context; BookRow became purely presentational. No DB change needed — status is
+text NOT NULL DEFAULT 'unread' CHECK (unread/reading/read) on every row alike,
+is_read GENERATED, only the set_updated_at trigger. Dead RecursiveBookEntry.jsx
+(510 lines) and the handleSubItem*/onSubItem* handler+prop chain removed.
+
+Deferred / carried forward: NotesModal footer still reads "LOCAL STORAGE"
+(harmless stale label). Possible dead activeFilters prop on PhaseDetail's
+signature — re-check. The Mobile-merge instruction conflict noted in the Sprint C
+block above is now RESOLVED (project instructions rewritten: Desktop = direct
+push to main, Mobile = Claude Code runs push + gh pr create + gh pr merge --squash
++ branch-delete in one pass; no manual Web-UI merge). Data drift in user_progress
+from sprint tests (some Grey-Knights/omnibus children and P1/P2 test books on
+read/reading that the curated reading status treats as open) to be cleaned on the
+next real in-app reading update — not a TIA blocker.
+
+---
+
 **Sprint C — Reflection Capture (COMPLETE)**
 
 Added a personal reflection layer to the READ dossier. Four commits, each

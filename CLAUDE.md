@@ -620,3 +620,23 @@ reflection in the READ dossier. Points worth carrying:
    fields, blur is the commit point; local state is seeded from bookProgress via a
    useEffect that lives ABOVE the early return (Rules of Hooks — the Book-Detail
    sprint's hook-order lesson applies to every new hook added to that component).
+
+### Sprint Omnibus Sub-Items: a nested child becomes a first-class book
+
+The sub-books inside an omnibus were deliberately binary checkboxes (Sprint C: "reflection/reading is entry-level, sub-item path byte-identical"). Tim wanted full parity: a read omnibus book should behave like any other book — its own ternary status, visible on Landing/Current Assignment, its own dossier, its own reflection. Achieved by flattening the data model, not by teaching consumers to nest. Eight commits, each live-verified, no commit broke the running app.
+
+1. **"Is a book" is a data-model statement, not a UI one.** When a nested sub-element must become fully first-class, flatten the data model rather than making every consumer nesting-aware. Sub-item progress moved from bookProgress[parent].contents[sub] (nested) to bookProgress[sub] (flat) — the same shape as entry-level. parent_book_id in the DB stays the only place that knows membership. Every consumer got SIMPLER (currentReading/invariant lost their special case), not more complex.
+
+2. **Bridge strategy (dual-write) for low-risk data-model moves.** A big-bang move would have broken every contents[sub] reader at once. Instead: commit 1 wrote sub-items flat ADDITIONALLY while keeping contents[sub] populated (both stores identical). Then consumers migrated off nested one at a time, each live-verified; the final commit tore the bridge down. Each step independently verifiable on Vercel.
+
+3. **Readers-before-writers ordering prevents store drift.** During the migration, move the READERS to flat first (BookRow), then the WRITERS (BookDetail toggle). While any nested reader still lives, no flat writer may run — otherwise the two stores drift. Separating the two and doing them in this order was safer than collapsing them into one commit.
+
+4. **Duplicated logic hides readers.** getPhaseStats looked like the last nested reader — but PhaseDetail carried a SECOND, locally duplicated phase statistic (calculateStats) that also read nested. Before any "last reader" teardown, grep the whole repo for the access pattern (.contents[...] on progress/bookProgress), never trust the one function you know about. → Centralise (one getEntryProgress/getPhaseStats) instead of duplicating.
+
+5. **Strict pre-flight grep before destructive store teardown.** The teardown prompt carried a stop condition: if grep finds ANY nested reader/consumer, STOP. It fired (RecursiveBookEntry). Belt-and-braces on the auth-dependent hydration path.
+
+6. **Dispose an orphaned consumer with its last reference points.** RecursiveBookEntry.jsx (510 lines, never imported/rendered since the BookRow refit) would have become incoherent zombie code once the handleSubItem* handlers were removed (it referenced handlers it would never receive). Deleted in the same commit rather than separately — semantic cohesion covers the scope.
+
+7. **getEntryProgress covers single-book AND omnibus.** Single: flat own status, childRead/Total=0. Omnibus: ternary derived from flat sub-statuses (all children read → read; any child reading OR some-but-not-all read → reading/IN PROGRESS; else unread). Always call this helper, never re-derive in a view — BookRow is now purely presentational (receives entryProgress as a prop).
+
+8. **resolveEntry contract: { book, phase, parent }.** Entry → parent:null. Sub-item → book = the sub-object, parent = the omnibus. hasContents (from book.contents) is false for a sub-item → it falls automatically into the single-book render path. Handlers get the right entryId automatically because book IS the sub-object; only the CONTENTS toggle deliberately references the parent (and runs only under hasContents).
