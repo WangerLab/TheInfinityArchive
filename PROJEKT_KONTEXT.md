@@ -15,6 +15,30 @@ architecture.
 
 ## Current Sprint
 
+**UI wiring — phase-view cleanup (COMPLETE)**
+
+Two small, independently-deployed commits on the parked UI-wiring track.
+HEAD after: 676b0e0. Both live-verified on Vercel.
+
+- `e270470` refactor(phase): remove allegiance filter from phase view. The
+  grand-alliance filter lived entirely in PhaseView (own activeFilters state →
+  GlobalHeader's ALLEGIANCE strip → PhaseDetail's visibleBooks filter). Since
+  GlobalHeader is rendered ONLY in PhaseView, the whole ALLEGIANCE block was
+  removed from GlobalHeader itself, not just unwired. Archive keeps its own
+  mirrored grand-alliance filter (separate config in Archive.jsx) — untouched.
+  Dead activeFilters-dimming in BookEntry.jsx left in place (no longer in the
+  render chain; separate cleanup candidate, with the dead Award icon import).
+- `676b0e0` feat(phase): pin current assignment + description in sticky header.
+  Both blocks moved out of the scrolling <main> into a children slot on the
+  sticky GlobalHeader, so they stay visible while phase cards scroll. Weg A:
+  GlobalHeader gained a `children` slot and stays data-agnostic + router-free
+  (no currentReading, no onOpen, no CurrentAssignment import) — PhaseView keeps
+  data + navigation and passes the finished blocks as children. The slot only
+  renders when children exist; description is always present, so the pinned
+  block is always visible by design.
+
+---
+
 **Sprint Omnibus Sub-Items — first-class sub-books (COMPLETE)**
 
 Gave books inside an omnibus full parity with standalone books: own ternary

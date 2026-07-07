@@ -640,3 +640,17 @@ The sub-books inside an omnibus were deliberately binary checkboxes (Sprint C: "
 7. **getEntryProgress covers single-book AND omnibus.** Single: flat own status, childRead/Total=0. Omnibus: ternary derived from flat sub-statuses (all children read → read; any child reading OR some-but-not-all read → reading/IN PROGRESS; else unread). Always call this helper, never re-derive in a view — BookRow is now purely presentational (receives entryProgress as a prop).
 
 8. **resolveEntry contract: { book, phase, parent }.** Entry → parent:null. Sub-item → book = the sub-object, parent = the omnibus. hasContents (from book.contents) is false for a sub-item → it falls automatically into the single-book render path. Handlers get the right entryId automatically because book IS the sub-object; only the CONTENTS toggle deliberately references the parent (and runs only under hasContents).
+
+### UI wiring: keep a shared header data-agnostic via a children slot
+
+When a data-bound block (CurrentAssignment + description) must be pinned inside a
+shared, sticky header, pass it as `children` rather than teaching the header its
+data. GlobalHeader is rendered only in PhaseView but is deliberately kept router-
+free and data-agnostic (built to be reused on the Landing cogitator later). A
+`children` slot placed inside the sticky container — between the stats section and
+the bottom accent — inherits the sticky position and full width, while the caller
+retains data access and navigation. Props-through (giving the header currentReading
++ onOpen) would have been shorter at the call site but broken the decoupling. Also:
+when a filter is removed and its host component is rendered in exactly one place,
+delete the markup from the host, don't just stop passing the props — verified via
+grep that GlobalHeader had no other render site before removing its ALLEGIANCE block.
