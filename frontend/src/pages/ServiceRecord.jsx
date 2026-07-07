@@ -1,8 +1,10 @@
 import React from 'react';
+import { ViewBackdrop } from 'components/ViewBackdrop';
 
 export function ServiceRecord() {
   return (
-    <div className="min-h-screen bg-slate-950 scanlines safe-bottom flex flex-col items-center justify-center px-6">
+    <ViewBackdrop art="/Gilded_reliquary_vitrine_with_skull_202607041801.jpeg" accent="gold">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="text-center space-y-3">
         <h1 className="font-display text-3xl text-gold tracking-wider">
           SERVICE RECORD
@@ -11,6 +13,7 @@ export function ServiceRecord() {
           HONOURS VITRINE — STANDBY
         </p>
       </div>
-    </div>
+      </div>
+    </ViewBackdrop>
   );
 }

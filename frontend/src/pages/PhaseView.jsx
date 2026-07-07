@@ -5,6 +5,7 @@ import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
 import { CurrentAssignment } from 'components/CurrentAssignment';
 import { useArchiveData } from 'context/ArchiveDataContext';
+import { ViewBackdrop } from 'components/ViewBackdrop';
 
 export function PhaseView() {
   const {
@@ -27,7 +28,7 @@ export function PhaseView() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 safe-bottom scanlines">
+    <ViewBackdrop art="/Chart-console_with_skull-beacon2K_202607041801.jpeg" accent="gold">
       <GlobalHeader
         totalPages={globalStats.totalPages}
         readPages={globalStats.readPages}
@@ -108,6 +109,6 @@ export function PhaseView() {
           </div>
         </footer>
       </main>
-    </div>
+    </ViewBackdrop>
   );
 }

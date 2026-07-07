@@ -1,8 +1,10 @@
 import React from 'react';
+import { ViewBackdrop } from 'components/ViewBackdrop';
 
 export function MapView() {
   return (
-    <div className="min-h-screen bg-slate-950 scanlines safe-bottom flex flex-col items-center justify-center px-6">
+    <ViewBackdrop art="/Oculus_hololith_galaxy_16x9_202607042230.jpeg" accent="plasma">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="text-center space-y-3">
         <h1 className="font-display text-3xl text-plasma tracking-wider">
           OCULUS
@@ -11,6 +13,7 @@ export function MapView() {
           HOLOLITHIC VIEWER — STANDBY
         </p>
       </div>
-    </div>
+      </div>
+    </ViewBackdrop>
   );
 }
