@@ -65,6 +65,8 @@ module.exports = {
           DEFAULT: 'hsl(var(--plasma))',
           dim: 'hsl(var(--plasma-dim))'
         },
+        map: 'hsl(var(--map))',
+        campaign: 'hsl(var(--campaign))',
         void: 'hsl(var(--void))',
       },
       borderRadius: {
