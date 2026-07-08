@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Cinzel', 'Orbitron', 'serif'],
+        display: ['Orbitron', 'Cinzel', 'sans-serif'],
         tactical: ['Orbitron', 'JetBrains Mono', 'sans-serif'],
         data: ['JetBrains Mono', 'Inter', 'monospace'],
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
