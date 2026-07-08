@@ -693,3 +693,46 @@ the detail view deliberately does not.
 Next track (own chat): Skin-Pass v1.3 — retire Cinzel→Orbitron for display type, make
 components consume `--acc`, assign distinct Map/Campaign accent tones, and amplify Service
 Record into the "achievement hall" grammar. Skeleton is done; skin is last.
+
+### Skin-Pass v1.3 / Typo (COMPLETE)
+
+Applied the finished accent/type layer on top of the ViewBackdrop skeleton.
+Five atomic commits on main, each build-tested; the visible ones live-verified.
+
+- `b8775ee` feat(theme): add --map and --campaign accent tokens. Additive
+  `:root` HSL vars (`--map: 205 90% 55%`, `--campaign: 28 90% 52%`) + matching
+  Tailwind colors. Not yet consumed — foundation only.
+- `949e817` feat(theme): wire distinct Map and Campaign accents. MapView
+  `accent="plasma"→"map"`, PhaseView `accent="gold"→"campaign"`. Map no longer
+  shares plasma with Strategium; Campaign no longer shares gold with Record.
+- `2a005bc` fix(css): define missing text-glow-plasma utility. Landing's
+  cogitator label referenced `.text-glow-plasma` but the class was never
+  defined (silent no-op). Mirrored the gold/auspex glow definitions.
+- `bf16776` refactor(css): grimdark-panel consumes --acc with gold fallback.
+  THE core lever. Panel border, primary glow shadow, and `::before` edge
+  gradient now read the per-view `--acc`/`--glow` set by ViewBackdrop, with a
+  `:root` gold fallback for views without a backdrop (Landing, BookDetail).
+  Each station's panels now carry that station's accent from ONE CSS change —
+  no JSX touched. State-bound `-pacified`/`-legendary` and the subtle
+  `--gold-dim` edge / inset `--gold` shadow deliberately stay gold (no
+  `--acc-dim` exists; those are depth cues, not colour carriers).
+- `0798174` style(type): flip font-display to Orbitron-first. `display`
+  font stack leads with Orbitron (mock direction) instead of Cinzel, synced
+  across Tailwind config and the `.font-display` class. Cinzel kept as second
+  fallback.
+
+Live-verified (Tim): Archive green, Map blue, Campaign amber, Landing/BookDetail
+gold via fallback. Strategium/Service Record show no accent yet — they are
+still content-less placeholders with no `.grimdark-panel` elements to carry the
+edge; the accent prop is set and will surface once those views get content.
+
+Key decision — the `--acc` migration is deliberately scoped to `.grimdark-panel`
+ONLY, not a mass utility rewrite. The ~123 hardwired `text-gold`/`text-auspex`/
+`text-plasma` utilities across ~20 files stay as-is; converting them is a
+separate later cleanup, not this sprint. Panel-level `--acc` gives the maximal
+per-view colour shift at minimal risk (one CSS change, zero JSX).
+
+Deferred / carried forward for the palette migration: the hardwired accent
+utilities above; a possible border-brightness dim (border now carries full
+`var(--acc)` vs the old `--gold-dim / 0.5` — accepted as intentional, no grell
+complaint from Tim); Service Record achievement-hall grammar (own sprint).
