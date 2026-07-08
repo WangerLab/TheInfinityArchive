@@ -72,7 +72,7 @@ export const NotesModal = ({
               {localNotes.length} CHARACTERS
             </span>
             <span className="text-[10px] text-gold/50 font-tactical tracking-widest">
-              LOCAL STORAGE
+              ARCHIVE SYNC
             </span>
           </div>
         </div>
