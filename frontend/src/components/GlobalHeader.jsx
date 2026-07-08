@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { ProgressRing } from './ProgressRing';
-import { FileText, Skull, Zap, Award, LogOut } from 'lucide-react';
+import { FileText, Skull, Zap, LogOut } from 'lucide-react';
 import { supabase } from 'lib/supabase';
 
 export const GlobalHeader = ({ 
