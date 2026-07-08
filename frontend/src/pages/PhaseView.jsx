@@ -28,7 +28,7 @@ export function PhaseView() {
   }, []);
 
   return (
-    <ViewBackdrop art="/Chart-console_with_skull-beacon2K_202607041801.jpeg" accent="gold">
+    <ViewBackdrop art="/Chart-console_with_skull-beacon2K_202607041801.jpeg" accent="campaign">
       <GlobalHeader
         totalPages={globalStats.totalPages}
         readPages={globalStats.readPages}
