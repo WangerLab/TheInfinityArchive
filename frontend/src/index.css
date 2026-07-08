@@ -263,6 +263,10 @@
   .text-glow-auspex {
     text-shadow: 0 0 10px hsl(var(--auspex) / 0.6), 0 0 20px hsl(var(--auspex) / 0.3);
   }
+
+  .text-glow-plasma {
+    text-shadow: 0 0 10px hsl(var(--plasma) / 0.6), 0 0 20px hsl(var(--plasma) / 0.3);
+  }
 }
 
 /* Animations */
