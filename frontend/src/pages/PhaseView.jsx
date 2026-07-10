@@ -21,11 +21,14 @@ export function PhaseView() {
   } = useArchiveData();
 
   const navigate = useNavigate();
-  const [expandedPhase, setExpandedPhase] = useState(null);
+  const initialPhaseId = currentReading?.phase?.id ?? projectData.phases[0]?.id ?? null;
+  const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
 
-  const handlePhaseClick = useCallback((phaseId) => {
-    setExpandedPhase(prev => prev === phaseId ? null : phaseId);
+  const handlePhaseSelect = useCallback((phaseId) => {
+    setSelectedPhaseId(phaseId);
   }, []);
+
+  const selectedPhase = projectData.phases.find(p => p.id === selectedPhaseId) ?? null;
 
   return (
     <ViewBackdrop art="/Chart-console_with_skull-beacon2K_202607041801.jpeg" accent="campaign">
@@ -56,46 +59,52 @@ export function PhaseView() {
         </div>
       </GlobalHeader>
 
-      <main className="px-4 py-4 pb-32">
-        {/* Phase cards */}
-        <div className="space-y-3">
-          {projectData.phases.map((phase) => {
-            const stats = getPhaseStats(phase);
-            const isExpanded = expandedPhase === phase.id;
-            const isPacified = stats.progress >= 100;
+      <main className="px-4 py-4">
+        <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:items-start">
 
-            return (
-              <div
-                key={phase.id}
-                className="animate-slide-in"
-                style={{ animationDelay: `${phase.id * 50}ms` }}
-              >
-                <PhaseCard
-                  phase={phase}
-                  progress={stats.progress}
-                  totalPages={stats.totalPages}
-                  readPages={stats.readPages}
-                  totalItems={stats.totalItems}
-                  completedItems={stats.completedItems}
-                  isExpanded={isExpanded}
-                  isPacified={isPacified}
-                  onClick={() => handlePhaseClick(phase.id)}
-                />
+          {/* LINKS: Phasenliste, sticky */}
+          <div className="space-y-3 lg:sticky lg:top-[220px] lg:self-start">
+            {projectData.phases.map((phase) => {
+              const stats = getPhaseStats(phase);
+              const isSelected = selectedPhaseId === phase.id;
+              const isPacified = stats.progress >= 100;
 
-                {isExpanded && (
-                  <PhaseDetail
+              return (
+                <div
+                  key={phase.id}
+                  className="animate-slide-in"
+                  style={{ animationDelay: `${phase.id * 50}ms` }}
+                >
+                  <PhaseCard
                     phase={phase}
-                    bookData={bookProgress}
-                    getEntryProgress={getEntryProgress}
-                    onBookReadChange={handleBookReadChange}
-                    onBookRatingChange={handleBookRatingChange}
-                    onBookNotesChange={handleBookNotesChange}
-                    onClose={() => setExpandedPhase(null)}
+                    progress={stats.progress}
+                    totalPages={stats.totalPages}
+                    readPages={stats.readPages}
+                    totalItems={stats.totalItems}
+                    completedItems={stats.completedItems}
+                    isSelected={isSelected}
+                    isPacified={isPacified}
+                    onClick={() => handlePhaseSelect(phase.id)}
                   />
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* RECHTS: Detail der gewählten Phase */}
+          <div className="mt-3 lg:mt-0">
+            {selectedPhase && (
+              <PhaseDetail
+                phase={selectedPhase}
+                bookData={bookProgress}
+                getEntryProgress={getEntryProgress}
+                onBookReadChange={handleBookReadChange}
+                onBookRatingChange={handleBookRatingChange}
+                onBookNotesChange={handleBookNotesChange}
+              />
+            )}
+          </div>
+
         </div>
 
         {/* Footer */}

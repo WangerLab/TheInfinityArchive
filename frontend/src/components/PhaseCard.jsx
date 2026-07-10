@@ -10,7 +10,7 @@ export const PhaseCard = ({
   readPages = 0,
   totalItems = 0,
   completedItems = 0,
-  isExpanded = false,
+  isSelected = false,
   isPacified = false,
   onClick,
   className 
@@ -24,7 +24,7 @@ export const PhaseCard = ({
         "transition-all duration-300 active:scale-[0.98]",
         "focus:outline-none focus:ring-2 focus:ring-gold/50",
         isPacified && "grimdark-panel-pacified",
-        isExpanded && "ring-2 ring-gold/40",
+        isSelected && "ring-2 ring-gold/40",
         className
       )}
     >
@@ -96,9 +96,8 @@ export const PhaseCard = ({
             strokeWidth={4}
           />
           <ChevronRight className={cn(
-            "w-5 h-5 transition-transform duration-200",
-            isPacified ? "text-auspex/60" : "text-gold/60",
-            isExpanded && "rotate-90"
+            "w-5 h-5",
+            isPacified ? "text-auspex/60" : "text-gold/60"
           )} />
         </div>
       </div>

@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
 import { BookRow } from './BookRow';
-import { ScrollArea } from 'components/ui/scroll-area';
-import { ChevronUp, Skull } from 'lucide-react';
+import { Skull } from 'lucide-react';
 
 export const PhaseDetail = ({
   phase,
@@ -12,7 +11,6 @@ export const PhaseDetail = ({
   onBookReadChange,
   onBookRatingChange,
   onBookNotesChange,
-  onClose,
   className
 }) => {
   const navigate = useNavigate();
@@ -82,7 +80,7 @@ export const PhaseDetail = ({
 
   return (
     <div className={cn(
-      "rounded-lg overflow-hidden mt-3",
+      "rounded-lg overflow-hidden",
       "grimdark-panel",
       isPacified && "grimdark-panel-pacified",
       className
@@ -92,7 +90,7 @@ export const PhaseDetail = ({
         "p-4 border-b border-gold/20",
         isPacified && "bg-auspex/5"
       )}>
-        <div className="flex items-center gap-2 pr-12">
+        <div className="flex items-center gap-2">
           <span className={cn(
             "w-6 h-6 rounded flex items-center justify-center text-xs font-display font-bold border shrink-0",
             isPacified
@@ -114,25 +112,11 @@ export const PhaseDetail = ({
             </span>
           )}
         </div>
-
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className={cn(
-            "absolute top-3 right-3 w-9 h-9 rounded-lg flex items-center justify-center",
-            "border transition-colors",
-            isPacified 
-              ? "bg-auspex/10 border-auspex/30 text-auspex hover:bg-auspex/20" 
-              : "bg-slate-800/50 border-slate-700 text-slate-400 hover:text-gold hover:border-gold/40"
-          )}
-        >
-          <ChevronUp className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Book list */}
-      <div className="overflow-y-auto max-h-[80vh]">
-        <div className="p-3 pb-40 space-y-2">
+      <div>
+        <div className="p-3 space-y-2">
           {books.map((book) => (
             <BookRow
               key={book.entryId}
