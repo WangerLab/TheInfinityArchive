@@ -77,10 +77,13 @@ export function Landing() {
               <p className="text-sm md:text-base tracking-widest leading-tight line-clamp-2">
                 {currentReading.book.title}
               </p>
-              <p className="text-[11px] tracking-widest text-auspex/80">
-                {currentReading.book.parentTitle
-                  ? `${currentReading.book.parentTitle} · PHASE ${currentReading.phase.id}`
-                  : `PHASE ${currentReading.phase.id}`}
+              {currentReading.book.parentTitle && (
+                <p className="text-[11px] tracking-widest text-auspex/80">
+                  {currentReading.book.parentTitle}
+                </p>
+              )}
+              <p className="text-[11px] tracking-[0.3em] text-auspex/80 mt-0.5">
+                PHASE {currentReading.phase.id}
               </p>
             </>
           ) : (
