@@ -66,10 +66,10 @@ export function PhaseView() {
       </GlobalHeader>
 
       <main className="px-4 py-4">
-        <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:items-start">
+        <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:h-[calc(100vh-360px)]">
 
           {/* LINKS: Phasenliste, sticky */}
-          <div className="space-y-3 lg:sticky lg:top-[220px] lg:self-start">
+          <div className="space-y-3 lg:h-full lg:overflow-y-auto lg:pr-2">
             {projectData.phases.map((phase) => {
               const stats = getPhaseStats(phase);
               const isSelected = selectedPhaseId === phase.id;
@@ -98,7 +98,7 @@ export function PhaseView() {
           </div>
 
           {/* RECHTS: Detail der gewählten Phase */}
-          <div className="mt-3 lg:mt-0">
+          <div className="mt-3 lg:mt-0 lg:h-full lg:overflow-y-auto lg:pr-2">
             {selectedPhase && (
               <PhaseDetail
                 phase={selectedPhase}
