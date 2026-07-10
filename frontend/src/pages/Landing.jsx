@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useArchiveData } from 'context/ArchiveDataContext';
 
 // Backdrop asset lives in frontend/public/ and is referenced from web root.
 const BACKDROP_SRC = '/Imperial_void-ship_command_bridge_2K_202607041950.jpeg';
@@ -25,6 +26,8 @@ const stations = [
 ];
 
 export function Landing() {
+  const { currentReading } = useArchiveData();
+
   return (
     <div className="relative min-h-screen bg-slate-950 scanlines safe-top safe-bottom overflow-hidden">
       {/* Stage — sized by the backdrop image itself (img-as-sizer). Absolute
@@ -69,8 +72,23 @@ export function Landing() {
           style={{ top: '57.4%', left: '38.4%', width: '23.1%', height: '27.4%' }}
         >
           <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
-          <p className="text-sm md:text-base tracking-widest">STANDBY</p>
-          <p className="text-[11px] tracking-widest text-auspex/80">NO SIGNAL</p>
+          {currentReading?.book ? (
+            <>
+              <p className="text-sm md:text-base tracking-widest leading-tight line-clamp-2">
+                {currentReading.book.title}
+              </p>
+              <p className="text-[11px] tracking-widest text-auspex/80">
+                {currentReading.book.parentTitle
+                  ? `${currentReading.book.parentTitle} · PHASE ${currentReading.phase.id}`
+                  : `PHASE ${currentReading.phase.id}`}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm md:text-base tracking-widest">STANDBY</p>
+              <p className="text-[11px] tracking-widest text-auspex/80">NO SIGNAL</p>
+            </>
+          )}
         </div>
       </div>
     </div>
