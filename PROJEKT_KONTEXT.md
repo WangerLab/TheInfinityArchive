@@ -15,27 +15,22 @@ architecture.
 
 ## Current Sprint
 
-**UI wiring — phase-view cleanup (COMPLETE)**
+**Cogitator-Live-Zone (COMPLETE)**
 
-Two small, independently-deployed commits on the parked UI-wiring track.
-HEAD after: 676b0e0. Both live-verified on Vercel.
+First functional (non-visual) track on the Landing. The Command Cogitator
+now reads live `currentReading` from ArchiveDataContext instead of static
+STANDBY text, shows title + parent/phase, is clickable into the book's
+dossier, and glows softly on hover. Four atomic commits, all live-verified.
+HEAD after: 56c347f.
 
-- `e270470` refactor(phase): remove allegiance filter from phase view. The
-  grand-alliance filter lived entirely in PhaseView (own activeFilters state →
-  GlobalHeader's ALLEGIANCE strip → PhaseDetail's visibleBooks filter). Since
-  GlobalHeader is rendered ONLY in PhaseView, the whole ALLEGIANCE block was
-  removed from GlobalHeader itself, not just unwired. Archive keeps its own
-  mirrored grand-alliance filter (separate config in Archive.jsx) — untouched.
-  Dead activeFilters-dimming in BookEntry.jsx left in place (no longer in the
-  render chain; separate cleanup candidate, with the dead Award icon import).
-- `676b0e0` feat(phase): pin current assignment + description in sticky header.
-  Both blocks moved out of the scrolling <main> into a children slot on the
-  sticky GlobalHeader, so they stay visible while phase cards scroll. Weg A:
-  GlobalHeader gained a `children` slot and stays data-agnostic + router-free
-  (no currentReading, no onOpen, no CurrentAssignment import) — PhaseView keeps
-  data + navigation and passes the finished blocks as children. The slot only
-  renders when children exist; description is always present, so the pinned
-  block is always visible by design.
+- `a29f4cd` wire live current-reading into the cogitator (display-only)
+- `5a62e7d` phase gets its own bottom line; parent row alone for sub-items
+- `0a97c5e` clickable → `/book/:entryId` (own entryId; sub-item ≠ parent)
+- `56c347f` soft ~200ms phosphor hover glow, scoped CSS rule, frameless
+
+Landing is inside ArchiveDataProvider (outside AppLayout only), so the hook
+is safe; the data derivation is mirrored rather than reusing the gold-framed
+CurrentAssignment component, to keep the frameless phosphor look.
 
 ---
 

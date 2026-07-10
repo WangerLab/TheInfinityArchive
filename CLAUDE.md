@@ -736,3 +736,45 @@ Deferred / carried forward for the palette migration: the hardwired accent
 utilities above; a possible border-brightness dim (border now carries full
 `var(--acc)` vs the old `--gold-dim / 0.5` — accepted as intentional, no grell
 complaint from Tim); Service Record achievement-hall grammar (own sprint).
+
+### Sprint Cogitator-Live-Zone (COMPLETE)
+
+First functional track after the visual passes: the Landing's Command
+Cogitator, static since the bridge was built, now reads live reading state.
+Four atomic commits on main, each build-tested, all live-verified on Vercel.
+
+- `a29f4cd` feat(landing): wire live current-reading into cogitator screen.
+  Landing pulls `currentReading` from ArchiveDataContext and renders the live
+  assignment (title + parent/phase) in the painted black screen, falling back
+  to STANDBY/NO SIGNAL when nothing is read. Display-only; frameless phosphor
+  and `pointer-events-none` untouched.
+- `5a62e7d` feat(landing): give cogitator phase its own line. Phase left the
+  inline parent-context row and became its own bottom line; the middle row
+  now carries the parent title alone and is dropped entirely for non-sub-item
+  books (title → phase, no empty row).
+- `0a97c5e` feat(landing): make live cogitator navigate to the reading dossier.
+  Filled state is a `<button>` navigating to `/book/:entryId` using the item's
+  OWN entryId — a sub-item lands on its own dossier, not the omnibus parent
+  (resolveEntry in BookDetail resolves the child id). Only the filled state is
+  interactive (`pointer-events-auto` on the button); STANDBY stays inert and
+  the wrapper keeps `pointer-events-none` so surrounding stations never block.
+- `56c347f` feat(landing): soft phosphor glow on cogitator hover. Hover swells
+  the green text over ~200ms (color + text-shadow transition via a scoped
+  `[data-cogitator-screen] button` rule in index.css) — a CRT-terminal feel,
+  deliberately distinct from the stations' snappy gold box-glow. The whole
+  black screen is the hover/click zone (`w-full h-full`); glow is text-shadow
+  only, no box-shadow, to hold the frameless look.
+
+Key decisions:
+- Landing sits INSIDE ArchiveDataProvider (only outside AppLayout), so
+  `useArchiveData()` is safe here — the provider renders its own loading/error
+  screens first, so `currentReading` is settled when Landing paints; `null`
+  means genuinely nothing is being read (→ STANDBY), never a load race.
+- The data derivation is mirrored, NOT the CurrentAssignment component. That
+  component is a gold-framed panel button; reusing it would break the frameless
+  phosphor illusion. The cogitator spends `currentReading`'s shape, keeps its
+  own bare-text presentation. Glimpse-not-depth: status glimpse here, depth in
+  the dossier.
+- text-shadow is not Tailwind-transitionable, so the hover glow lives in a
+  scoped CSS rule, not a `hover:` utility — a utility toggle would hard-jump
+  instead of glimmer.
