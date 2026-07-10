@@ -11,6 +11,8 @@ export const GlobalHeader = ({
   completedItems = 0, 
   totalRated = 0,
   averageRating = 0,
+  pacifiedSectors = 0,
+  totalSectors = 0,
   children,
   className
 }) => {
@@ -113,6 +115,18 @@ export const GlobalHeader = ({
                 }}
               />
             </div>
+
+            {/* Sectors pacified */}
+            {totalSectors > 0 && (
+              <div className="mt-2.5 flex items-center gap-1.5">
+                <span className="font-data text-sm font-bold text-auspex tabular-nums">
+                  {pacifiedSectors}/{totalSectors}
+                </span>
+                <span className="text-[10px] text-auspex/70 font-tactical tracking-[0.2em]">
+                  SECTORS PACIFIED
+                </span>
+              </div>
+            )}
           </div>
 
           {/* CurrentAssignment */}

@@ -30,6 +30,10 @@ export function PhaseView() {
 
   const selectedPhase = projectData.phases.find(p => p.id === selectedPhaseId) ?? null;
 
+  const pacifiedSectors = projectData.phases.filter(
+    (p) => getPhaseStats(p).progress >= 100
+  ).length;
+
   return (
     <ViewBackdrop art="/Chart-console_with_skull-beacon2K_202607041801.jpeg" accent="campaign">
       <GlobalHeader
@@ -39,6 +43,8 @@ export function PhaseView() {
         completedItems={globalStats.completedItems}
         totalRated={globalStats.totalRated}
         averageRating={globalStats.averageRating}
+        pacifiedSectors={pacifiedSectors}
+        totalSectors={projectData.totalPhases}
       >
         <CurrentAssignment
           current={currentReading}
