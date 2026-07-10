@@ -55,14 +55,17 @@ export const ProgressRing = ({
       </svg>
       
       {showPercentage && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex items-baseline justify-center">
           <span className={cn(
-            "font-tactical text-lg font-bold",
+            "font-data text-base font-bold leading-none tabular-nums",
             isPacified ? "text-auspex text-glow-auspex" : "text-gold text-glow-gold"
           )}>
             {Math.round(progress)}
           </span>
-          <span className="text-[9px] text-slate-400 font-semibold tracking-widest">%</span>
+          <span className={cn(
+            "font-data text-[10px] font-semibold leading-none ml-0.5",
+            isPacified ? "text-auspex/70" : "text-gold/70"
+          )}>%</span>
         </div>
       )}
     </div>
