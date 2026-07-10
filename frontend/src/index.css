@@ -269,6 +269,18 @@
   .text-glow-plasma {
     text-shadow: 0 0 10px hsl(var(--plasma) / 0.6), 0 0 20px hsl(var(--plasma) / 0.3);
   }
+
+  /* Cogitator console — the clickable readout glows softly on hover of the
+     whole black screen area (CRT-terminal feel), not a snappy box glow.
+     text-shadow only; no box-shadow, to keep the frameless phosphor look. */
+  [data-cogitator-screen] button {
+    text-shadow: 0 0 10px hsl(var(--auspex) / 0.6), 0 0 20px hsl(var(--auspex) / 0.3);
+    transition: color 200ms ease, text-shadow 200ms ease;
+  }
+  [data-cogitator-screen] button:hover {
+    color: hsl(var(--auspex));
+    text-shadow: 0 0 14px hsl(var(--auspex) / 0.9), 0 0 28px hsl(var(--auspex) / 0.5);
+  }
 }
 
 /* Animations */

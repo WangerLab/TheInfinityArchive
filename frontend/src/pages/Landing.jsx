@@ -76,7 +76,7 @@ export function Landing() {
             <button
               type="button"
               onClick={() => navigate(`/book/${currentReading.book.entryId}`)}
-              className="pointer-events-auto cursor-pointer flex flex-col items-center gap-1 bg-transparent border-0 p-0 text-auspex hover:text-auspex/100 transition-opacity"
+              className="pointer-events-auto cursor-pointer w-full h-full flex flex-col items-center justify-center gap-1 bg-transparent border-0 p-0"
             >
               <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
               <p className="text-sm md:text-base tracking-widest leading-tight line-clamp-2">
