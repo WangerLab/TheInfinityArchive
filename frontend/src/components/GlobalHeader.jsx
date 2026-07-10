@@ -92,6 +92,7 @@ export const GlobalHeader = ({
                 <div className="flex items-center gap-1.5 text-xs">
                   <Zap className="w-4 h-4 text-auspex" />
                   <span className="text-slate-200 font-bold">{completedItems}/{totalItems}</span>
+                  <span className="text-[9px] text-auspex/70 font-tactical tracking-[0.15em] ml-0.5">ITEMS</span>
                 </div>
                 {averageRating > 0 && (
                   <div className="flex items-center gap-1.5 text-xs">
