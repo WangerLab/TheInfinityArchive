@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useArchiveData } from 'context/ArchiveDataContext';
 
 // Backdrop asset lives in frontend/public/ and is referenced from web root.
@@ -27,6 +27,7 @@ const stations = [
 
 export function Landing() {
   const { currentReading } = useArchiveData();
+  const navigate = useNavigate();
 
   return (
     <div className="relative min-h-screen bg-slate-950 scanlines safe-top safe-bottom overflow-hidden">
@@ -71,9 +72,13 @@ export function Landing() {
           className="absolute flex flex-col items-center justify-center text-center gap-1 text-auspex font-tactical text-glow-auspex pointer-events-none"
           style={{ top: '57.4%', left: '38.4%', width: '23.1%', height: '27.4%' }}
         >
-          <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
           {currentReading?.book ? (
-            <>
+            <button
+              type="button"
+              onClick={() => navigate(`/book/${currentReading.book.entryId}`)}
+              className="pointer-events-auto cursor-pointer flex flex-col items-center gap-1 bg-transparent border-0 p-0 text-auspex hover:text-auspex/100 transition-opacity"
+            >
+              <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
               <p className="text-sm md:text-base tracking-widest leading-tight line-clamp-2">
                 {currentReading.book.title}
               </p>
@@ -85,9 +90,10 @@ export function Landing() {
               <p className="text-[11px] tracking-[0.3em] text-auspex/80 mt-0.5">
                 PHASE {currentReading.phase.id}
               </p>
-            </>
+            </button>
           ) : (
             <>
+              <p className="text-[10px] tracking-[0.3em] text-auspex/70">CURRENT ASSIGNMENT</p>
               <p className="text-sm md:text-base tracking-widest">STANDBY</p>
               <p className="text-[11px] tracking-widest text-auspex/80">NO SIGNAL</p>
             </>
