@@ -778,3 +778,53 @@ Key decisions:
 - text-shadow is not Tailwind-transitionable, so the hover glow lives in a
   scoped CSS rule, not a `hover:` utility — a utility toggle would hard-jump
   instead of glimmer.
+
+## Campaign Skin + Layout Sprint (Cinzel / two-column / ring / scrollers)
+
+Seven commits, Desktop, all live-green on main. Base 82c4f91 → HEAD
+544b4ab.
+
+- `0a06a9e` feat(type): swap display font Orbitron → Cinzel. font-display
+  slot only (Cinzel-first, Orbitron kept as fallback) in tailwind.config.js
+  and the .font-display rule in index.css. tactical/data slots stay
+  Orbitron. Cinzel already in the Google Fonts @import — no import change.
+- `a6aef70` feat(campaign): page-counter + current-assignment side by side.
+  GlobalHeader XP-bar and children slot moved into one shared grid
+  (grid-cols-1, md:grid-cols-2 when children present); old border-t
+  separator and standalone children block dropped; header flattened
+  (py-3→py-2, title mb-3→mb-2).
+- `2eed965` feat(campaign): two-column master-detail. Accordion replaced by
+  left phase list + right selected-phase book list. selectedPhaseId
+  pre-seeded from currentReading.phase, falling back to first phase.
+  PhaseCard: isExpanded→isSelected, chevron rotation dropped. PhaseDetail:
+  onClose + close button removed, dead ScrollArea/ChevronUp imports
+  dropped.
+- `f302149` / `544b4ab` ring percent iterations — SEE lesson below.
+- `7ac9b73` fix(header): label the bare completedItems/totalItems mini-stat
+  ("ITEMS", auspex accent).
+- `1a3afe8` feat(header): "X/8 SECTORS PACIFIED" line in the page-counter
+  panel. GlobalHeader stays data-agnostic — two new NUMBER props
+  (pacifiedSectors, totalSectors); derivation (phases with getPhaseStats
+  progress >= 100) lives in PhaseView.
+
+Key decisions & lessons:
+- GlobalHeader is only rendered by PhaseView (verified via grep — the
+  Archive.jsx hit is a comment). Header changes have no cross-view effect
+  today.
+- GlobalHeader stays DATA-AGNOSTIC: feed it numbers, derive in the page.
+  The sectors-pacified line follows this — no phase objects in the header.
+- Two-column columns scroll INDEPENDENTLY via fixed-height container +
+  per-column overflow-y-auto, NOT via sticky. sticky with a guessed
+  top-offset (lg:top-[220px]) did not match real header height and both
+  columns scrolled together. Deterministic fix: grid gets
+  lg:h-[calc(100vh-360px)], each column lg:h-full lg:overflow-y-auto.
+  LESSON: prefer fixed-height + own-overflow over sticky when the header
+  height is variable/unknown — sticky offsets are guesswork.
+- Ring percent is STILL NOT RIGHT (open). Iteration 1 (f302149) put number
+  on font-data + inline "%" but items-baseline pushed it above center.
+  Iteration 2 (544b4ab) switched to items-center, digit-count sizing
+  (text-[13px] at >=100 else text-[15px]), "%" as superscript suffix.
+  User reports it still doesn't sit cleanly. NOT resolved — carry to next
+  session. LESSON: the ProgressRing percent overlay is fiddly at 52px/68px;
+  next attempt should probably preview in-browser or reconsider showing
+  "%" at all in the small ring.

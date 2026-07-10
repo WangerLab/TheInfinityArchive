@@ -13,24 +13,13 @@ handling, skull ratings, and per-book notes.
 Single user. Built properly anyway — auth, real backend, sane
 architecture.
 
-## Current Sprint
+## Current Sprint (last completed)
 
-**Cogitator-Live-Zone (COMPLETE)**
-
-First functional (non-visual) track on the Landing. The Command Cogitator
-now reads live `currentReading` from ArchiveDataContext instead of static
-STANDBY text, shows title + parent/phase, is clickable into the book's
-dossier, and glows softly on hover. Four atomic commits, all live-verified.
-HEAD after: 56c347f.
-
-- `a29f4cd` wire live current-reading into the cogitator (display-only)
-- `5a62e7d` phase gets its own bottom line; parent row alone for sub-items
-- `0a97c5e` clickable → `/book/:entryId` (own entryId; sub-item ≠ parent)
-- `56c347f` soft ~200ms phosphor hover glow, scoped CSS rule, frameless
-
-Landing is inside ArchiveDataProvider (outside AppLayout only), so the hook
-is safe; the data derivation is mirrored rather than reusing the gold-framed
-CurrentAssignment component, to keep the frameless phosphor look.
+Campaign Skin + Layout — COMPLETE (Desktop). HEAD 544b4ab on main.
+Cinzel display font, two-column master-detail campaign view, header with
+page-counter + current-assignment side by side and an X/8 sectors-pacified
+line, independent column scrolling. One open item: ProgressRing percent
+still doesn't sit cleanly (carried forward).
 
 ---
 
