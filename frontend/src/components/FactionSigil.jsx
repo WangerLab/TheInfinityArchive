@@ -23,6 +23,7 @@ const SIZES = {
   md: 'w-5 h-5',
   lg: 'w-6 h-6',
   xl: 'w-8 h-8',
+  xxl: 'w-10 h-10',
 };
 
 // public/ assets aren't fingerprinted, so a replaced PNG keeps its URL and can be

@@ -21,6 +21,7 @@ const SIZES = {
   md: 'w-5 h-5',
   lg: 'w-6 h-6',   // dossier header, full silhouette
   xl: 'w-8 h-8',   // enlarged leading sigil in list rows
+  xxl: 'w-10 h-10', // 40px hero sigil in phase book rows
 };
 
 // public/ assets aren't fingerprinted — bump when any alliance PNG is replaced
