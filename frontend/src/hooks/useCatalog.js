@@ -169,6 +169,39 @@ export function useCatalog() {
               book.factionSigil = best;
             }
 
+            // Same for the display faction NAME: omnibus parents have no
+            // sub_faction, so derive a primary faction label from the most
+            // common non-empty child sub_faction (primary POV-bearer value,
+            // parenthetical qualifier stripped), ties broken by reading order.
+            // Attached as derivedFaction so BookRow can show it without
+            // re-deriving. Plain entries keep their own sub_faction.
+            if (book.contents && !book.subFaction) {
+              const primaryOf = (sf) => {
+                if (!sf) return null;
+                let depth = 0, end = sf.length;
+                for (let i = 0; i < sf.length; i++) {
+                  const ch = sf[i];
+                  if (ch === '(') depth++;
+                  else if (ch === ')') depth = Math.max(0, depth - 1);
+                  else if (ch === ';' && depth === 0) { end = i; break; }
+                }
+                return sf.slice(0, end).trim().replace(/\s*\([^)]*\)\s*$/, '').trim() || null;
+              };
+              const counts = new Map();
+              for (const c of book.contents) {
+                const f = primaryOf(c.subFaction);
+                if (f) counts.set(f, (counts.get(f) || 0) + 1);
+              }
+              let best = null, bestN = 0;
+              for (const c of book.contents) {
+                const f = primaryOf(c.subFaction);
+                if (!f) continue;
+                const n = counts.get(f);
+                if (n > bestN) { bestN = n; best = f; }
+              }
+              book.derivedFaction = best;
+            }
+
             return book;
           });
 
