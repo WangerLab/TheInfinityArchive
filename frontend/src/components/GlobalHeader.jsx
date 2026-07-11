@@ -1,7 +1,6 @@
 import React from 'react';
 import { cn } from 'lib/utils';
-import { FileText, LogOut } from 'lucide-react';
-import { supabase } from 'lib/supabase';
+import { FileText } from 'lucide-react';
 
 export const GlobalHeader = ({ 
   totalPages = 0,
@@ -32,24 +31,7 @@ export const GlobalHeader = ({
       {/* Top gold accent line */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       
-      <div className="px-4 py-1">
-        {/* Logout row (title removed for vertical space) */}
-        <div className="flex items-center justify-end mb-2">
-          <button
-            onClick={() => supabase.auth.signOut()}
-            aria-label="Sign out"
-            className={cn(
-              "touch-target w-9 h-9 rounded-md",
-              "border border-gold/30 text-gold/70",
-              "flex items-center justify-center",
-              "hover:border-gold hover:text-gold hover:bg-gold/10",
-              "active:scale-95 transition-all duration-200"
-            )}
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
+      <div className="px-4 py-2">
         <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-2">
           {/* Zeile 1 links: Page-Counter */}
           <div className="grimdark-panel rounded-lg px-3 py-2 flex flex-col justify-center">

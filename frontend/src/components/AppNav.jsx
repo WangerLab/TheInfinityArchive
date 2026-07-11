@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Layers, Archive, Globe, Cpu, Award } from 'lucide-react';
+import { Home, Layers, Archive, Globe, Cpu, Award, LogOut } from 'lucide-react';
+import { supabase } from 'lib/supabase';
 
 const navItems = [
   { to: '/', label: 'HOME', icon: Home, end: true },
@@ -32,6 +33,13 @@ export function AppNav() {
             {label}
           </NavLink>
         ))}
+        <button
+          onClick={() => supabase.auth.signOut()}
+          aria-label="Sign out"
+          className="ml-auto inline-flex items-center justify-center w-9 h-9 rounded-md border border-gold/30 text-gold/70 hover:border-gold hover:text-gold hover:bg-gold/10 active:scale-95 transition-all"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </nav>
   );
