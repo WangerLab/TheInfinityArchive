@@ -14,13 +14,15 @@ const PROJECT_DESCRIPTION =
 //       books: [ { entryId, title, author, pages, type, tags,
 //                  locationPrimary, locationSegmentum, inUniverseDate,
 //                  protagonist, keyCharacters, subFaction, factionPrimary,
+//                  grandAlliance, factionSigil,
 //                  moodTags, semanticTags, summary,
 //                  series: { name, orderLabel, sortPosition } | null,
 //                  contents? } ] } ] }
 // where contents (only present when an entry has children) is:
 //       [ { entryId, title, pages, type,
 //           locationPrimary, locationSegmentum, inUniverseDate,
-//           protagonist, keyCharacters, subFaction, moodTags, summary,
+//           protagonist, keyCharacters, subFaction, grandAlliance, factionSigil,
+//           moodTags, summary,
 //           series: { name, orderLabel, sortPosition } | null } ]
 // entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
 // state key (E-2b). description is a static display constant (not DB data);
@@ -49,7 +51,7 @@ export function useCatalog() {
               .order('sort_order', { ascending: true }),
             supabase
               .from('books')
-              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance')
+              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance, faction_sigil')
               .order('sort_order', { ascending: true }),
             supabase
               .from('book_series')
@@ -120,6 +122,7 @@ export function useCatalog() {
               subFaction: entry.sub_faction ?? null,
               factionPrimary: entry.faction_primary ?? null,
               grandAlliance: entry.grand_alliance ?? null,
+              factionSigil: entry.faction_sigil ?? null,
               moodTags: Array.isArray(entry.mood_tags) ? entry.mood_tags : [],
               semanticTags: Array.isArray(entry.semantic_tags) ? entry.semantic_tags : [],
               summary: entry.spoiler_free_summary ?? null,
@@ -139,6 +142,7 @@ export function useCatalog() {
                 keyCharacters: Array.isArray(sub.key_characters) ? sub.key_characters : [],
                 subFaction: sub.sub_faction ?? null,
                 grandAlliance: sub.grand_alliance ?? null,
+                factionSigil: sub.faction_sigil ?? null,
                 moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
                 summary: sub.spoiler_free_summary ?? null,
                 series: seriesByBookId.get(sub.id) ?? null,
