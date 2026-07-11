@@ -15,11 +15,7 @@ architecture.
 
 ## Current Sprint (last completed)
 
-Campaign Skin + Layout — COMPLETE (Desktop). HEAD 544b4ab on main.
-Cinzel display font, two-column master-detail campaign view, header with
-page-counter + current-assignment side by side and an X/8 sectors-pacified
-line, independent column scrolling. One open item: ProgressRing percent
-still doesn't sit cleanly (carried forward).
+Header-Overhaul (Ring / Dossier / 2×2-Grid / compact) — COMPLETE (Desktop). HEAD fdd62de on main. Twelve commits: ring-% centered + enlarged, pacified-badge clip fixed, header re-cut (left = project-general, right = current book), new CurrentBookDossier (FactionMark + sub-faction + summary + sector/POV), 2×2 mirror grid via named slots, header lowered. NOTE: a flex-fill layout experiment (7d89c24) broke independent column scrolling and was reverted (f4ee184) back to calc(100vh-360px) — see CLAUDE.md lesson; do not re-apply flex-fill to PhaseView.
 
 ---
 

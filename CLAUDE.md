@@ -828,3 +828,51 @@ Key decisions & lessons:
   session. LESSON: the ProgressRing percent overlay is fiddly at 52px/68px;
   next attempt should probably preview in-browser or reconsider showing
   "%" at all in the small ring.
+
+## Header-Overhaul Sprint (Ring / Dossier / 2×2-Grid / compact)
+
+Zwölf Commits, Desktop, alle live-grün auf main. Base 524e44f → HEAD fdd62de.
+Kette: a611c50 (ring % centered) · 5c3a761 (badge clip + sticky-comment) ·
+4821ea3 (header-ring number bigger) · 74b980a (subFaction onto sub-item shape) ·
+8c742d8 (scope stacked left, facts clearer) · 7f93b6f (CurrentBookDossier) ·
+f4a898d (2×2 named-slot grid, mirror symmetry) · 7d89c24 (flex-fill — regression) ·
+24df09b (center + tighten) · 89e7f9a (scroll fix attempt) · f4ee184 (revert to calc) ·
+fdd62de (all four boxes lower, dossier one-line).
+
+Key decisions & lessons:
+- Header = 2×2 mirror grid. Left = project-general (page-counter + description/
+  scope-facts), right = current book (assignment + dossier). auto-rows-fr keeps
+  each row's left/right box equal height.
+- GlobalHeader stays DATA-AGNOSTIC: numbers + a `description` string + two
+  ReactNode slots (assignmentSlot, dossierSlot). No project objects. Rendered
+  only by PhaseView.
+- FactionMark is the single source of truth for alliance icon+tint+label;
+  factionLabel(alliance) reads the same MARKS object. Archive.jsx filter labels
+  are separate filter UI, not canonical.
+- CurrentBookDossier is presentational + router-free (like CurrentAssignment),
+  every field null-tolerant, returns null when empty.
+
+- LESSON — flex-fill vs. independent inner scrollers (scroll regression):
+  Commit 7d89c24 replaced the phase grid's fixed lg:h-[calc(100vh-360px)] with a
+  flex-col fill where `main` became the scroll container (overflow-y-auto). That
+  left the inner grid without a defined height, lg:h-full resolved to nothing,
+  and the two columns (phase list / book list) lost their reference height —
+  both scrolled together in `main` instead of independently. The independent
+  scroll had been working before. A partial fix (89e7f9a) did not reliably
+  restore it; only a full revert (f4ee184) to the calc structure did.
+  RULE: an overflow scroll container on outer `main` is incompatible with inner
+  columns that need their own h-full + overflow-y-auto — the outer scroller
+  robs the inner grid of a defined reference height. When independent inner
+  scrollers are required, the grid needs a FIXED defined height (calc(100vh-Xpx)),
+  NOT a growing flex-fill container with its own overflow. A guessed-but-working
+  magic value beats a "clean" flex-fill that breaks the inner scrollers. Do NOT
+  re-replace PhaseView's calc height with flex-fill.
+
+- PROCESS LESSON: the flex-fill rework solved a problem the user never had (they
+  wanted header alignment + less empty space, not height decoupling). Result:
+  detour commits + a broken core feature + frustration. Stay close to the user's
+  actually-stated goal; don't introduce a preventive architectural "improvement"
+  whose risk the user didn't ask for.
+
+- Preview practice: render in-chat previews at REAL header width before optical
+  decisions — narrow previews distort proportions (boxes look taller/emptier).
