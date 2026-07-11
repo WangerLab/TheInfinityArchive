@@ -33,7 +33,7 @@ export const GlobalHeader = ({
       {/* Top gold accent line */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       
-      <div className="px-4 py-2">
+      <div className="px-4 py-1.5">
         {/* Title row */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1 min-w-0">
@@ -68,14 +68,14 @@ export const GlobalHeader = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-3">
           {/* Zeile 1 links: Page-Counter */}
-          <div className="grimdark-panel rounded-lg px-3 py-2.5 flex flex-col justify-center">
+          <div className="grimdark-panel rounded-lg px-3 py-2 flex flex-col justify-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-gold" />
+              <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-gold" />
               </div>
               <div className="flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-display text-2xl text-slate-100 tracking-wide">
+                  <span className="font-display text-xl text-slate-100 tracking-wide">
                     {formatNumber(readPages)}
                   </span>
                   <span className="text-slate-500 font-data">/</span>
@@ -105,7 +105,7 @@ export const GlobalHeader = ({
           {assignmentSlot}
 
           {/* Zeile 2 links: Scope (Description + Fakten) */}
-          <div className="grimdark-panel rounded-lg px-4 py-2.5 flex flex-col justify-center">
+          <div className="grimdark-panel rounded-lg px-4 py-2 flex flex-col justify-center">
             {description && (
               <p className="text-xs text-slate-300 leading-relaxed font-medium">
                 <span className="text-gold font-bold">{'>'}</span> {description}
