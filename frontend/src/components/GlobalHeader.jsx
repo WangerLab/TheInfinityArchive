@@ -20,6 +20,17 @@ export const GlobalHeader = ({
 
   const formatNumber = (num) => num.toLocaleString();
 
+  // Axis ticks every 10k up to totalPages (e.g. 0, 10k … 80k). Compact
+  // "k" labels; positioned by percentage so they align under the bar.
+  const TICK_STEP = 10000;
+  const ticks = [];
+  if (totalPages > 0) {
+    for (let v = 0; v <= totalPages; v += TICK_STEP) {
+      ticks.push(v);
+    }
+  }
+  const tickLabel = (v) => (v === 0 ? '0' : `${Math.round(v / 1000)}k`);
+
   return (
     <header className={cn(
       "sticky top-0 z-50 safe-top",
@@ -65,6 +76,21 @@ export const GlobalHeader = ({
                 }}
               />
             </div>
+
+            {/* Axis ticks */}
+            {ticks.length > 1 && (
+              <div className="relative h-3 mt-1">
+                {ticks.map((v) => (
+                  <span
+                    key={v}
+                    className="absolute top-0 text-[9px] font-data text-slate-600 tabular-nums -translate-x-1/2"
+                    style={{ left: `${(v / totalPages) * 100}%` }}
+                  >
+                    {tickLabel(v)}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Zeile 1 rechts: Assignment */}
