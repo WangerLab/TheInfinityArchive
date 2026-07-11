@@ -68,7 +68,7 @@ export const GlobalHeader = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-3">
           {/* Zeile 1 links: Page-Counter */}
-          <div className="grimdark-panel rounded-lg p-3 flex flex-col">
+          <div className="grimdark-panel rounded-lg px-3 py-2.5 flex flex-col justify-center">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-gold" />
@@ -105,7 +105,7 @@ export const GlobalHeader = ({
           {assignmentSlot}
 
           {/* Zeile 2 links: Scope (Description + Fakten) */}
-          <div className="grimdark-panel rounded-lg px-4 py-3 flex flex-col justify-center">
+          <div className="grimdark-panel rounded-lg px-4 py-2.5 flex flex-col justify-center">
             {description && (
               <p className="text-xs text-slate-300 leading-relaxed font-medium">
                 <span className="text-gold font-bold">{'>'}</span> {description}
