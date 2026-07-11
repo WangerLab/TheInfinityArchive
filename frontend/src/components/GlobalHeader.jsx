@@ -14,7 +14,8 @@ export const GlobalHeader = ({
   pacifiedSectors = 0,
   totalSectors = 0,
   description = '',
-  children,
+  assignmentSlot,
+  dossierSlot,
   className
 }) => {
   const progress = totalPages > 0 ? (readPages / totalPages) * 100 : 0;
@@ -65,78 +66,71 @@ export const GlobalHeader = ({
           />
         </div>
 
-        <div className={cn(
-          "grid grid-cols-1 gap-3",
-          children && "md:grid-cols-2 md:items-stretch"
-        )}>
-          {/* LINKS: Page-Counter + Scope, gestapelt */}
-          <div className="flex flex-col gap-3">
-            {/* XP Bar - Page Counter */}
-            <div className="grimdark-panel rounded-lg p-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-gold" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-display text-2xl text-slate-100 tracking-wide">
-                      {formatNumber(readPages)}
-                    </span>
-                    <span className="text-slate-500 font-data">/</span>
-                    <span className="font-data text-lg text-slate-400">
-                      {formatNumber(totalPages)}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-gold font-tactical tracking-[0.2em]">
-                    PAGES PROCESSED
+        <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-3">
+          {/* Zeile 1 links: Page-Counter */}
+          <div className="grimdark-panel rounded-lg p-3 flex flex-col">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-gold" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-2xl text-slate-100 tracking-wide">
+                    {formatNumber(readPages)}
+                  </span>
+                  <span className="text-slate-500 font-data">/</span>
+                  <span className="font-data text-lg text-slate-400">
+                    {formatNumber(totalPages)}
                   </span>
                 </div>
-              </div>
-
-              {/* Progress bar */}
-              <div className="mt-3 h-2 bg-black/50 rounded-full overflow-hidden border border-gold/20">
-                <div
-                  className="h-full bg-gradient-to-r from-gold via-gold to-auspex rounded-full transition-all duration-700"
-                  style={{
-                    width: `${progress}%`,
-                    boxShadow: progress > 0 ? '0 0 10px hsl(38, 92%, 50%)' : 'none'
-                  }}
-                />
+                <span className="text-[10px] text-gold font-tactical tracking-[0.2em]">
+                  PAGES PROCESSED
+                </span>
               </div>
             </div>
 
-            {/* Scope: Description + Fakten */}
-            <div className="grimdark-panel rounded-lg px-4 py-3">
-              {description && (
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  <span className="text-gold font-bold">{'>'}</span> {description}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-xs font-data">
-                <span className="flex items-center gap-1.5">
-                  <span className="font-bold text-auspex tabular-nums">{pacifiedSectors}/{totalSectors}</span>
-                  <span className="text-[10px] text-auspex/70 font-tactical tracking-[0.15em]">SECTORS PACIFIED</span>
-                </span>
-                <span className="text-gold/50">•</span>
-                <span className="flex items-center gap-1.5">
-                  <span className="font-bold text-slate-200 tabular-nums">{totalPages.toLocaleString()}</span>
-                  <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">TOTAL PAGES</span>
-                </span>
-                <span className="text-gold/50">•</span>
-                <span className="flex items-center gap-1.5">
-                  <span className="font-bold text-slate-200 tabular-nums">{completedItems}/{totalItems}</span>
-                  <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">BOOKS READ</span>
-                </span>
-              </div>
+            {/* Progress bar */}
+            <div className="mt-3 h-2 bg-black/50 rounded-full overflow-hidden border border-gold/20">
+              <div
+                className="h-full bg-gradient-to-r from-gold via-gold to-auspex rounded-full transition-all duration-700"
+                style={{
+                  width: `${progress}%`,
+                  boxShadow: progress > 0 ? '0 0 10px hsl(38, 92%, 50%)' : 'none'
+                }}
+              />
             </div>
           </div>
 
-          {/* CurrentAssignment */}
-          {children && (
-            <div className="flex flex-col justify-center">
-              {children}
+          {/* Zeile 1 rechts: Assignment */}
+          {assignmentSlot}
+
+          {/* Zeile 2 links: Scope (Description + Fakten) */}
+          <div className="grimdark-panel rounded-lg px-4 py-3 flex flex-col justify-center">
+            {description && (
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                <span className="text-gold font-bold">{'>'}</span> {description}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-xs font-data">
+              <span className="flex items-center gap-1.5">
+                <span className="font-bold text-auspex tabular-nums">{pacifiedSectors}/{totalSectors}</span>
+                <span className="text-[10px] text-auspex/70 font-tactical tracking-[0.15em]">SECTORS PACIFIED</span>
+              </span>
+              <span className="text-gold/50">•</span>
+              <span className="flex items-center gap-1.5">
+                <span className="font-bold text-slate-200 tabular-nums">{totalPages.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">TOTAL PAGES</span>
+              </span>
+              <span className="text-gold/50">•</span>
+              <span className="flex items-center gap-1.5">
+                <span className="font-bold text-slate-200 tabular-nums">{completedItems}/{totalItems}</span>
+                <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">BOOKS READ</span>
+              </span>
             </div>
-          )}
+          </div>
+
+          {/* Zeile 2 rechts: Dossier */}
+          {dossierSlot}
         </div>
       </div>
 

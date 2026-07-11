@@ -47,13 +47,17 @@ export function PhaseView() {
         pacifiedSectors={pacifiedSectors}
         totalSectors={projectData.totalPhases}
         description={projectData.description}
-      >
-        <CurrentAssignment
-          current={currentReading}
-          onOpen={(entryId) => navigate('/book/' + entryId)}
-        />
-        <CurrentBookDossier book={currentReading?.book} />
-      </GlobalHeader>
+        assignmentSlot={
+          <CurrentAssignment
+            current={currentReading}
+            onOpen={(entryId) => navigate('/book/' + entryId)}
+            className="h-full"
+          />
+        }
+        dossierSlot={
+          <CurrentBookDossier book={currentReading?.book} className="h-full" />
+        }
+      />
 
       <main className="px-4 py-4">
         <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:h-[calc(100vh-360px)]">
