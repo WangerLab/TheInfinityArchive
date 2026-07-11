@@ -16,6 +16,14 @@ export const ProgressRing = ({
   
   const isPacified = progress >= 100;
 
+  const rounded = Math.round(progress);
+  const isThreeDigit = rounded >= 100;
+  // Ziffern- und Prozentgröße aus der Ringgröße ableiten (px).
+  // 68px-Header-Ring: 17/10 (zweistellig), 15/9 (dreistellig).
+  // 52px-Karten-Ring: 14/8 (zweistellig), 13/8 (dreistellig).
+  const numPx = size >= 60 ? (isThreeDigit ? 15 : 17) : (isThreeDigit ? 13 : 14);
+  const pctPx = size >= 60 ? (isThreeDigit ? 8 : 10) : 8;
+
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
       <svg width={size} height={size} className="transform -rotate-90">
@@ -55,18 +63,17 @@ export const ProgressRing = ({
       </svg>
       
       {showPercentage && (
-        <div className="absolute inset-0 flex items-center justify-center gap-px">
+        <div className="absolute inset-0 flex items-center justify-center">
           <span className={cn(
-            "font-data font-bold leading-none tabular-nums",
-            Math.round(progress) >= 100 ? "text-[13px]" : "text-[15px]",
+            "inline-flex items-baseline font-data font-bold leading-none tabular-nums",
             isPacified ? "text-auspex text-glow-auspex" : "text-gold text-glow-gold"
           )}>
-            {Math.round(progress)}
+            <span style={{ fontSize: `${numPx}px` }}>{rounded}</span>
+            <span
+              className={cn("font-semibold", isPacified ? "text-auspex/75" : "text-gold/75")}
+              style={{ fontSize: `${pctPx}px`, transform: 'translateY(-0.15em)', marginLeft: '0.5px' }}
+            >%</span>
           </span>
-          <span className={cn(
-            "font-data text-[9px] font-semibold leading-none self-start mt-0.5",
-            isPacified ? "text-auspex/70" : "text-gold/70"
-          )}>%</span>
         </div>
       )}
     </div>
