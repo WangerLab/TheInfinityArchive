@@ -32,4 +32,10 @@ export function FactionMark({ alliance, size = 'sm', className, title }) {
   );
 }
 
+// Human-readable alliance label from the same MARKS source. Returns '' for
+// unknown/empty, so callers can conditionally render.
+export function factionLabel(alliance) {
+  return MARKS[alliance]?.label ?? '';
+}
+
 export default FactionMark;

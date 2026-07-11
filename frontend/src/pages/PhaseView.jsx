@@ -4,6 +4,7 @@ import { GlobalHeader } from 'components/GlobalHeader';
 import { PhaseCard } from 'components/PhaseCard';
 import { PhaseDetail } from 'components/PhaseDetail';
 import { CurrentAssignment } from 'components/CurrentAssignment';
+import { CurrentBookDossier } from 'components/CurrentBookDossier';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { ViewBackdrop } from 'components/ViewBackdrop';
 
@@ -51,6 +52,7 @@ export function PhaseView() {
           current={currentReading}
           onOpen={(entryId) => navigate('/book/' + entryId)}
         />
+        <CurrentBookDossier book={currentReading?.book} />
       </GlobalHeader>
 
       <main className="px-4 py-4">
