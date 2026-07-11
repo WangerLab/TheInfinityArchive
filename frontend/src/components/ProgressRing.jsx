@@ -21,8 +21,8 @@ export const ProgressRing = ({
   // Ziffern- und Prozentgröße aus der Ringgröße ableiten (px).
   // 68px-Header-Ring: 17/10 (zweistellig), 15/9 (dreistellig).
   // 52px-Karten-Ring: 14/8 (zweistellig), 13/8 (dreistellig).
-  const numPx = size >= 60 ? (isThreeDigit ? 15 : 17) : (isThreeDigit ? 13 : 14);
-  const pctPx = size >= 60 ? (isThreeDigit ? 8 : 10) : 8;
+  const numPx = size >= 60 ? (isThreeDigit ? 18 : 23) : (isThreeDigit ? 13 : 14);
+  const pctPx = size >= 60 ? (isThreeDigit ? 10 : 12) : 8;
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
