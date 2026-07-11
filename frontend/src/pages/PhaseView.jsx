@@ -60,8 +60,8 @@ export function PhaseView() {
           }
         />
 
-        <main className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
-          <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:h-full">
+        <main className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 py-4">
+          <div className="flex-1 min-h-0 lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5">
 
             {/* LINKS: Phasenliste (eigener Scroll-Container) */}
             <div className="space-y-3 pt-2 lg:h-full lg:overflow-y-auto lg:pr-2 lg:pl-1">
@@ -109,7 +109,7 @@ export function PhaseView() {
           </div>
 
           {/* Footer */}
-          <footer className="mt-8 pt-4 border-t border-gold/20">
+          <footer className="shrink-0 mt-4 pt-4 border-t border-gold/20">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-auspex animate-pulse-glow shadow-[0_0_8px_hsl(var(--auspex))]" />
