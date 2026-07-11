@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { ProgressRing } from './ProgressRing';
-import { FileText, Skull, Zap, LogOut } from 'lucide-react';
+import { FileText, LogOut } from 'lucide-react';
 import { supabase } from 'lib/supabase';
 
 export const GlobalHeader = ({ 
@@ -13,6 +13,7 @@ export const GlobalHeader = ({
   averageRating = 0,
   pacifiedSectors = 0,
   totalSectors = 0,
+  description = '',
   children,
   className
 }) => {
@@ -68,65 +69,66 @@ export const GlobalHeader = ({
           "grid grid-cols-1 gap-3",
           children && "md:grid-cols-2 md:items-stretch"
         )}>
-          {/* XP Bar - Page Counter */}
-          <div className="grimdark-panel rounded-lg p-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-gold" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-2xl text-slate-100 tracking-wide">
-                    {formatNumber(readPages)}
-                  </span>
-                  <span className="text-slate-500 font-data">/</span>
-                  <span className="font-data text-lg text-slate-400">
-                    {formatNumber(totalPages)}
-                  </span>
+          {/* LINKS: Page-Counter + Scope, gestapelt */}
+          <div className="flex flex-col gap-3">
+            {/* XP Bar - Page Counter */}
+            <div className="grimdark-panel rounded-lg p-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-gold" />
                 </div>
-                <span className="text-[10px] text-gold font-tactical tracking-[0.2em]">
-                  PAGES PROCESSED
-                </span>
-              </div>
-
-              {/* Mini stats */}
-              <div className="flex flex-col gap-1.5 items-end">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <Zap className="w-4 h-4 text-auspex" />
-                  <span className="text-slate-200 font-bold">{completedItems}/{totalItems}</span>
-                  <span className="text-[9px] text-auspex/70 font-tactical tracking-[0.15em] ml-0.5">ITEMS</span>
-                </div>
-                {averageRating > 0 && (
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Skull className="w-4 h-4 text-gold" />
-                    <span className="text-gold font-bold">{averageRating.toFixed(1)}</span>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-2xl text-slate-100 tracking-wide">
+                      {formatNumber(readPages)}
+                    </span>
+                    <span className="text-slate-500 font-data">/</span>
+                    <span className="font-data text-lg text-slate-400">
+                      {formatNumber(totalPages)}
+                    </span>
                   </div>
-                )}
+                  <span className="text-[10px] text-gold font-tactical tracking-[0.2em]">
+                    PAGES PROCESSED
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mt-3 h-2 bg-black/50 rounded-full overflow-hidden border border-gold/20">
+                <div
+                  className="h-full bg-gradient-to-r from-gold via-gold to-auspex rounded-full transition-all duration-700"
+                  style={{
+                    width: `${progress}%`,
+                    boxShadow: progress > 0 ? '0 0 10px hsl(38, 92%, 50%)' : 'none'
+                  }}
+                />
               </div>
             </div>
 
-            {/* Progress bar */}
-            <div className="mt-3 h-2 bg-black/50 rounded-full overflow-hidden border border-gold/20">
-              <div
-                className="h-full bg-gradient-to-r from-gold via-gold to-auspex rounded-full transition-all duration-700"
-                style={{
-                  width: `${progress}%`,
-                  boxShadow: progress > 0 ? '0 0 10px hsl(38, 92%, 50%)' : 'none'
-                }}
-              />
-            </div>
-
-            {/* Sectors pacified */}
-            {totalSectors > 0 && (
-              <div className="mt-2.5 flex items-center gap-1.5">
-                <span className="font-data text-sm font-bold text-auspex tabular-nums">
-                  {pacifiedSectors}/{totalSectors}
+            {/* Scope: Description + Fakten */}
+            <div className="grimdark-panel rounded-lg px-4 py-3">
+              {description && (
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  <span className="text-gold font-bold">{'>'}</span> {description}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-xs font-data">
+                <span className="flex items-center gap-1.5">
+                  <span className="font-bold text-auspex tabular-nums">{pacifiedSectors}/{totalSectors}</span>
+                  <span className="text-[10px] text-auspex/70 font-tactical tracking-[0.15em]">SECTORS PACIFIED</span>
                 </span>
-                <span className="text-[10px] text-auspex/70 font-tactical tracking-[0.2em]">
-                  SECTORS PACIFIED
+                <span className="text-gold/50">•</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="font-bold text-slate-200 tabular-nums">{totalPages.toLocaleString()}</span>
+                  <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">TOTAL PAGES</span>
+                </span>
+                <span className="text-gold/50">•</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="font-bold text-slate-200 tabular-nums">{completedItems}/{totalItems}</span>
+                  <span className="text-[10px] text-slate-400 font-tactical tracking-[0.15em]">BOOKS READ</span>
                 </span>
               </div>
-            )}
+            </div>
           </div>
 
           {/* CurrentAssignment */}

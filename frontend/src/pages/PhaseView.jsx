@@ -45,24 +45,12 @@ export function PhaseView() {
         averageRating={globalStats.averageRating}
         pacifiedSectors={pacifiedSectors}
         totalSectors={projectData.totalPhases}
+        description={projectData.description}
       >
         <CurrentAssignment
           current={currentReading}
           onOpen={(entryId) => navigate('/book/' + entryId)}
         />
-
-        <div className="grimdark-panel rounded-lg p-4">
-          <p className="text-sm text-slate-200 leading-relaxed font-medium">
-            <span className="text-gold font-bold">{'>'}</span> {projectData.description}
-          </p>
-          <div className="flex items-center gap-4 mt-3 text-xs text-slate-400 font-data">
-            <span>{projectData.totalPhases} SECTORS</span>
-            <span className="text-gold">•</span>
-            <span>{globalStats.totalPages.toLocaleString()} TOTAL PAGES</span>
-            <span className="text-gold">•</span>
-            <span>{globalStats.totalItems} ITEMS</span>
-          </div>
-        </div>
       </GlobalHeader>
 
       <main className="px-4 py-4">
