@@ -34,7 +34,7 @@ export function CurrentBookDossier({ book, className }) {
             <>
               <span className="text-slate-600">·</span>
               <span className="text-[11px] text-slate-300 font-semibold truncate">
-                {book.subFaction}
+                {book.subFaction.split(';').map(s => s.trim()).join(' · ')}
               </span>
             </>
           )}

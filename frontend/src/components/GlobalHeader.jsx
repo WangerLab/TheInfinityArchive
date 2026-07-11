@@ -33,9 +33,9 @@ export const GlobalHeader = ({
       {/* Top gold accent line */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       
-      <div className="px-4 py-1.5">
+      <div className="px-4 py-1">
         {/* Title row */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5">
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-xl text-gold tracking-wider text-glow-gold">
               THE INFINITY ARCHIVE
@@ -61,12 +61,12 @@ export const GlobalHeader = ({
 
           <ProgressRing
             progress={progress}
-            size={68}
+            size={60}
             strokeWidth={5}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-2">
           {/* Zeile 1 links: Page-Counter */}
           <div className="grimdark-panel rounded-lg px-3 py-2 flex flex-col justify-center">
             <div className="flex items-center gap-3">
