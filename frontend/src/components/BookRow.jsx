@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { Check, BookOpen } from 'lucide-react';
-import { FactionMark } from './FactionMark';
+import { FactionSigil } from './FactionSigil';
 import { SkullRating } from './SkullRating';
 
 // Lean list row — a status GLIMPSE, not depth. Click opens the dossier via
@@ -32,8 +32,8 @@ export function BookRow({ book, entryProgress, onOpen }) {
           : 'border-l-slate-700'
       )}
     >
-      {/* Faction mark — leading, small, tinted */}
-      <FactionMark alliance={book.grandAlliance} size="sm" />
+      {/* Faction sigil — leading, small, alliance-tinted; falls back to the alliance mark */}
+      <FactionSigil sigil={book.factionSigil} alliance={book.grandAlliance} size="sm" />
 
       {/* Title + optional author */}
       <div className="flex-1 min-w-0">
