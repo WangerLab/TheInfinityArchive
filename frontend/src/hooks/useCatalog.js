@@ -148,6 +148,27 @@ export function useCatalog() {
                 series: seriesByBookId.get(sub.id) ?? null,
               }));
             }
+
+            // Omnibus parents carry no sub_faction of their own (enriched
+            // metadata lives on the children), so faction_sigil is NULL. Derive
+            // the parent's display sigil from its children: the most common
+            // non-null child sigil, ties broken by reading order. Stays null if
+            // no child has one (-> falls back to the alliance mark).
+            if (book.contents && !book.factionSigil) {
+              const counts = new Map();
+              for (const c of book.contents) {
+                if (!c.factionSigil) continue;
+                counts.set(c.factionSigil, (counts.get(c.factionSigil) || 0) + 1);
+              }
+              let best = null, bestN = 0;
+              for (const c of book.contents) {
+                if (!c.factionSigil) continue;
+                const n = counts.get(c.factionSigil);
+                if (n > bestN) { bestN = n; best = c.factionSigil; }
+              }
+              book.factionSigil = best;
+            }
+
             return book;
           });
 
