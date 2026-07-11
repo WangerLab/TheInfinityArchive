@@ -28,7 +28,7 @@ const SIZES = {
 // public/ assets aren't fingerprinted, so a replaced PNG keeps its URL and can be
 // served stale from browser/CDN cache. Bump this whenever a sigil file is
 // replaced — the query string changes the cache key and forces a fresh fetch.
-const ASSET_VERSION = 1;
+const ASSET_VERSION = 2;
 
 export function FactionSigil({ sigil, alliance, size = 'sm', className, title }) {
   const [failed, setFailed] = useState(false);
