@@ -20,7 +20,7 @@ const PROJECT_DESCRIPTION =
 // where contents (only present when an entry has children) is:
 //       [ { entryId, title, pages, type,
 //           locationPrimary, locationSegmentum, inUniverseDate,
-//           protagonist, moodTags, summary,
+//           protagonist, keyCharacters, subFaction, moodTags, summary,
 //           series: { name, orderLabel, sortPosition } | null } ]
 // entryId is the stable DB join-key (B-3c); App.js uses it as the per-book
 // state key (E-2b). description is a static display constant (not DB data);
@@ -136,6 +136,8 @@ export function useCatalog() {
                 locationSegmentum: sub.location_segmentum ?? null,
                 inUniverseDate: sub.in_universe_date ?? null,
                 protagonist: sub.protagonist ?? null,
+                keyCharacters: Array.isArray(sub.key_characters) ? sub.key_characters : [],
+                subFaction: sub.sub_faction ?? null,
                 grandAlliance: sub.grand_alliance ?? null,
                 moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
                 summary: sub.spoiler_free_summary ?? null,
