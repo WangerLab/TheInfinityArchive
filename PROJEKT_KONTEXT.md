@@ -15,7 +15,7 @@ architecture.
 
 ## Current Sprint (last completed)
 
-Header-Overhaul (Ring / Dossier / 2×2-Grid / compact) — COMPLETE (Desktop). HEAD fdd62de on main. Twelve commits: ring-% centered + enlarged, pacified-badge clip fixed, header re-cut (left = project-general, right = current book), new CurrentBookDossier (FactionMark + sub-faction + summary + sector/POV), 2×2 mirror grid via named slots, header lowered. NOTE: a flex-fill layout experiment (7d89c24) broke independent column scrolling and was reverted (f4ee184) back to calc(100vh-360px) — see CLAUDE.md lesson; do not re-apply flex-fill to PhaseView.
+Faction-Sigil Integration — COMPLETE (Desktop). HEAD b5b73dc on main. Per-book faction sigils end to end: 40 white-silhouette PNGs in public/sigils/, a faction_sigil text column on books (287 classified / 62 NULL via a regex CASE on the POV-bearer sub_faction), threaded through useCatalog to both book shapes, rendered by a new FactionSigil component (CSS mask-image tinted by grand_alliance, falls back to FactionMark on null/load-error), enlarged to 32px (xl size) in BookRow, with omnibus parents deriving their sigil from the most common child. Assets are cache-busted via an ASSET_VERSION query (public/ files aren't fingerprinted). See CLAUDE.md lessons (alpha-checker high-threshold, mask-sim verification, public/ cache-bust).
 
 ---
 
@@ -480,18 +480,20 @@ writes `status`; `is_read` follows automatically.
 
 ## Next Sprints (planned, not committed)
 
-- **Sprint B-3 (optional):** Pre-Supabase localStorage data migration
-  for Tim's existing reading state across devices.
-- **Sprint B-4 (optional polish):** logout flow polish, error/loading
-  auth states, fix `packageManager: yarn@...` field in package.json
-  (currently inconsistent with npm-based workflow, harmless because
-  package-lock.json takes precedence on Vercel).
-- **Sprint C:** Future-release tracker module (BL-GRP "Watch List"
-  integration).
-- **Sprint D:** Statistics dashboard (recharts likely needs re-adding,
-  was removed in B-0 as unused).
-- **Future:** deeper BL-GRP doc-sync — auto-pull phase structure from
-  BL-GRP docs into the Supabase catalog (manual for now).
+- **Doc reconcile (small, partly open):** faction-sigil lessons entered in
+  CLAUDE.md and mobile-merge wording aligned (this commit); handover .docx +
+  feature-summary .docx still to be patched incrementally.
+- **Semicolon cosmetic:** sub_faction `;` → `·` in the dossier. Mini-fix.
+- **Service Record "Achievement Hall":** display-case / badge grid, gold
+  frame. Needs a content-design decision first. The 40 sigils (512px) are
+  asset reserve and can render larger than 32px there.
+- **Palette migration v1.0 → v1.3 (deferred):** ~123 hard-wired
+  text-gold/text-auspex/text-plasma utilities to token consumption.
+- **Analysis View:** content-design session before build.
+- **AI Recommendation Companion:** Anthropic-API read-advisor; Strategium.
+- **Map View:** galactic map via location_primary / location_segmentum.
+- **BL-GRP:** finish Phase 1 (Infinite and the Divine, Ahriman saga),
+  then Phases 2–7.
 
 ## Cross-Project Note
 

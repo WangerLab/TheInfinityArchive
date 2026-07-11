@@ -59,18 +59,19 @@ This app is developed via a two-Claude model:
 - **Claude Code** (Sonnet, on Tim's device) = executor. Runs the
   prompts, shows full file contents for review, commits on Tim's go.
 
-Tim pushes himself, always. Claude Code stops and waits before push.
+Claude Code stops and waits for Tim's explicit go before push. On that go Claude Code executes the push/merge itself (device-dependent, below); Tim gives the go and verifies the result, he does not run the push/merge commands himself.
 
 ## Device Mode — Per Session
 
 - **Desktop:** local filesystem, `git diff` review allowed, push directly
   to main after approval.
-- **Mobile:** push only via `claude/*`-branch, merge via GitHub MCP or
-  Web UI. No `git push origin HEAD:main` (HTTP 403 from the Anthropic
-  harness). Full file contents replace `git diff` for review (hard to
-  read git diff on phone). Repo setting "Automatically delete head
-  branches" is ENABLED — server-side cleanup after every squash-merge,
-  no manual branch deletion needed.
+- **Mobile:** push only via `claude/*`-branch, then PR + squash-merge via
+  the `gh` CLI in one pass (see Mobile Release Sequence). No
+  `git push origin HEAD:main` (HTTP 403 from the Anthropic harness). Full
+  file contents replace `git diff` for review (hard to read git diff on
+  phone). Repo setting "Automatically delete head branches" is ENABLED —
+  server-side cleanup after every squash-merge, no manual branch deletion
+  needed.
 
 ## Mobile Release Sequence
 
@@ -78,14 +79,11 @@ After Tim's go-signal at sprint-commit completion, Claude Code executes
 in one shot:
 
 ````
-git push -u origin claude/<sprint-id>
-# Then via GitHub MCP:
-#   create_pull_request (with exact title and body)
-#   merge_pull_request (squash, with exact title and body)
-# GitHub auto-deletes the head branch.
+git push origin HEAD:claude/<sprint-id>
+gh pr create --base main --head claude/<sprint-id> --title "<title>" --body "<body>"
+gh pr merge --squash --delete-branch
 git checkout main
 git pull origin main
-git branch -D claude/<sprint-id>   # local cleanup
 git log -1 --oneline                # verify squash commit on main
 ````
 
@@ -876,3 +874,11 @@ Key decisions & lessons:
 
 - Preview practice: render in-chat previews at REAL header width before optical
   decisions — narrow previews distort proportions (boxes look taller/emptier).
+
+### Sprint Faction-Sigil Integration: alpha-checker high-threshold, mask-sim verification, public/ cache-bust
+
+Per-book faction sigils end to end: 40 white-silhouette PNGs in `public/sigils/`, a `faction_sigil` text column on `books` (287 classified / 62 NULL via a regex CASE on the POV-bearer `sub_faction`), threaded through useCatalog to both book shapes, and a `FactionSigil` component that tints the PNG via CSS `mask-image` + `bg-<alliance>`, falling back to `FactionMark` on null or load error. Omnibus parents (empty sub_faction) derive their display sigil from the most common child sigil in useCatalog. Three lessons:
+
+- **Gemini "transparency" can be a checkerboard baked into the ALPHA channel at a partial value (~170)** — not only an RGB checker, not only a soft halo. Hardening alpha at a mid threshold (130) cuts THROUGH such a checker and pushes its squares to 255 → a crisp checkerboard, blurred to a cloud at 16px but sharp at 32px. RULE: inspect the alpha histogram; if bimodal (checker cluster ~170 + shape cluster 255), threshold HIGH (~210, in the clean gap) so checker → transparent, shape → solid. A fixed 130 harden is wrong for alpha-baked checkers.
+- **Verify sigil alpha as a gold-on-dark MASK SIMULATION, never by mid-% alone.** A hard 0/255 checker has mid 0% and looks statistically clean while being visibly broken. The real tell is opaque% ≈ expected shape size (dark_angels 33%, not 61% — 61% = shape + checker-hardened-to-255) plus corners/background at uniform alpha 0.
+- **`public/` assets don't cache-bust on replacement** (same filename → browser AND Vercel CDN-edge serve stale; incognito bypasses only the browser, not the CDN, which caches per-URL). Decisive test: open the raw asset URL with a `?v=N` query (new URL → bypasses both → origin). Durable fix: an `ASSET_VERSION` query in FactionSigil's mask URL, bumped on any asset replacement. The cost of path-based `public/` over fingerprinted `assets/`.
