@@ -15,7 +15,9 @@ architecture.
 
 ## Current Sprint (last completed)
 
-Faction-Sigil Integration — COMPLETE (Desktop). HEAD b5b73dc on main. Per-book faction sigils end to end: 40 white-silhouette PNGs in public/sigils/, a faction_sigil text column on books (287 classified / 62 NULL via a regex CASE on the POV-bearer sub_faction), threaded through useCatalog to both book shapes, rendered by a new FactionSigil component (CSS mask-image tinted by grand_alliance, falls back to FactionMark on null/load-error), enlarged to 32px (xl size) in BookRow, with omnibus parents deriving their sigil from the most common child. Assets are cache-busted via an ASSET_VERSION query (public/ files aren't fingerprinted). See CLAUDE.md lessons (alpha-checker high-threshold, mask-sim verification, public/ cache-bust).
+Phases-Menü Optik-Politur — COMPLETE (Desktop). HEAD f87535a on main. Ten commits reshaping the Phases view: header slimmed (title row removed, logout moved into AppNav, bg lightened to slate-950/80 for backdrop blur, page-axis tick markers 0–80k under the progress bar), grand-alliance marks now render as tinted white-silhouette PNG masks (imperium=aquila, chaos=chaos_generic, xenos=xenos; unaligned stays lucide Skull) via FactionMark — the single source, so it propagates everywhere; CurrentAssignment rebuilt (book icon dropped, alliance+faction sigil line with names); BookRow gained a 40px (xxl) leading sigil, a faction line under the title, a left-aligned POV/Sector data block (fixed w-[300px] title block + spacer), and an omnibus composition string ("3 novels + 1 short story") from child types; omnibus parent faction derived from the most common child in useCatalog (derivedFaction, no DB write); sub_faction semicolons rendered as " · ". Two new assets in public/sigils/ (imperium.png, xenos.png; chaos_generic.png pre-existed). No DB change. PhaseView calc height now calc(100vh-270px). See CLAUDE.md lessons (RGB-vs-alpha checker, calc-header coupling, title-width layout lever).
+
+**⚠️ Known data gap (own sprint):** the "X/303 books read" count is structurally low. The 4 Gaunt's Ghosts omnibuses (P6-01..04) exist as is_omnibus entries with freetext omnibus_contents but NO sub_item child rows, so they count as 1 each instead of unpacking. 15 volumes hidden as 11 extra items → correct totals 314 total / 25 read. Fix: seed 15 sub_item rows (parent_book_id, entry_id, pages, faction_sigil=astra_militarum, imperium) with a dry-run against the count deltas. Frontend already handles unpacking; the data is incomplete.
 
 ---
 
@@ -480,10 +482,12 @@ writes `status`; `is_read` follows automatically.
 
 ## Next Sprints (planned, not committed)
 
-- **Doc reconcile (small, partly open):** faction-sigil lessons entered in
-  CLAUDE.md and mobile-merge wording aligned (this commit); handover .docx +
-  feature-summary .docx still to be patched incrementally.
-- **Semicolon cosmetic:** sub_faction `;` → `·` in the dossier. Mini-fix.
+- **Gaunt's Ghosts unpacking (data sprint, priority):** seed 15 sub_item
+  rows for P6-01..04 so the book count reads 314/25 instead of 303/14.
+  Diagnosis complete (see Current Sprint gap note); build only.
+- **Doc reconcile (small):** handover .docx + feature-summary .docx still
+  to be patched incrementally. CLAUDE.md mobile-rule verified current (no
+  drift). Next-sprints list refreshed (this commit).
 - **Service Record "Achievement Hall":** display-case / badge grid, gold
   frame. Needs a content-design decision first. The 40 sigils (512px) are
   asset reserve and can render larger than 32px there.
