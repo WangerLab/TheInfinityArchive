@@ -60,7 +60,7 @@ export function PhaseView() {
       />
 
       <main className="px-4 py-4">
-        <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:h-[calc(100vh-325px)]">
+        <div className="lg:grid lg:grid-cols-[minmax(300px,360px)_1fr] lg:gap-5 lg:h-[calc(100vh-270px)]">
 
           {/* LINKS: Phasenliste (eigener Scroll-Container) */}
           <div className="space-y-3 pt-2 lg:h-full lg:overflow-y-auto lg:pr-2 lg:pl-1">

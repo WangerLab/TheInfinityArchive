@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from 'lib/utils';
-import { ProgressRing } from './ProgressRing';
 import { FileText, LogOut } from 'lucide-react';
 import { supabase } from 'lib/supabase';
 
@@ -25,7 +24,7 @@ export const GlobalHeader = ({
   return (
     <header className={cn(
       "sticky top-0 z-50 safe-top",
-      "bg-slate-950/95 backdrop-blur-md",
+      "bg-slate-950/80 backdrop-blur-md",
       "border-b border-gold/30",
       "shadow-[0_4px_30px_rgba(0,0,0,0.8)]",
       className
@@ -34,22 +33,13 @@ export const GlobalHeader = ({
       <div className="h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       
       <div className="px-4 py-1">
-        {/* Title row */}
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex-1 min-w-0">
-            <h1 className="font-display text-xl text-gold tracking-wider text-glow-gold">
-              THE INFINITY ARCHIVE
-            </h1>
-            <p className="text-[10px] text-slate-400 font-tactical tracking-[0.25em] mt-0.5">
-              COGITATOR INTERFACE v.M41
-            </p>
-          </div>
-
+        {/* Logout row (title removed for vertical space) */}
+        <div className="flex items-center justify-end mb-2">
           <button
             onClick={() => supabase.auth.signOut()}
             aria-label="Sign out"
             className={cn(
-              "touch-target w-10 h-10 mr-2 rounded-md",
+              "touch-target w-9 h-9 rounded-md",
               "border border-gold/30 text-gold/70",
               "flex items-center justify-center",
               "hover:border-gold hover:text-gold hover:bg-gold/10",
@@ -58,12 +48,6 @@ export const GlobalHeader = ({
           >
             <LogOut className="w-4 h-4" />
           </button>
-
-          <ProgressRing
-            progress={progress}
-            size={60}
-            strokeWidth={5}
-          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-2">
