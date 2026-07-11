@@ -24,7 +24,7 @@ export function BookRow({ book, entryProgress, onOpen }) {
       type="button"
       onClick={() => onOpen?.(book.entryId)}
       className={cn(
-        'w-full text-left rounded-lg p-3 flex items-center gap-3 transition-all duration-200',
+        'w-full text-left rounded-lg p-3 flex items-center gap-4 transition-all duration-200',
         'bg-gradient-to-r from-slate-900/80 to-transparent border-l-3',
         'hover:from-slate-900 active:scale-[0.99]',
         isRead ? 'border-l-auspex bg-auspex/5'
@@ -33,7 +33,7 @@ export function BookRow({ book, entryProgress, onOpen }) {
       )}
     >
       {/* Faction sigil — leading, small, alliance-tinted; falls back to the alliance mark */}
-      <FactionSigil sigil={book.factionSigil} alliance={book.grandAlliance} size="sm" />
+      <FactionSigil sigil={book.factionSigil} alliance={book.grandAlliance} size="xl" />
 
       {/* Title + optional author */}
       <div className="flex-1 min-w-0">

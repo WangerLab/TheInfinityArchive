@@ -16,6 +16,7 @@ const SIZES = {
   sm: 'w-4 h-4',   // dense list rows (~18-24px box incl. padding)
   md: 'w-5 h-5',
   lg: 'w-6 h-6',   // dossier header, full silhouette
+  xl: 'w-8 h-8',   // enlarged leading sigil in list rows
 };
 
 // grandAlliance is NOT NULL across the catalog, but guard anyway: an unknown
