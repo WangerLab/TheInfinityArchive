@@ -47,15 +47,15 @@ export function CurrentAssignment({ current, onOpen, className }) {
           CURRENT ASSIGNMENT
         </p>
 
-        {/* Title with enlarged alliance sigil */}
-        <div className="flex items-center gap-2.5 mt-0.5">
-          <FactionMark alliance={alliance} size="lg" />
+        {/* Title */}
+        <div className="mt-0.5">
           <span className="font-display text-base text-gold truncate">{book.title}</span>
         </div>
 
-        {/* Faction line: alliance sigil + name + faction sigil + name */}
+        {/* Faction line: alliance sigil + name · faction sigil + name */}
         {(alliance || faction) && (
           <div className="flex items-center gap-2 mt-1.5 text-[12px]">
+            <FactionMark alliance={alliance} size="md" />
             {allianceName && (
               <span className="font-tactical tracking-[0.1em] text-purple-300">
                 {allianceName.toUpperCase()}
@@ -67,7 +67,7 @@ export function CurrentAssignment({ current, onOpen, className }) {
                 <FactionSigil
                   sigil={book.factionSigil}
                   alliance={alliance}
-                  size="sm"
+                  size="md"
                 />
                 <span className="text-slate-200 font-semibold truncate">{faction}</span>
               </>
