@@ -1,46 +1,26 @@
 import React from 'react';
 import { cn } from 'lib/utils';
 import { Globe } from 'lucide-react';
-import { FactionMark, factionLabel } from './FactionMark';
 
 // Presentational, router-free dossier for the currently-read book. Renders
-// faction line + summary + sector/POV data grid + mood-tag pills. Mirrors
-// CurrentAssignment's decoupling (no navigate import). Renders null when no
-// book. Fields tolerate null/empty individually so a sparse book still reads.
+// summary + sector/POV data grid. The faction line lived here until it proved
+// redundant — CurrentAssignment sits directly above it in the header and
+// already carries alliance + faction. Mirrors CurrentAssignment's decoupling
+// (no navigate import). Renders null when no book. Fields tolerate null/empty
+// individually so a sparse book still reads.
 export function CurrentBookDossier({ book, className }) {
   if (!book) return null;
 
-  const alliance = book.grandAlliance;
-  const label = factionLabel(alliance);
   const sector = book.locationSegmentum;
   const pov = book.protagonist;
   const summary = book.summary;
   const hasDataGrid = sector || pov;
 
   // Nothing worth showing → render nothing (keeps the column clean).
-  if (!alliance && !summary && !hasDataGrid) return null;
+  if (!summary && !hasDataGrid) return null;
 
   return (
     <div className={cn('grimdark-panel rounded-lg px-4 py-2', className)}>
-      {(alliance || book.subFaction) && (
-        <div className="flex items-center gap-2 mb-2">
-          <FactionMark alliance={alliance} size="sm" />
-          {label && (
-            <span className="text-[11px] font-tactical tracking-[0.12em] text-purple-300">
-              {label.toUpperCase()}
-            </span>
-          )}
-          {book.subFaction && (
-            <>
-              <span className="text-slate-600">·</span>
-              <span className="text-[11px] text-slate-300 font-semibold truncate">
-                {book.subFaction.split(';').map(s => s.trim()).join(' · ')}
-              </span>
-            </>
-          )}
-        </div>
-      )}
-
       {summary && (
         <p className="text-[12.5px] text-slate-300 leading-relaxed mb-2.5">
           {summary}
