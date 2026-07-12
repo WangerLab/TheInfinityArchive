@@ -38,11 +38,11 @@ export function CurrentAssignment({ current, onOpen, className }) {
       className={cn(
         'w-full text-left rounded-lg p-4 flex items-center gap-3 transition-all',
         'grimdark-panel border border-gold/40 hover:border-gold/70',
-        // The gold wash is an accent ON the panel fill, not a replacement for
-        // it: bg-gradient-to-r overrides .grimdark-panel's background-image
-        // outright, so it has to carry its own dark end or the box has no
-        // ground at all. Values track the panel base (card/void at .82/.88).
-        'bg-gradient-to-r from-gold/10 via-[hsl(var(--card)/0.82)] to-[hsl(var(--void)/0.88)]',
+        // No bg-* utility here on purpose: any background-image utility
+        // overrides .grimdark-panel's gradient outright, and this box is
+        // meant to sit on exactly the same ground as its three neighbours.
+        // Its call-to-action reading comes from the gold border, the gold
+        // title and the chevron — not from a background wash.
         'active:scale-[0.99]',
         className
       )}
