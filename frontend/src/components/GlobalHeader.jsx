@@ -34,7 +34,7 @@ export const GlobalHeader = ({
   return (
     <header className={cn(
       "sticky top-0 z-50 safe-top",
-      "bg-slate-950/80 backdrop-blur-md",
+      "bg-slate-950/65 backdrop-blur-sm",
       "border-b border-gold/30",
       "shadow-[0_4px_30px_rgba(0,0,0,0.8)]",
       className

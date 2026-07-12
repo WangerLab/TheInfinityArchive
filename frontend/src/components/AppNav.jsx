@@ -18,7 +18,7 @@ const navItems = [
 
 export function AppNav() {
   return (
-    <nav className="bg-slate-950/95 backdrop-blur-md border-b border-gold/30 safe-top">
+    <nav className="bg-slate-950/65 backdrop-blur-sm border-b border-gold/30 safe-top">
       <div className="flex items-center gap-1 px-4 py-2">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
