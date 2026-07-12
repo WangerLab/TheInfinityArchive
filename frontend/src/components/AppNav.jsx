@@ -3,13 +3,17 @@ import { NavLink } from 'react-router-dom';
 import { Home, Layers, Archive, Globe, Cpu, Award, LogOut } from 'lucide-react';
 import { supabase } from 'lib/supabase';
 
+// Labels mirror the Landing bridge's station names (see the stations array in
+// pages/Landing.jsx) so a destination reads the same in both places. Matched by
+// route, not by label. '/' keeps HOME — the Landing IS the bridge and has no
+// station of its own for it.
 const navItems = [
   { to: '/', label: 'HOME', icon: Home, end: true },
-  { to: '/phases', label: 'PHASES', icon: Layers },
-  { to: '/archive', label: 'ARCHIVE', icon: Archive },
-  { to: '/map', label: 'MAP', icon: Globe },
+  { to: '/phases', label: 'CAMPAIGN', icon: Layers },
+  { to: '/archive', label: 'AUSPEX', icon: Archive },
+  { to: '/map', label: 'OCULUS', icon: Globe },
   { to: '/strategium', label: 'STRATEGIUM', icon: Cpu },
-  { to: '/record', label: 'RECORD', icon: Award },
+  { to: '/record', label: 'SERVICE RECORD', icon: Award },
 ];
 
 export function AppNav() {
