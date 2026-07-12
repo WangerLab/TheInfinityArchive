@@ -15,9 +15,21 @@ architecture.
 
 ## Current Sprint (last completed)
 
-Phases-Menü Optik-Politur — COMPLETE (Desktop). HEAD f87535a on main. Ten commits reshaping the Phases view: header slimmed (title row removed, logout moved into AppNav, bg lightened to slate-950/80 for backdrop blur, page-axis tick markers 0–80k under the progress bar), grand-alliance marks now render as tinted white-silhouette PNG masks (imperium=aquila, chaos=chaos_generic, xenos=xenos; unaligned stays lucide Skull) via FactionMark — the single source, so it propagates everywhere; CurrentAssignment rebuilt (book icon dropped, alliance+faction sigil line with names); BookRow gained a 40px (xxl) leading sigil, a faction line under the title, a left-aligned POV/Sector data block (fixed w-[300px] title block + spacer), and an omnibus composition string ("3 novels + 1 short story") from child types; omnibus parent faction derived from the most common child in useCatalog (derivedFaction, no DB write); sub_faction semicolons rendered as " · ". Two new assets in public/sigils/ (imperium.png, xenos.png; chaos_generic.png pre-existed). No DB change. PhaseView calc height now calc(100vh-270px). See CLAUDE.md lessons (RGB-vs-alpha checker, calc-header coupling, title-width layout lever).
+Campaign-Finish — COMPLETE (Desktop). HEAD 28f650d on main. Thirteen commits closing out the Campaign/Phases view.
 
-**⚠️ Known data gap (own sprint):** the "X/303 books read" count is structurally low. The 4 Gaunt's Ghosts omnibuses (P6-01..04) exist as is_omnibus entries with freetext omnibus_contents but NO sub_item child rows, so they count as 1 each instead of unpacking. 15 volumes hidden as 11 extra items → correct totals 314 total / 25 read. Fix: seed 15 sub_item rows (parent_book_id, entry_id, pages, faction_sigil=astra_militarum, imperium) with a dry-run against the count deltas. Frontend already handles unpacking; the data is incomplete.
+**Counting bug (the real one, `8b76341`):** `globalStats` still read sub-item progress from the NESTED store (`progress?.contents?.[subEntryId]`) after the omnibus sub-items sprint moved to FLAT. The dead branch always returned undefined, so every read omnibus child counted as unread — DB held 9 read sub_items, header showed 14 completed instead of 23. `getPhaseStats` had been migrated; `globalStats` was missed. This, not the Gaunt's Ghosts gap, was the bulk of the old "14/303" discrepancy. Two further dead reads in the same block picked up (`progress?.isRead`, sub-item ratings).
+
+**Gaunt's Ghosts unpacked (`68b928b` + live DB):** 15 novels seeded as real `sub_item` rows under P6-01..04; count now reads 314. Page figures are an even split of each omnibus total (`page_count_confidence = 'low'`) — no per-volume figure is published, and the counters ignore a parent's `pages` once it has children, so the split is what holds the global total at 89,624 exactly. Dry-run green before insert (F-lesson). Recorded in `db/migrations/H-1_seed_gaunts_ghosts_sub_items.sql` (documentation only — the SQL ran live via MCP; NOT idempotent, a re-run would duplicate the 15 books rows).
+
+**Backdrop finally reaches the header — four rounds, four independent lids:** (1) `c2901e0` ViewBackdrop sat at `zIndex: -10`, which places it behind the OPAQUE body background — visible only where a `.grimdark-panel` spawned a stacking context via `backdrop-filter`; art moved to `z 0`, content to `z 10`. (2) `2965991` that promptly covered AppNav, which renders as a SIBLING of the Outlet and had no z-index; given `relative z-10`. (3) `f9db067` the GlobalHeader's own band (`bg-slate-950/65`) was a lid BETWEEN art and boxes; stripped to `bg-transparent` along with its hard black drop-shadow. AppNav keeps its band deliberately — no panels, bare labels, it carries their contrast. (4) `d8b409b`+`28f650d` `CurrentAssignment` never had the panel fill: a `bg-gradient-to-r from-gold/10 to-transparent` utility overrode `.grimdark-panel`'s gradient outright. Wash removed entirely; the box reads as a call to action through its gold border, gold title and chevron.
+
+**⚠️ Collateral, unresolved (`815800d`):** that commit raised `.grimdark-panel` from `card 0.6 / void 0.68` to `0.82 / 0.88` APP-WIDE, as an attempt to catch the bright assignment box. Wrong diagnosis — the box didn't have the class working (see round 4). It missed its target and darkened every panel in every view. It still stands, live-accepted, but the darkening was unintended. **Open decision: revert to 0.6/0.68?** The header boxes are unaffected either way.
+
+**Rest:** CurrentBookDossier lost its faction line (redundant — CurrentAssignment sits directly above it) and got its content vertically centred; the phase headline in the book list went `text-xs` → `text-lg` with a proportional number badge; nav labels now mirror the Landing bridge stations (PHASES→CAMPAIGN, ARCHIVE→AUSPEX, MAP→OCULUS, RECORD→SERVICE RECORD; `/` keeps HOME — the Landing IS the bridge), matched by route, not by label.
+
+**⚠️ Open: counting logic exists in triplicate.** `globalStats` + `getPhaseStats` (both `ArchiveDataContext.jsx`) + `calculateStats` (local in `PhaseDetail.jsx`). The nested→flat migration touched two of three; the third ran silently wrong for 40+ commits. Centralising is a clean standalone commit — one helper, three callers.
+
+**Reading status corrected:** what the previous STATE.md filed as "data drift from sprint tests" was Tim's actual reading position. Phase 1: Forges of Mars ✓, The Emperor's Gift ✓, Grey Knights ✓, The Infinite and the Divine ✓, All is Dust ✓, Ahriman: Exile ✓, **Ahriman: Sorcerer in progress**. The DB was right; the doc was stale. The drift note is struck.
 
 ---
 
@@ -482,12 +494,14 @@ writes `status`; `is_read` follows automatically.
 
 ## Next Sprints (planned, not committed)
 
-- **Gaunt's Ghosts unpacking (data sprint, priority):** seed 15 sub_item
-  rows for P6-01..04 so the book count reads 314/25 instead of 303/14.
-  Diagnosis complete (see Current Sprint gap note); build only.
+- **Panel-fill decision (small, first):** `.grimdark-panel` currently sits at
+  0.82/0.88 app-wide from a misdiagnosed commit (815800d). Decide: keep, or
+  revert to 0.6/0.68. Header boxes unaffected either way.
+- **Centralise the counting logic (small, high value):** one shared helper for
+  globalStats / getPhaseStats / calculateStats. The triplication is what hid
+  the nested-store reader for 40+ commits.
 - **Doc reconcile (small):** handover .docx + feature-summary .docx still
-  to be patched incrementally. CLAUDE.md mobile-rule verified current (no
-  drift). Next-sprints list refreshed (this commit).
+  to be patched incrementally — two sprints behind now.
 - **Service Record "Achievement Hall":** display-case / badge grid, gold
   frame. Needs a content-design decision first. The 40 sigils (512px) are
   asset reserve and can render larger than 32px there.
