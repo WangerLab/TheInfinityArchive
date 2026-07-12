@@ -92,7 +92,7 @@ export const PhaseDetail = ({
       )}>
         <div className="flex items-center gap-2">
           <span className={cn(
-            "w-6 h-6 rounded flex items-center justify-center text-xs font-display font-bold border shrink-0",
+            "w-8 h-8 rounded flex items-center justify-center text-sm font-display font-bold border shrink-0",
             isPacified
               ? "bg-auspex/20 text-auspex border-auspex/50"
               : "bg-gold/20 text-gold border-gold/50"
@@ -100,7 +100,7 @@ export const PhaseDetail = ({
             {phase.id}
           </span>
           <h3 className={cn(
-            "font-display text-xs tracking-wide truncate",
+            "font-display text-lg tracking-wide truncate",
             isPacified ? "text-auspex" : "text-gold"
           )}>
             {phase.title}
