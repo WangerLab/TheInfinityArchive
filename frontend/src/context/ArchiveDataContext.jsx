@@ -31,41 +31,42 @@ export function ArchiveDataProvider({ children }) {
     let totalRated = 0;
     let totalRatingSum = 0;
 
-    const isSubItemRead = (data) => {
-      if (typeof data === 'boolean') return data;
-      return data?.isRead || false;
+    const readOf = (entryId) => {
+      const p = bookProgress[entryId] || {};
+      return (p.status ?? (p.isRead ? 'read' : 'unread')) === 'read';
     };
+
+    const ratingOf = (entryId) => bookProgress[entryId]?.rating || 0;
 
     projectData.phases.forEach(phase => {
       phase.books.forEach(book => {
-        const progress = bookProgress[book.entryId];
-
         if (book.contents && book.contents.length > 0) {
           book.contents.forEach(subItem => {
             totalPages += subItem.pages || 0;
             totalItems++;
-            const subData = progress?.contents?.[subItem.entryId];
-            if (isSubItemRead(subData)) {
+            if (readOf(subItem.entryId)) {
               readPages += subItem.pages || 0;
               completedItems++;
             }
-            if (typeof subData === 'object' && subData?.rating > 0) {
+            const subRating = ratingOf(subItem.entryId);
+            if (subRating > 0) {
               totalRated++;
-              totalRatingSum += subData.rating;
+              totalRatingSum += subRating;
             }
           });
         } else {
           totalPages += book.pages || 0;
           totalItems++;
-          if (progress?.isRead) {
+          if (readOf(book.entryId)) {
             readPages += book.pages || 0;
             completedItems++;
           }
         }
 
-        if (progress?.rating > 0) {
+        const bookRating = ratingOf(book.entryId);
+        if (bookRating > 0) {
           totalRated++;
-          totalRatingSum += progress.rating;
+          totalRatingSum += bookRating;
         }
       });
     });
