@@ -20,7 +20,7 @@ export function CurrentBookDossier({ book, className }) {
   if (!summary && !hasDataGrid) return null;
 
   return (
-    <div className={cn('grimdark-panel rounded-lg px-4 py-2', className)}>
+    <div className={cn('grimdark-panel rounded-lg px-4 py-2 flex flex-col justify-center', className)}>
       {summary && (
         <p className="text-[12.5px] text-slate-300 leading-relaxed mb-2.5">
           {summary}
