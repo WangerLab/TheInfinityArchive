@@ -177,7 +177,7 @@
 @layer components {
   .grimdark-panel {
     position: relative;
-    background: linear-gradient(145deg, hsl(var(--card) / 0.6) 0%, hsl(var(--void) / 0.68) 100%);
+    background: linear-gradient(145deg, hsl(var(--card) / 0.82) 0%, hsl(var(--void) / 0.88) 100%);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border: 1px solid var(--acc);
