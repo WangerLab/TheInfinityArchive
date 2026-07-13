@@ -148,7 +148,7 @@ export function Archive() {
     <ViewBackdrop art="/Operator_console_with_sweep-scope_2K_202607041801.jpeg" accent="auspex">
       <main className="px-4 py-4">
         {/* Header */}
-        <div className="grimdark-panel rounded-lg p-4 mb-4">
+        <div className="grimdark-panel rounded-lg p-4 mb-4 relative z-30">
           <div className="flex items-center gap-2">
             <ArchiveIcon className="w-5 h-5 text-gold" />
             <h1 className="font-display text-lg text-gold tracking-wider text-glow-gold">
