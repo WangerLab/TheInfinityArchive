@@ -24,7 +24,7 @@ const TINT_BG = {
 // Fist. Tinting by grand_alliance painted those two POV marks in the enemy's
 // colour. The mark is tinted by its own allegiance; the alliance filter still
 // keys off grand_alliance, so each field keeps answering its own question.
-const SIGIL_ALLIANCE = {
+export const SIGIL_ALLIANCE = {
   admech: 'imperium', arbites: 'imperium', astartes_generic: 'imperium',
   astra_militarum: 'imperium', black_templars: 'imperium', blood_angels: 'imperium',
   carcharodons: 'imperium', custodes: 'imperium', dark_angels: 'imperium',
@@ -41,6 +41,56 @@ const SIGIL_ALLIANCE = {
 
   aeldari: 'xenos', drukhari: 'xenos', genestealer: 'xenos', necrons: 'xenos',
   orks: 'xenos', tau: 'xenos', tyranids: 'xenos', votann: 'xenos', xenos: 'xenos',
+};
+
+// Display name for a sigil key. The keys are asset filenames; these are the
+// names. Not derivable by prettifying the key — 'admech' is the Adeptus
+// Mechanicus, 'sororitas' the Adepta Sororitas, 'tau' the T'au.
+export const SIGIL_LABEL = {
+  admech: 'Adeptus Mechanicus',
+  arbites: 'Adeptus Arbites',
+  astartes_generic: 'Adeptus Astartes',
+  astra_militarum: 'Astra Militarum',
+  black_templars: 'Black Templars',
+  blood_angels: 'Blood Angels',
+  carcharodons: 'Carcharodons',
+  custodes: 'Adeptus Custodes',
+  dark_angels: 'Dark Angels',
+  deathwatch: 'Deathwatch',
+  grey_knights: 'Grey Knights',
+  imperial_fists: 'Imperial Fists',
+  imperial_knights: 'Imperial Knights',
+  imperium: 'Imperium',
+  inquisition: 'Inquisition',
+  iron_hands: 'Iron Hands',
+  navis: 'Navis Nobilite',
+  raven_guard: 'Raven Guard',
+  salamanders: 'Salamanders',
+  sororitas: 'Adepta Sororitas',
+  space_wolves: 'Space Wolves',
+  ultramarines: 'Ultramarines',
+  white_scars: 'White Scars',
+
+  alpha_legion: 'Alpha Legion',
+  black_legion: 'Black Legion',
+  chaos_generic: 'Chaos',
+  death_guard: 'Death Guard',
+  emperors_children: "Emperor's Children",
+  iron_warriors: 'Iron Warriors',
+  night_lords: 'Night Lords',
+  thousand_sons: 'Thousand Sons',
+  word_bearers: 'Word Bearers',
+  world_eaters: 'World Eaters',
+
+  aeldari: 'Aeldari',
+  drukhari: 'Drukhari',
+  genestealer: 'Genestealer Cults',
+  necrons: 'Necrons',
+  orks: 'Orks',
+  tau: "T'au",
+  tyranids: 'Tyranids',
+  votann: 'Leagues of Votann',
+  xenos: 'Xenos',
 };
 
 // Box sizes mirror FactionMark.SIZES so sigil and fallback share a footprint.
