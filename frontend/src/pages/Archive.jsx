@@ -51,12 +51,19 @@ export function Archive() {
   const clearFactions = useCallback(() => setActiveFactions([]), []);
   const clearMoods = useCallback(() => setActiveMoods([]), []);
 
-  // Catalog-wide flat list of all entry-level books across every phase. Keyed by
-  // entryId, not title: titles are non-unique across phases (e.g. 'Apocalypse' in
-  // P3 and P5), so a title key would collapse two distinct books onto one React
-  // element (Sprint E lesson).
+  // Catalog-wide flat list of all entry-level books across every phase, minus
+  // the cross-listings. A novel the reading plan places in two phases has a row
+  // in each; the phase view is right to show both, but flattening the phases
+  // turns the second row into a duplicate of the first. duplicate_of names the
+  // canonical row, so a row that has one is a pointer and not an entry.
+  //
+  // Keyed by entryId, not title: titles are non-unique across phases, so a title
+  // key would collapse two distinct books onto one React element (Sprint E).
   const allBooks = useMemo(
-    () => projectData.phases.flatMap((phase) => phase.books),
+    () =>
+      projectData.phases
+        .flatMap((phase) => phase.books)
+        .filter((book) => !book.duplicateOf),
     [projectData]
   );
 

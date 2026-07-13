@@ -51,7 +51,7 @@ export function useCatalog() {
               .order('sort_order', { ascending: true }),
             supabase
               .from('books')
-              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance, faction_sigil')
+              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance, faction_sigil, duplicate_of')
               .order('sort_order', { ascending: true }),
             supabase
               .from('book_series')
@@ -123,6 +123,7 @@ export function useCatalog() {
               factionPrimary: entry.faction_primary ?? null,
               grandAlliance: entry.grand_alliance ?? null,
               factionSigil: entry.faction_sigil ?? null,
+              duplicateOf: entry.duplicate_of ?? null,
               moodTags: Array.isArray(entry.mood_tags) ? entry.mood_tags : [],
               semanticTags: Array.isArray(entry.semantic_tags) ? entry.semantic_tags : [],
               summary: entry.spoiler_free_summary ?? null,
