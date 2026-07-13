@@ -17,6 +17,32 @@ const TINT_BG = {
   unaligned: 'bg-slate-400',
 };
 
+// Which alliance a sigil BELONGS to, independent of the book it appears on.
+// The silhouette names the POV-bearing faction (faction_sigil); grand_alliance
+// names the faction the book is ABOUT. They agree on all but two entries — a
+// Tyranid novel told by an Ultramarine, a Word Bearers novel told by an Imperial
+// Fist. Tinting by grand_alliance painted those two POV marks in the enemy's
+// colour. The mark is tinted by its own allegiance; the alliance filter still
+// keys off grand_alliance, so each field keeps answering its own question.
+const SIGIL_ALLIANCE = {
+  admech: 'imperium', arbites: 'imperium', astartes_generic: 'imperium',
+  astra_militarum: 'imperium', black_templars: 'imperium', blood_angels: 'imperium',
+  carcharodons: 'imperium', custodes: 'imperium', dark_angels: 'imperium',
+  deathwatch: 'imperium', grey_knights: 'imperium', imperial_fists: 'imperium',
+  imperial_knights: 'imperium', imperium: 'imperium', inquisition: 'imperium',
+  iron_hands: 'imperium', navis: 'imperium', raven_guard: 'imperium',
+  salamanders: 'imperium', sororitas: 'imperium', space_wolves: 'imperium',
+  ultramarines: 'imperium', white_scars: 'imperium',
+
+  alpha_legion: 'chaos', black_legion: 'chaos', chaos_generic: 'chaos',
+  death_guard: 'chaos', emperors_children: 'chaos', iron_warriors: 'chaos',
+  night_lords: 'chaos', thousand_sons: 'chaos', word_bearers: 'chaos',
+  world_eaters: 'chaos',
+
+  aeldari: 'xenos', drukhari: 'xenos', genestealer: 'xenos', necrons: 'xenos',
+  orks: 'xenos', tau: 'xenos', tyranids: 'xenos', votann: 'xenos', xenos: 'xenos',
+};
+
 // Box sizes mirror FactionMark.SIZES so sigil and fallback share a footprint.
 const SIZES = {
   sm: 'w-4 h-4',
@@ -43,7 +69,7 @@ export function FactionSigil({ sigil, alliance, size = 'sm', className, title })
 
   const url = `/sigils/${sigil}.png?v=${ASSET_VERSION}`;
   const box = SIZES[size] || SIZES.sm;
-  const tint = TINT_BG[alliance] || TINT_BG.unaligned;
+  const tint = TINT_BG[SIGIL_ALLIANCE[sigil]] || TINT_BG[alliance] || TINT_BG.unaligned;
 
   return (
     <>
