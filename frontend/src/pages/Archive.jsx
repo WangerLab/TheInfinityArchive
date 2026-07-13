@@ -61,7 +61,7 @@ export function Archive() {
 
   return (
     <ViewBackdrop art="/Operator_console_with_sweep-scope_2K_202607041801.jpeg" accent="auspex">
-      <main className="px-4 py-4 pb-32">
+      <main className="px-4 py-4">
         {/* Header */}
         <div className="grimdark-panel rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2">
@@ -105,24 +105,26 @@ export function Archive() {
         </div>
 
         {/* Flat catalog */}
-        {visibleBooks.length === 0 ? (
-          <div className="grimdark-panel rounded-lg p-6 text-center">
-            <p className="text-sm text-slate-400 font-data">
-              NO ENTRIES MATCH THE ACTIVE FILTER
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {visibleBooks.map((book) => (
-              <BookRow
-                key={book.entryId}
-                book={book}
-                entryProgress={getEntryProgress(book)}
-                onOpen={(entryId) => navigate('/book/' + entryId)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="lg:h-[calc(100vh-270px)] lg:overflow-y-auto lg:pr-2">
+          {visibleBooks.length === 0 ? (
+            <div className="grimdark-panel rounded-lg p-6 text-center">
+              <p className="text-sm text-slate-400 font-data">
+                NO ENTRIES MATCH THE ACTIVE FILTER
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              {visibleBooks.map((book) => (
+                <BookRow
+                  key={book.entryId}
+                  book={book}
+                  entryProgress={getEntryProgress(book)}
+                  onOpen={(entryId) => navigate('/book/' + entryId)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </ViewBackdrop>
   );
