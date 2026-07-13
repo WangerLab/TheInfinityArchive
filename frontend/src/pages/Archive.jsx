@@ -113,7 +113,7 @@ export function Archive() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            <div className="grimdark-panel rounded-lg p-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
               {visibleBooks.map((book) => (
                 <BookRow
                   key={book.entryId}
