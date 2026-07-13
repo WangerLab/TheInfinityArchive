@@ -15,6 +15,32 @@ architecture.
 
 ## Current Sprint (last completed)
 
+Auspex-Politur — CODE COMPLETE, LIVE-VERIFIKATION OFFEN (Desktop). HEAD 26caeb2 on main. Zwölf Commits am Archive/Auspex-View.
+
+**⚠️ ZUERST LESEN: Dieser Sprint ist NICHT live geprüft.** Alle zwölf Commits sind gebaut und gepusht, der Vercel-Deploy wurde am Sessionende nicht mehr durchgesehen. "Build grün ≠ Runtime grün" gilt hier vollumfänglich. Vier Punkte stehen konkret offen: (1) zeigt der Header **175 ENTRIES**? (2) erscheint *Apocalypse* nur noch **einmal**, mit Imperial-Fists-Symbol? (3) zeigt **Campaign in Phase 3 weiterhin *Apocalypse*** — die Kontrollprobe, ob der `duplicate_of`-Filter zu breit greift und in den Leseplan hineinschneidet? (4) liefert **Allegiance=Chaos + Faction=Imperial Fists** genau *Apocalypse*? Diese vier zuerst, bevor irgendetwas Neues gebaut wird.
+
+**Layout (`112b471`, `e911103`, `a8f2404`, `cea459d`):** Auspex' eigene Allegiance-Chip-Leiste raus (spiegelte den GlobalHeader 1:1). Header steht fest, Katalog scrollt in eigenem Container, zwei Spalten ab `lg`. Die zweite Spalte legte eine Altlast frei: `BookRow` läuft nach rechts auf `to-transparent` aus, was einspaltig folgenlos war und zweispaltig den POV/SECTOR-Block ohne Grund auf die grüne Auspex-Art setzte. Fix war die fehlende Panel-Ebene (Campaign wickelt seine Zeilen in `.grimdark-panel`, Auspex tat es nie) — `BookRow` blieb unangetastet. Das neue Panel setzte dann einen Stacking Context und begrub die Filter-Dropdowns; `z-30` auf dem Header holte sie wieder heraus.
+
+**Panel-Deckkraft (`87b4b63`):** `.grimdark-panel` von `0.82/0.88` auf `0.72/0.78`. Das ist die **Erledigung der offenen `815800d`-Entscheidung** — kein Revert auf `0.6/0.68`: der alte Wert versagte über heller Art, und `815800d` löste ein echtes Problem, wenn auch als Nebenwirkung einer Fehldiagnose. `0.72/0.78` liegt über der versagenden Schwelle und lässt die Art wieder durch. Live abgenommen.
+
+**Sigils (`122bafa` I-1, `8d8feab`, `6c931aa`):** 53 der 176 Einträge hatten gar keinen `faction_sigil` — der Seed-Regex lief über `sub_faction`, und diese Zeilen haben keine. 42 aus `faction_primary` nachgezogen (konfliktfrei by construction: `grand_alliance` stammt aus derselben Spalte), 11 bleiben NULL und sollen es — alle `unaligned`, ohne Fraktion. Jetzt 165/176 mit Sigil. Dazu der Tönungs-Fix: `FactionSigil` tönte die POV-Silhouette nach der Buch-Alliance, was bei *Leviathan* (Tyraniden-Roman, Ultramarines-POV) und *Apocalypse* (Word-Bearers-Roman, Fists-POV) das Symbol in die Farbe des Gegners tauchte. `SIGIL_ALLIANCE` (42 Assets) + `SIGIL_LABEL` exportiert, Tönung nach der Alliance des Sigils selbst.
+
+**Filter (`7bb338f`, `1100cd9`):** Neue `FilterDropdown`-Komponente (Multi-Select, Gruppen-Header, Leading-Node; kein Radix — `components/ui` hat weder Select noch Popover, und drei Filter rechtfertigen keine Dependency). Drei Dropdowns ersetzen die Mood-Chip-Wolke: ALLEGIANCE auf `grand_alliance` (Thema), FACTION auf `faction_sigil` (POV, 37 Werte unter vier Alliance-Gruppen, mit Symbolen), MOOD wie bisher. **Innerhalb** eines Filters ODER, **zwischen** den dreien UND. Die 11 fraktionslosen Bücher bekommen einen "No faction"-Eintrag — sonst wären sie über keinen Filter erreichbar. Header schrumpft von drei Zeilen auf zwei.
+
+**Dubletten (`0061fa3` I-2, `26caeb2`):** *Apocalypse* stand doppelt im flachen Katalog. Kein Bug — der Leseplan listet den Roman bewusst in P3-30 (Quer-Listung) und P5-13 (native). Campaign zeigt zu Recht beide; der flache Katalog darf ihn nur einmal zeigen. `also_in` sagte das schon, aber als Freitext ("SAME NOVEL do not double-count") — für Queries unsichtbar. Neue Spalte `duplicate_of`, P3-30 → P5-13, Auspex filtert Zeiger-Zeilen. Katalogweit gibt es sonst KEINE Titel+Autor-Dublette; zwei weitere `also_in`-Querverweise (P3-26 → P2-03.2, P7-23 → P7-11.2) zeigen auf Omnibus-Kinder, die nie auf Entry-Level erscheinen, und sind keine Dubletten.
+
+**⚠️ Offen: `calc(100vh-270px)` in Auspex ist NICHT kalibriert.** 1:1 aus PhaseView geerbt, obwohl Auspex einen anderen Kopfbereich hat, und seit `1100cd9` ist der Header zwei Zeilen kürzer. Am Deploy prüfen: Lücke unten oder Abschnitt?
+
+**⚠️ Offen: `duplicate_of` vs. Seitenzahlen.** P3-30 trägt die 560 Seiten, die kanonische P5-13 trägt NULL. Heute korrekt (global einmal gezählt). Wer künftig eine Katalog-Statistik baut und `duplicate_of` ausfiltert, verliert sie lautlos. Details in CLAUDE.md.
+
+**⚠️ Weiterhin offen: Zähl-Logik in dreifacher Ausführung.** `globalStats` + `getPhaseStats` (`ArchiveDataContext.jsx`) + `calculateStats` (`PhaseDetail.jsx`). Unverändert aus dem Campaign-Sprint.
+
+**⚠️ Weiterhin offen: Dropdown-Zähler sind statisch.** Sie zeigen die Katalogzahl, nicht die Zahl unter den übrigen aktiven Filtern ("Dark Angels 9" bleibt 9, auch wenn Mood=grim nur 4 übrig lässt). Bewusst so, dynamische Zähler wären ein eigener Commit.
+
+---
+
+**Sprint Campaign-Finish (COMPLETE)**
+
 Campaign-Finish — COMPLETE (Desktop). HEAD 28f650d on main. Thirteen commits closing out the Campaign/Phases view.
 
 **Counting bug (the real one, `8b76341`):** `globalStats` still read sub-item progress from the NESTED store (`progress?.contents?.[subEntryId]`) after the omnibus sub-items sprint moved to FLAT. The dead branch always returned undefined, so every read omnibus child counted as unread — DB held 9 read sub_items, header showed 14 completed instead of 23. `getPhaseStats` had been migrated; `globalStats` was missed. This, not the Gaunt's Ghosts gap, was the bulk of the old "14/303" discrepancy. Two further dead reads in the same block picked up (`progress?.isRead`, sub-item ratings).
@@ -494,9 +520,10 @@ writes `status`; `is_read` follows automatically.
 
 ## Next Sprints (planned, not committed)
 
-- **Panel-fill decision (small, first):** `.grimdark-panel` currently sits at
-  0.82/0.88 app-wide from a misdiagnosed commit (815800d). Decide: keep, or
-  revert to 0.6/0.68. Header boxes unaffected either way.
+- **Auspex live verifizieren (zuerst, blockierend):** vier Punkte, siehe
+  Current Sprint. Der Sprint ist code-complete, aber ungeprüft.
+- **`calc(100vh-270px)` in Auspex kalibrieren (klein):** geerbter Wert aus
+  PhaseView, nie gegen Auspex' realen Header gemessen.
 - **Centralise the counting logic (small, high value):** one shared helper for
   globalStats / getPhaseStats / calculateStats. The triplication is what hid
   the nested-store reader for 40+ commits.
