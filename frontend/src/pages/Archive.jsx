@@ -1,41 +1,119 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from 'lib/utils';
 import { Archive as ArchiveIcon } from 'lucide-react';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { BookRow } from 'components/BookRow';
 import { ViewBackdrop } from 'components/ViewBackdrop';
+import { FilterDropdown } from 'components/FilterDropdown';
+import { FactionSigil, SIGIL_ALLIANCE, SIGIL_LABEL } from 'components/FactionSigil';
+import { FactionMark } from 'components/FactionMark';
 
-// Only moods with >= this many entry-level hits become filter chips. Keeps the
-// cloud to the shared, filter-worthy vocabulary and drops the long tail of rare
-// moods (those belong to the AI-companion context blob, not a filter control).
+// Only moods at or above this many entry-level hits become filter options. The
+// long tail of rare moods is context for the AI companion, not a filter control.
 const MOOD_MIN_HITS = 8;
+
+// Eleven entries carry no faction_sigil — every one of them unaligned, with no
+// faction to name (Rogue Trader retinues, anthologies, Warhammer Horror). Without
+// a sentinel they would be unreachable from the faction filter, so they get an
+// option of their own rather than quietly falling out of the catalog.
+const NO_FACTION = '__none__';
+
+// Display order of the four grand alliances. Frequency would shuffle them run to
+// run; this is the order the setting itself implies.
+const ALLIANCE_ORDER = ['imperium', 'chaos', 'xenos', 'unaligned'];
+const ALLIANCE_LABEL = {
+  imperium: 'Imperium',
+  chaos: 'Chaos',
+  xenos: 'Xenos',
+  unaligned: 'Unaligned',
+};
 
 export function Archive() {
   const { projectData, getEntryProgress } = useArchiveData();
   const navigate = useNavigate();
 
+  const [activeAlliances, setActiveAlliances] = useState([]);
+  const [activeFactions, setActiveFactions] = useState([]);
   const [activeMoods, setActiveMoods] = useState([]);
 
-  const handleMoodToggle = useCallback((mood) => {
-    setActiveMoods((prev) =>
-      prev.includes(mood) ? prev.filter((m) => m !== mood) : [...prev, mood]
+  // One toggle shape for all three: present -> drop, absent -> add. Empty means
+  // the filter is off, which is not the same as "nothing selected shows nothing".
+  const toggle = (setter) => (value) =>
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
-  }, []);
 
-  // Catalog-wide flat list of all entry-level books across every phase.
-  // Keyed by entryId, not title: titles are non-unique across phases
-  // (e.g. 'Apocalypse' in P3 and P5), so a title key would collapse two
-  // distinct books onto one React element (Sprint E lesson). Memoised so the
-  // reference is stable across renders (the mood/visible memos depend on it).
+  const handleAllianceToggle = useCallback(toggle(setActiveAlliances), []);
+  const handleFactionToggle = useCallback(toggle(setActiveFactions), []);
+  const handleMoodToggle = useCallback(toggle(setActiveMoods), []);
+
+  const clearAlliances = useCallback(() => setActiveAlliances([]), []);
+  const clearFactions = useCallback(() => setActiveFactions([]), []);
+  const clearMoods = useCallback(() => setActiveMoods([]), []);
+
+  // Catalog-wide flat list of all entry-level books across every phase. Keyed by
+  // entryId, not title: titles are non-unique across phases (e.g. 'Apocalypse' in
+  // P3 and P5), so a title key would collapse two distinct books onto one React
+  // element (Sprint E lesson).
   const allBooks = useMemo(
     () => projectData.phases.flatMap((phase) => phase.books),
     [projectData]
   );
 
-  // Data-driven mood chips: count each mood over entry-level books (Rule A),
-  // keep the shared vocabulary (>= MOOD_MIN_HITS), sort by frequency desc.
-  const moodChips = useMemo(() => {
+  // Alliance options: fixed four, in setting order, counted over the catalog.
+  const allianceOptions = useMemo(() => {
+    const counts = new Map();
+    allBooks.forEach((b) => counts.set(b.grandAlliance, (counts.get(b.grandAlliance) || 0) + 1));
+    return ALLIANCE_ORDER
+      .filter((a) => counts.get(a))
+      .map((a) => ({
+        value: a,
+        label: ALLIANCE_LABEL[a],
+        count: counts.get(a),
+        leading: <FactionMark alliance={a} size="md" />,
+      }));
+  }, [allBooks]);
+
+  // Faction options: grouped under the sigil's OWN alliance, not the book's. A
+  // book can be about one side and told from the other — the sigil names the
+  // teller, and that is what this filter selects on.
+  const factionOptions = useMemo(() => {
+    const counts = new Map();
+    allBooks.forEach((b) => {
+      const key = b.factionSigil || NO_FACTION;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    const out = [];
+    ALLIANCE_ORDER.forEach((alliance) => {
+      [...counts.entries()]
+        .filter(([sigil]) => sigil !== NO_FACTION && SIGIL_ALLIANCE[sigil] === alliance)
+        .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
+        .forEach(([sigil, count]) => {
+          out.push({
+            value: sigil,
+            label: SIGIL_LABEL[sigil] || sigil,
+            count,
+            group: ALLIANCE_LABEL[alliance],
+            leading: <FactionSigil sigil={sigil} alliance={alliance} size="md" />,
+          });
+        });
+    });
+
+    if (counts.get(NO_FACTION)) {
+      out.push({
+        value: NO_FACTION,
+        label: 'No faction',
+        count: counts.get(NO_FACTION),
+        group: 'Unaligned',
+      });
+    }
+    return out;
+  }, [allBooks]);
+
+  // Mood options: counted over entry-level books, shared vocabulary only,
+  // most frequent first.
+  const moodOptions = useMemo(() => {
     const counts = new Map();
     allBooks.forEach((book) => {
       (book.moodTags || []).forEach((m) => counts.set(m, (counts.get(m) || 0) + 1));
@@ -43,21 +121,28 @@ export function Archive() {
     return [...counts.entries()]
       .filter(([, n]) => n >= MOOD_MIN_HITS)
       .sort((a, b) => b[1] - a[1])
-      .map(([mood, count]) => ({ mood, count }));
+      .map(([mood, count]) => ({ value: mood, label: mood, count }));
   }, [allBooks]);
 
-  // Mood: has-any-of (array intersection) the selected moods. An empty set
-  // means the filter is inactive.
+  // Three filters, AND-combined. Within one filter the selections are OR: two
+  // factions widen the result, they do not narrow it to their intersection —
+  // no book has two POV factions, so AND within a filter would always be empty.
   const visibleBooks = useMemo(() => {
     return allBooks.filter((book) => {
+      const allianceOk =
+        activeAlliances.length === 0 || activeAlliances.includes(book.grandAlliance);
+      const factionOk =
+        activeFactions.length === 0 ||
+        activeFactions.includes(book.factionSigil || NO_FACTION);
       const moodOk =
         activeMoods.length === 0 ||
         (book.moodTags || []).some((m) => activeMoods.includes(m));
-      return moodOk;
+      return allianceOk && factionOk && moodOk;
     });
-  }, [allBooks, activeMoods]);
+  }, [allBooks, activeAlliances, activeFactions, activeMoods]);
 
-  const isFiltered = activeMoods.length > 0;
+  const isFiltered =
+    activeAlliances.length > 0 || activeFactions.length > 0 || activeMoods.length > 0;
 
   return (
     <ViewBackdrop art="/Operator_console_with_sweep-scope_2K_202607041801.jpeg" accent="auspex">
@@ -76,31 +161,28 @@ export function Archive() {
               : `${allBooks.length} ENTRIES • CATALOG-WIDE BROWSE`}
           </p>
 
-          {/* Mood filter — data-driven chips */}
-          <div className="flex items-start gap-2 mt-3 flex-wrap">
-            <span className="text-[9px] text-slate-500 font-tactical tracking-[0.15em] mr-1 mt-1.5">
-              MOOD:
-            </span>
-            {moodChips.map(({ mood, count }) => {
-              const isSelected = activeMoods.includes(mood);
-              return (
-                <button
-                  key={mood}
-                  onClick={() => handleMoodToggle(mood)}
-                  className={cn(
-                    'touch-target flex items-center gap-1.5 px-2.5 py-1 rounded-md',
-                    'border transition-all duration-200 active:scale-95',
-                    'text-[10px] font-medium tracking-wide',
-                    isSelected
-                      ? 'bg-plasma/30 text-plasma border-plasma'
-                      : 'bg-plasma/10 text-plasma/70 border-plasma/30 hover:text-plasma hover:border-plasma/60'
-                  )}
-                >
-                  <span>{mood}</span>
-                  <span className="text-plasma/50 font-data">{count}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <FilterDropdown
+              label="ALLEGIANCE"
+              options={allianceOptions}
+              selected={activeAlliances}
+              onToggle={handleAllianceToggle}
+              onClear={clearAlliances}
+            />
+            <FilterDropdown
+              label="FACTION"
+              options={factionOptions}
+              selected={activeFactions}
+              onToggle={handleFactionToggle}
+              onClear={clearFactions}
+            />
+            <FilterDropdown
+              label="MOOD"
+              options={moodOptions}
+              selected={activeMoods}
+              onToggle={handleMoodToggle}
+              onClear={clearMoods}
+            />
           </div>
         </div>
 
