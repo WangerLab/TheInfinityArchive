@@ -117,7 +117,7 @@ export function BookRow({ book, entryProgress, onOpen }) {
 
       {/* Context block — left, with gap + divider; POV/Sector or omnibus comp */}
       {hasDataBlock && (
-        <div className="hidden md:flex flex-col gap-0.5 shrink-0 min-w-[170px] pl-5 border-l border-slate-400/15">
+        <div className="hidden md:flex flex-col gap-0.5 shrink-0 min-w-0 w-[170px] pl-5 border-l border-slate-400/15">
           {hasContents ? (
             <span className="text-[11px] font-data tracking-[0.06em] text-slate-500">
               {comp}
@@ -127,13 +127,13 @@ export function BookRow({ book, entryProgress, onOpen }) {
               {pov && (
                 <div className="flex items-baseline gap-2 text-[12px] font-data">
                   <span className="text-slate-500 tracking-[0.1em] min-w-[48px]">POV</span>
-                  <span className="text-slate-300 truncate">{pov}</span>
+                  <span className="text-slate-300 truncate min-w-0 flex-1">{pov}</span>
                 </div>
               )}
               {sector && (
                 <div className="flex items-baseline gap-2 text-[12px] font-data">
                   <span className="text-slate-500 tracking-[0.1em] min-w-[48px]">SECTOR</span>
-                  <span className="text-slate-300 truncate">{sector}</span>
+                  <span className="text-slate-300 truncate min-w-0 flex-1">{sector}</span>
                 </div>
               )}
             </>
