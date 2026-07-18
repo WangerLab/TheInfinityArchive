@@ -113,6 +113,16 @@ export function BookRow({ book, entryProgress, onOpen }) {
         {faction && (
           <p className="text-[11px] text-slate-300 font-medium truncate mt-1">{faction}</p>
         )}
+        {book.parentTitle && (
+          <div className="flex items-center gap-1.5 mt-1 truncate">
+            <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-auspex/70 text-auspex text-[9px] font-bold leading-none shrink-0">
+              O
+            </span>
+            <span className="text-[10px] font-data tracking-[0.08em] uppercase text-auspex/80 truncate">
+              Part of {book.parentTitle}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Context block — left, with gap + divider; POV/Sector or omnibus comp */}
