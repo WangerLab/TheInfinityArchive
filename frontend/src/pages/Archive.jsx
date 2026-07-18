@@ -63,7 +63,16 @@ export function Archive() {
     () =>
       projectData.phases
         .flatMap((phase) => phase.books)
-        .filter((book) => !book.duplicateOf),
+        .filter((book) => !book.duplicateOf)
+        .flatMap((book) =>
+          Array.isArray(book.contents) && book.contents.length > 0
+            ? book.contents.map((child) => ({
+                ...child,
+                parentTitle: book.title,
+                parentEntryId: book.entryId,
+              }))
+            : [book]
+        ),
     [projectData]
   );
 
