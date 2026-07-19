@@ -132,7 +132,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server missing ANTHROPIC_API_KEY' });
   }
 
-  const { raw, book } = req.body || {};
+  const { raw, book, existing } = req.body || {};
   if (!raw || typeof raw !== 'string' || !raw.trim()) {
     return res.status(400).json({ error: 'Missing raw reflection text' });
   }
@@ -147,11 +147,29 @@ export default async function handler(req, res) {
       ].filter(Boolean).join('\n')
     : '';
 
+  // When appending, give the model the existing chronicle so it can weave the
+  // new dictation INTO it — enriching, not replacing. The reader liked what was
+  // there and is only adding.
+  const existingBlock =
+    existing && typeof existing === 'object' && existing.chronicle
+      ? `The reader already has this Chronicle for the book and wants to KEEP ` +
+        `its substance while weaving in a new addition. Do not discard what is ` +
+        `here — enrich and extend it, integrating the new thought naturally. ` +
+        `Produce a single coherent Chronicle covering both.\n\n` +
+        `Existing Chronicle:\n"""${JSON.stringify(existing.chronicle, null, 2)}"""\n\n`
+      : '';
+
+  const instruction = existingBlock
+    ? `The reader dictated the following ADDITION to their reflection. ` +
+      `Structure the combined result with the record_reflection tool.`
+    : `The reader just finished this book and dictated the following raw ` +
+      `reflection. Structure it with the record_reflection tool.`;
+
   const userText =
     (ctx ? `Book context:\n${ctx}\n\n` : '') +
-    `The reader just finished this book and dictated the following raw ` +
-    `reflection. Structure it with the record_reflection tool.\n\n` +
-    `Raw reflection:\n"""${raw.trim()}"""`;
+    existingBlock +
+    instruction + `\n\n` +
+    `Raw ${existingBlock ? 'addition' : 'reflection'}:\n"""${raw.trim()}"""`;
 
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {

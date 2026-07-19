@@ -20,12 +20,14 @@ export function ContextDrop({ book }) {
   const [error, setError] = useState(null);
   const [auspexOpen, setAuspexOpen] = useState(false);
   const [redrafting, setRedrafting] = useState(false);
+  const [appending, setAppending] = useState(false);
 
-  const structure = async () => {
+  const structure = async (mode = 'new') => {
     if (!raw.trim() || busy) return;
     setBusy(true);
     setError(null);
     try {
+      const isAppend = mode === 'append' && Boolean(chronicle);
       const res = await fetch('/api/context-drop', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -37,15 +39,22 @@ export function ContextDrop({ book }) {
             factionPrimary: book.factionPrimary,
             subFaction: book.subFaction,
           },
+          existing: isAppend ? { chronicle } : undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data?.error || `Request failed (${res.status})`);
       }
-      await handleContextDropSave(book.entryId, { ...data, raw });
+      // On append, preserve the full dictation history: prepend the prior raw.
+      const priorRaw = saved.contextDropRaw || '';
+      const mergedRaw = isAppend && priorRaw
+        ? `${priorRaw}\n\n--- ADDITION ---\n\n${raw}`
+        : raw;
+      await handleContextDropSave(book.entryId, { ...data, raw: mergedRaw });
       setRaw('');
       setRedrafting(false);
+      setAppending(false);
     } catch (e) {
       setError(String(e.message || e));
     } finally {
@@ -54,7 +63,7 @@ export function ContextDrop({ book }) {
   };
 
   // Existing drop, not redrafting: show the chronicle + collapsed auspex.
-  if (hasDrop && !redrafting) {
+  if (hasDrop && !redrafting && !appending) {
     return (
       <div className="mt-6 border-t border-gold/15 pt-5">
         <div className="flex items-center gap-2 mb-3">
@@ -168,18 +177,27 @@ export function ContextDrop({ book }) {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setRedrafting(true)}
-          className="mt-4 text-[10px] font-tactical tracking-[0.2em] text-slate-500 hover:text-gold transition-colors"
-        >
-          RE-DRAFT
-        </button>
+        <div className="mt-4 flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setAppending(true)}
+            className="text-[10px] font-tactical tracking-[0.2em] text-plasma/60 hover:text-plasma transition-colors"
+          >
+            + APPEND
+          </button>
+          <button
+            type="button"
+            onClick={() => setRedrafting(true)}
+            className="text-[10px] font-tactical tracking-[0.2em] text-slate-500 hover:text-gold transition-colors"
+          >
+            RE-DRAFT
+          </button>
+        </div>
       </div>
     );
   }
 
-  // No drop yet, or redrafting: show the input.
+  // No drop yet, redrafting, or appending: show the input.
   return (
     <div className="mt-6 border-t border-gold/15 pt-5">
       <div className="flex items-center gap-2 mb-2">
@@ -189,8 +207,9 @@ export function ContextDrop({ book }) {
         </h2>
       </div>
       <p className="text-[11px] text-slate-500 font-data mb-3 leading-relaxed">
-        Dictate your raw reflection — unstructured, stream of thought. The
-        cogitator distils it into your Chronicle.
+        {appending
+          ? 'Dictate what you want to add. The cogitator weaves it into your existing Chronicle, keeping what is already there.'
+          : 'Dictate your raw reflection — unstructured, stream of thought. The cogitator distils it into your Chronicle.'}
       </p>
       <Textarea
         value={raw}
@@ -212,7 +231,7 @@ export function ContextDrop({ book }) {
       <div className="mt-3 flex items-center gap-3">
         <button
           type="button"
-          onClick={structure}
+          onClick={() => structure(appending ? 'append' : 'new')}
           disabled={!raw.trim() || busy}
           className={cn(
             'inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold tracking-wider transition-all',
@@ -229,14 +248,19 @@ export function ContextDrop({ book }) {
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              STRUCTURE
+              {appending ? 'WEAVE IN' : 'STRUCTURE'}
             </>
           )}
         </button>
-        {redrafting && (
+        {(redrafting || appending) && (
           <button
             type="button"
-            onClick={() => { setRedrafting(false); setError(null); setRaw(''); }}
+            onClick={() => {
+              setRedrafting(false);
+              setAppending(false);
+              setError(null);
+              setRaw('');
+            }}
             className="text-[10px] font-tactical tracking-[0.2em] text-slate-500 hover:text-slate-300 transition-colors"
           >
             CANCEL
