@@ -15,7 +15,7 @@ export function useArchiveData() {
 
 export function ArchiveDataProvider({ children }) {
   const { data: projectData, loading, error } = useCatalog();
-  const [bookProgress, setBookProgress, { loading: progressLoading, error: progressError }] = useSupabaseProgress();
+  const [bookProgress, setBookProgress, { loading: progressLoading, error: progressError }, handleContextDropSave] = useSupabaseProgress();
 
   // Global stats — sum all pages recursively
   const globalStats = useMemo(() => {
@@ -333,6 +333,7 @@ export function ArchiveDataProvider({ children }) {
     handleBookRatingChange,
     handleBookNotesChange,
     handleBookPersonalTakeChange,
+    handleContextDropSave,
     isReflectionPending,
   };
 

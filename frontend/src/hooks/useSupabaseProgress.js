@@ -76,7 +76,7 @@ export function useSupabaseProgress() {
 
         const { data: progressRows, error: progressError } = await supabase
           .from('user_progress')
-          .select('book_id, status, is_read, rating, notes, personal_take, started_at, completed_at');
+          .select('book_id, status, is_read, rating, notes, personal_take, started_at, completed_at, chronicle, auspex_reading, context_drop_raw, context_drop_at, context_drop_model, context_drop_schema_version');
         if (progressError) throw progressError;
 
         const next = {};
@@ -98,6 +98,10 @@ export function useSupabaseProgress() {
             notes: row.notes ?? '',
             personalTake: row.personal_take ?? '',
             startedAt: row.started_at ?? null,
+            chronicle: row.chronicle ?? null,
+            auspexReading: row.auspex_reading ?? null,
+            contextDropRaw: row.context_drop_raw ?? '',
+            contextDropAt: row.context_drop_at ?? null,
           };
           if (parentId == null) {
             const existing = next[entryId] || {};
@@ -245,6 +249,57 @@ export function useSupabaseProgress() {
   }, [flush]);
   scheduleSyncRef.current = scheduleSync;
 
+  // Context Drop writes six columns in one direct upsert (no debounce): it is a
+  // deliberate one-shot commit, not continuous typing. Uses the same supabase
+  // client + user session as the debounced path, so same RLS auth. After the
+  // write it patches local state AND lastSyncedRef, so the debounce flush does
+  // not later see these fields as a diff and clobber them.
+  const handleContextDropSave = useCallback(async (entryId, result) => {
+    const userId = userIdRef.current;
+    if (!userId) throw new Error('Not authenticated');
+    const bookId = entryIdToIdRef.current.get(entryId);
+    if (!bookId) throw new Error('Unknown entry_id: ' + entryId);
+
+    const nowIso = new Date().toISOString();
+    const row = {
+      user_id: userId,
+      book_id: bookId,
+      chronicle: result.chronicle ?? null,
+      auspex_reading: result.auspex_reading ?? null,
+      context_drop_raw: result.raw ?? null,
+      context_drop_at: nowIso,
+      context_drop_model: result.meta?.model ?? null,
+      context_drop_schema_version: result.meta?.schema_version ?? null,
+    };
+
+    const { error: upsertError } = await supabase
+      .from('user_progress')
+      .upsert(row, { onConflict: 'user_id,book_id' });
+    if (upsertError) throw upsertError;
+
+    setBookProgressState((prev) => {
+      const nextEntry = {
+        ...(prev[entryId] || {}),
+        chronicle: row.chronicle,
+        auspexReading: row.auspex_reading,
+        contextDropRaw: row.context_drop_raw ?? '',
+        contextDropAt: nowIso,
+      };
+      const next = { ...prev, [entryId]: nextEntry };
+      // Keep lastSynced in lockstep so the debounce flush sees no diff here.
+      if (lastSyncedRef.current[entryId]) {
+        lastSyncedRef.current[entryId] = {
+          ...lastSyncedRef.current[entryId],
+          chronicle: row.chronicle,
+          auspexReading: row.auspex_reading,
+          contextDropRaw: row.context_drop_raw ?? '',
+          contextDropAt: nowIso,
+        };
+      }
+      return next;
+    });
+  }, []);
+
   const setBookProgress = useCallback((updater) => {
     setBookProgressState((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
@@ -258,7 +313,7 @@ export function useSupabaseProgress() {
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
   }, []);
 
-  return [bookProgress, setBookProgress, { loading, error }];
+  return [bookProgress, setBookProgress, { loading, error }, handleContextDropSave];
 }
 
 export default useSupabaseProgress;
