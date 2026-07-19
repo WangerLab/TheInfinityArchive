@@ -15,27 +15,33 @@ architecture.
 
 ## Current Sprint (last completed)
 
-Auspex-Politur — CODE COMPLETE, LIVE-VERIFIKATION OFFEN (Desktop). HEAD 26caeb2 on main. Zwölf Commits am Archive/Auspex-View.
+Auspex Omnibus-Split + Row-Layout + Sigil-Sanity — COMPLETE (Desktop). HEAD 06bd041 on main (Sigil-Fixes live via MCP, kein Commit). Sieben Commits plus zwei DB-Korrekturen.
 
-**⚠️ ZUERST LESEN: Dieser Sprint ist NICHT live geprüft.** Alle zwölf Commits sind gebaut und gepusht, der Vercel-Deploy wurde am Sessionende nicht mehr durchgesehen. "Build grün ≠ Runtime grün" gilt hier vollumfänglich. Vier Punkte stehen konkret offen: (1) zeigt der Header **175 ENTRIES**? (2) erscheint *Apocalypse* nur noch **einmal**, mit Imperial-Fists-Symbol? (3) zeigt **Campaign in Phase 3 weiterhin *Apocalypse*** — die Kontrollprobe, ob der `duplicate_of`-Filter zu breit greift und in den Leseplan hineinschneidet? (4) liefert **Allegiance=Chaos + Faction=Imperial Fists** genau *Apocalypse*? Diese vier zuerst, bevor irgendetwas Neues gebaut wird.
+**Omnibus-Auftrennung im Auspex (`1157d69`, `ccf39cb`):** Der flache Katalog zeigte Omnibusse als eine Zeile; die einzelnen Romane und Kurzgeschichten darin waren über die Filter nicht erreichbar. `allBooks` in Archive.jsx ersetzt jeden Omnibus-Entry durch seine Kinder (`flatMap` über `contents`, jedes Kind per Spread mit `parentTitle`/`parentEntryId` angereichert), Einzelbücher unverändert, `duplicate_of`-Filter bleibt auf Entry-Ebene VOR der Auftrennung. Header zählt dadurch von 175 auf 313 (175 − 50 Parents + 188 Kinder). Campaign/Phase-View unberührt — rendert direkt aus projectData, nicht aus allBooks. Kinder tragen im Katalog bereits alle Filterfelder (`grand_alliance` 0 NULL, `faction_sigil` 9 NULL → NO_FACTION-Sentinel, mood 15 leer → moodOk lässt leere durch), daher KEINE Migration nötig. O-Badge (`ccf39cb`): kleines auspex-getöntes O-Ring + "PART OF <Omnibus>" unter dem Titel, nur wenn `parentTitle` gesetzt.
+
+**C3/C5 entfielen als Code:** Progress-Auflösung der Kind-Zeilen (`getEntryProgress` löst Objekte ohne `contents` automatisch als Einzelbuch über `bookProgress[entryId]` auf) und Klick-Ziel (`resolveEntry` steigt bereits in `contents` ab, gibt Kind + `parent` zurück) waren durch den früheren Omnibus-Sprint korrekt gebaut. Reine Verifikation.
+
+**Row-Layout, drei Iterationen (`c5dffaf`, `2343a13`, `06bd041`):** Ausgangsproblem: lange POV/Sektor-Werte liefen aus der Box ("Interrogator-Chaplain Asmodai/Boreas", "Ultima Segmentum (Imperium Nihilus)"). C1 gab dem Datenblock feste `w-[170px]` + Truncate-Anker — behob den Overflow, tauschte ihn aber gegen hartes "…"-Abschneiden bei viel Leerraum rechts. C6 ließ den Block wachsen und umbrechen (`flex-1`, `break-words`, Container auf `items-start`) — brach aber zu früh um, weil ein `max-w-[440px]`-Deckel PLUS ein konkurrierender flex-1-Spacer den Raum halbierten. C7 löste es endgültig: Spacer raus, Deckel raus, Datenblock als einziger Grower, bedingter Spacer für Zeilen ohne Datenblock. Ergebnis: "Interrogator-Chaplain Boreas" einzeilig, kein Leerraum, lange Sektoren umbrechen erst nach voller Breite. Lessons in CLAUDE.md.
+
+**Sigil-Sanity-Check (live via MCP, kein Commit):** Sweep über 108 Einträge mit komplexem `sub_faction`. Ein echter Fehler: *The Talon of Horus* (P0-08) trug `thousand_sons` statt `black_legion` — Klammerzusatz "Thousand Sons remnants" überstimmte die Regex. Ein Grenzfall auf Tims Entscheidung korrigiert: *Witchbringer* (P6-23) `inquisition` → `astra_militarum`. Beide per Dry-Run-dann-UPDATE geschrieben. *Leviathan* ist KEIN Fehler (Sigil korrekt, nur `grand_alliance = xenos` bei Ultramarines-POV — die bekannte Zwei-Felder-Frage). `faction_sigil` wird live aus Supabase gelesen (`useCatalog` select), kein JSON-Rebuild nötig — Reload zeigt die Korrektur.
+
+**⚠️ Offen: Alliance-vs-POV-Sweep.** *Leviathan*-Typ (grand_alliance = thematisches Lager statt POV-Fraktion) katalogweit ungeprüft. Eigene Session, eigene Alliance-Semantik. Details in CLAUDE.md.
+
+**⚠️ Weiterhin offen (unverändert):** Zähl-Logik dreifach (`globalStats` + `getPhaseStats` + `calculateStats`); `calc(100vh-270px)` in Auspex unkalibriert; `duplicate_of` vs. Seitenzahlen (P3-30 trägt 560, P5-13 NULL); Dropdown-Zähler statisch.
+
+---
+
+**Sprint Auspex-Politur (COMPLETE)**
+
+Auspex-Politur — COMPLETE (Desktop). HEAD 26caeb2 on main. Zwölf Commits am Archive/Auspex-View. Live verifiziert im Folge-Sprint (Omnibus-Split): Header, Dubletten-Filter, Campaign-Kontrollprobe und Faction-Filter bestätigt. Panel-Deckkraft in `87b4b63` auf `0.72/0.78` gesetzt (Erledigung der alten `815800d`-Entscheidung, kein Revert auf 0.6/0.68 — der alte Wert versagte über heller Art). Live abgenommen.
 
 **Layout (`112b471`, `e911103`, `a8f2404`, `cea459d`):** Auspex' eigene Allegiance-Chip-Leiste raus (spiegelte den GlobalHeader 1:1). Header steht fest, Katalog scrollt in eigenem Container, zwei Spalten ab `lg`. Die zweite Spalte legte eine Altlast frei: `BookRow` läuft nach rechts auf `to-transparent` aus, was einspaltig folgenlos war und zweispaltig den POV/SECTOR-Block ohne Grund auf die grüne Auspex-Art setzte. Fix war die fehlende Panel-Ebene (Campaign wickelt seine Zeilen in `.grimdark-panel`, Auspex tat es nie) — `BookRow` blieb unangetastet. Das neue Panel setzte dann einen Stacking Context und begrub die Filter-Dropdowns; `z-30` auf dem Header holte sie wieder heraus.
-
-**Panel-Deckkraft (`87b4b63`):** `.grimdark-panel` von `0.82/0.88` auf `0.72/0.78`. Das ist die **Erledigung der offenen `815800d`-Entscheidung** — kein Revert auf `0.6/0.68`: der alte Wert versagte über heller Art, und `815800d` löste ein echtes Problem, wenn auch als Nebenwirkung einer Fehldiagnose. `0.72/0.78` liegt über der versagenden Schwelle und lässt die Art wieder durch. Live abgenommen.
 
 **Sigils (`122bafa` I-1, `8d8feab`, `6c931aa`):** 53 der 176 Einträge hatten gar keinen `faction_sigil` — der Seed-Regex lief über `sub_faction`, und diese Zeilen haben keine. 42 aus `faction_primary` nachgezogen (konfliktfrei by construction: `grand_alliance` stammt aus derselben Spalte), 11 bleiben NULL und sollen es — alle `unaligned`, ohne Fraktion. Jetzt 165/176 mit Sigil. Dazu der Tönungs-Fix: `FactionSigil` tönte die POV-Silhouette nach der Buch-Alliance, was bei *Leviathan* (Tyraniden-Roman, Ultramarines-POV) und *Apocalypse* (Word-Bearers-Roman, Fists-POV) das Symbol in die Farbe des Gegners tauchte. `SIGIL_ALLIANCE` (42 Assets) + `SIGIL_LABEL` exportiert, Tönung nach der Alliance des Sigils selbst.
 
 **Filter (`7bb338f`, `1100cd9`):** Neue `FilterDropdown`-Komponente (Multi-Select, Gruppen-Header, Leading-Node; kein Radix — `components/ui` hat weder Select noch Popover, und drei Filter rechtfertigen keine Dependency). Drei Dropdowns ersetzen die Mood-Chip-Wolke: ALLEGIANCE auf `grand_alliance` (Thema), FACTION auf `faction_sigil` (POV, 37 Werte unter vier Alliance-Gruppen, mit Symbolen), MOOD wie bisher. **Innerhalb** eines Filters ODER, **zwischen** den dreien UND. Die 11 fraktionslosen Bücher bekommen einen "No faction"-Eintrag — sonst wären sie über keinen Filter erreichbar. Header schrumpft von drei Zeilen auf zwei.
 
 **Dubletten (`0061fa3` I-2, `26caeb2`):** *Apocalypse* stand doppelt im flachen Katalog. Kein Bug — der Leseplan listet den Roman bewusst in P3-30 (Quer-Listung) und P5-13 (native). Campaign zeigt zu Recht beide; der flache Katalog darf ihn nur einmal zeigen. `also_in` sagte das schon, aber als Freitext ("SAME NOVEL do not double-count") — für Queries unsichtbar. Neue Spalte `duplicate_of`, P3-30 → P5-13, Auspex filtert Zeiger-Zeilen. Katalogweit gibt es sonst KEINE Titel+Autor-Dublette; zwei weitere `also_in`-Querverweise (P3-26 → P2-03.2, P7-23 → P7-11.2) zeigen auf Omnibus-Kinder, die nie auf Entry-Level erscheinen, und sind keine Dubletten.
-
-**⚠️ Offen: `calc(100vh-270px)` in Auspex ist NICHT kalibriert.** 1:1 aus PhaseView geerbt, obwohl Auspex einen anderen Kopfbereich hat, und seit `1100cd9` ist der Header zwei Zeilen kürzer. Am Deploy prüfen: Lücke unten oder Abschnitt?
-
-**⚠️ Offen: `duplicate_of` vs. Seitenzahlen.** P3-30 trägt die 560 Seiten, die kanonische P5-13 trägt NULL. Heute korrekt (global einmal gezählt). Wer künftig eine Katalog-Statistik baut und `duplicate_of` ausfiltert, verliert sie lautlos. Details in CLAUDE.md.
-
-**⚠️ Weiterhin offen: Zähl-Logik in dreifacher Ausführung.** `globalStats` + `getPhaseStats` (`ArchiveDataContext.jsx`) + `calculateStats` (`PhaseDetail.jsx`). Unverändert aus dem Campaign-Sprint.
-
-**⚠️ Weiterhin offen: Dropdown-Zähler sind statisch.** Sie zeigen die Katalogzahl, nicht die Zahl unter den übrigen aktiven Filtern ("Dark Angels 9" bleibt 9, auch wenn Mood=grim nur 4 übrig lässt). Bewusst so, dynamische Zähler wären ein eigener Commit.
 
 ---
 
