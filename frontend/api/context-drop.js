@@ -120,8 +120,35 @@ const STRUCTURE_TOOL = {
           'fatigue_signals', 'faction_resonance', 'thematic_hooks',
         ],
       },
+      music_scenes: {
+        type: 'array',
+        description:
+          'Scenes the reader EXPLICITLY marked for their music project — ' +
+          'triggered by phrases like "scene for music", "I could make a song ' +
+          'from this", "I want to set this to music", or similar explicit ' +
+          'intent. Extract ONLY scenes the reader deliberately flagged this ' +
+          'way. Do NOT infer or invent musical scenes from general enthusiasm — ' +
+          'if the reader marked none, return an empty array. This feeds a ' +
+          'separate downstream music workflow, not the chronicle.',
+        items: {
+          type: 'object',
+          properties: {
+            scene: {
+              type: 'string',
+              description: 'The scene itself — what happens, vividly. Spoilers ok.',
+            },
+            note: {
+              type: 'string',
+              description:
+                'Why it resonates / the song idea the reader gestured at. ' +
+                'Empty string if they only named the scene.',
+            },
+          },
+          required: ['scene', 'note'],
+        },
+      },
     },
-    required: ['chronicle', 'auspex_reading'],
+    required: ['chronicle', 'auspex_reading', 'music_scenes'],
   },
 };
 
@@ -153,13 +180,21 @@ export default async function handler(req, res) {
   // When appending, give the model the existing chronicle so it can weave the
   // new dictation INTO it — enriching, not replacing. The reader liked what was
   // there and is only adding.
+  const existingScenes =
+    existing && Array.isArray(existing.music_scenes) && existing.music_scenes.length > 0
+      ? `The reader has ALSO already marked these music scenes. Preserve them ` +
+        `ALL in music_scenes, and add any new scene the reader marks in this ` +
+        `addition:\n"""${JSON.stringify(existing.music_scenes, null, 2)}"""\n\n`
+      : '';
+
   const existingBlock =
     existing && typeof existing === 'object' && existing.chronicle
       ? `The reader already has this Chronicle for the book and wants to KEEP ` +
         `its substance while weaving in a new addition. Do not discard what is ` +
         `here — enrich and extend it, integrating the new thought naturally. ` +
         `Produce a single coherent Chronicle covering both.\n\n` +
-        `Existing Chronicle:\n"""${JSON.stringify(existing.chronicle, null, 2)}"""\n\n`
+        `Existing Chronicle:\n"""${JSON.stringify(existing.chronicle, null, 2)}"""\n\n` +
+        existingScenes
       : '';
 
   const instruction = existingBlock
@@ -184,7 +219,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1500,
+        max_tokens: 2000,
         tool_choice: { type: 'tool', name: 'record_reflection' },
         tools: [STRUCTURE_TOOL],
         messages: [{ role: 'user', content: userText }],
@@ -211,11 +246,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const { chronicle, auspex_reading } = toolUse.input;
+    const { chronicle, auspex_reading, music_scenes } = toolUse.input;
 
     return res.status(200).json({
       chronicle,
       auspex_reading,
+      music_scenes: Array.isArray(music_scenes) ? music_scenes : [],
       meta: {
         model: MODEL,
         schema_version: SCHEMA_VERSION,
