@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { FactionMark } from 'components/FactionMark';
+import { ViewBackdrop } from 'components/ViewBackdrop';
 import { SkullRating } from 'components/SkullRating';
 import { Textarea } from 'components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog';
@@ -60,7 +61,7 @@ export function BookDetail() {
 
   if (!resolved) {
     return (
-      <div className="min-h-screen bg-slate-950 scanlines flex items-center justify-center p-6">
+      <div className="min-h-screen bg-void scanlines flex items-center justify-center p-6">
         <div className="grimdark-panel rounded-lg p-6 text-center max-w-sm">
           <p className="font-display text-lg text-gold tracking-wider">NO SUCH RECORD</p>
           <p className="text-sm text-slate-400 mt-2 font-data">entry_id: {entryId}</p>
@@ -122,7 +123,7 @@ export function BookDetail() {
   const cancelStart = () => setReadingPrompt(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 scanlines safe-bottom">
+    <ViewBackdrop art="/Gilded_reliquary_vitrine_with_skull_202607041801.jpeg" accent="gold">
       <main className="px-4 py-4 pb-32 max-w-3xl mx-auto">
         {/* Back */}
         <button
@@ -390,7 +391,7 @@ export function BookDetail() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </ViewBackdrop>
   );
 }
 
