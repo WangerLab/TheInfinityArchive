@@ -43,20 +43,29 @@ const STRUCTURE_TOOL = {
           resonance: {
             type: 'string',
             description:
-              '2-3 sentences: what the book did to the reader, why it stuck ' +
-              '(or did not). Their voice, warm, first-person-friendly.',
+              'A full, rich paragraph (4-7 sentences): what the book did to ' +
+              'the reader, why it stuck (or did not), how it sat within the ' +
+              'wider 40K reading. Draw out everything the reader gestured at ' +
+              'in their dictation — do not compress it to a couple of lines. ' +
+              'Their voice, warm, first-person-friendly. Spoilers fine.',
           },
-          standout_moment: {
-            type: 'string',
+          standout_moments: {
+            type: 'array',
             description:
-              'The one beat, character, or image that will remain. Spoilers ok.',
+              'The 2-4 beats, characters, images, or ideas that will remain ' +
+              'with the reader. Each a single vivid sentence. Pull out ' +
+              'everything distinct they emphasised — do not collapse several ' +
+              'into one. Spoilers ok.',
+            items: { type: 'string' },
+            minItems: 1,
+            maxItems: 4,
           },
           verdict_line: {
             type: 'string',
             description: 'A single punchy sentence — their epitaph for the book.',
           },
         },
-        required: ['resonance', 'standout_moment', 'verdict_line'],
+        required: ['resonance', 'standout_moments', 'verdict_line'],
       },
       auspex_reading: {
         type: 'object',
