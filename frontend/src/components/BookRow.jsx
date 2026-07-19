@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { cn } from 'lib/utils';
 import { Check, BookOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FactionSigil } from './FactionSigil';
-import { SkullRating } from './SkullRating';
 
 // Lean list row — status GLIMPSE plus light context. Click opens the dossier
 // via onOpen(entryId); the row imports no router. Deep content (summary, mood
@@ -194,10 +193,7 @@ export function BookRow({ book, entryProgress, onOpen, getEntryProgress }) {
             )}
           </>
         ) : isRead ? (
-          <>
-            {rating > 0 && <SkullRating rating={rating} readonly size="sm" />}
-            <Check className="w-5 h-5 text-auspex" />
-          </>
+          <Check className={cn('w-5 h-5', rating > 0 ? 'text-gold' : 'text-auspex')} />
         ) : isReading ? (
           <BookOpen className="w-5 h-5 text-gold" />
         ) : null}
