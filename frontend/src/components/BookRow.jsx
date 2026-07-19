@@ -127,7 +127,7 @@ export function BookRow({ book, entryProgress, onOpen }) {
 
       {/* Context block — left, with gap + divider; POV/Sector or omnibus comp */}
       {hasDataBlock && (
-        <div className="hidden md:flex flex-col gap-0.5 flex-1 min-w-[170px] max-w-[440px] pl-5 border-l border-slate-400/15">
+        <div className="hidden md:flex flex-col gap-0.5 flex-1 min-w-[170px] pr-4 pl-5 border-l border-slate-400/15">
           {hasContents ? (
             <span className="text-[11px] font-data tracking-[0.06em] text-slate-500">
               {comp}
@@ -150,9 +150,7 @@ export function BookRow({ book, entryProgress, onOpen }) {
           )}
         </div>
       )}
-
-      {/* Spacer pushes status to the far right */}
-      <div className="flex-1" />
+      {!hasDataBlock && <div className="flex-1" />}
 
       {/* Status glimpse (far right) */}
       <div className="flex items-center gap-2 shrink-0">
