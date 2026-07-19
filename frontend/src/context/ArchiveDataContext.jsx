@@ -154,7 +154,14 @@ export function ArchiveDataProvider({ children }) {
       : (anyReading || childRead > 0) ? 'reading'
       : 'unread';
 
-    return { status, childRead, childTotal, rating: 0 };
+    const ratedChildren = subs
+      .map((c) => flat(c).rating || 0)
+      .filter((r) => r > 0);
+    const avgRating = ratedChildren.length > 0
+      ? ratedChildren.reduce((sum, r) => sum + r, 0) / ratedChildren.length
+      : 0;
+
+    return { status, childRead, childTotal, rating: avgRating };
   }, [bookProgress]);
 
   // Per-phase stats

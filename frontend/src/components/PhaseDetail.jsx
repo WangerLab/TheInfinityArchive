@@ -122,6 +122,7 @@ export const PhaseDetail = ({
               key={book.entryId}
               book={book}
               entryProgress={getEntryProgress(book)}
+              getEntryProgress={getEntryProgress}
               onOpen={(entryId) => navigate('/book/' + entryId)}
             />
           ))}

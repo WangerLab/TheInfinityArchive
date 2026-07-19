@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from 'lib/utils';
-import { Check, BookOpen } from 'lucide-react';
+import { Check, BookOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FactionSigil } from './FactionSigil';
 import { SkullRating } from './SkullRating';
 
@@ -60,8 +60,26 @@ function composition(contents) {
   return parts.join(' + ') || null;
 }
 
-export function BookRow({ book, entryProgress, onOpen }) {
+function AverageRatingIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="9" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+export function BookRow({ book, entryProgress, onOpen, getEntryProgress }) {
   const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
+  const [expanded, setExpanded] = useState(false);
+
+  const handleRowClick = () => {
+    if (hasContents) {
+      setExpanded((e) => !e);
+    } else {
+      onOpen?.(book.entryId);
+    }
+  };
 
   const { status, childRead, childTotal, rating } = entryProgress;
   const isRead = status === 'read';
@@ -83,9 +101,10 @@ export function BookRow({ book, entryProgress, onOpen }) {
   const hasDataBlock = (!hasContents && (pov || sector)) || (hasContents && comp);
 
   return (
+    <>
     <button
       type="button"
-      onClick={() => onOpen?.(book.entryId)}
+      onClick={handleRowClick}
       className={cn(
         'w-full text-left rounded-lg p-3 flex items-start gap-3.5 transition-all duration-200',
         'bg-gradient-to-r from-slate-900/80 to-transparent border-l-3',
@@ -155,12 +174,25 @@ export function BookRow({ book, entryProgress, onOpen }) {
       {/* Status glimpse (far right) */}
       <div className="flex items-center gap-2 shrink-0">
         {hasContents ? (
-          <span className={cn(
-            'text-xs font-bold font-data',
-            omnibusComplete ? 'text-auspex' : 'text-slate-400'
-          )}>
-            {childRead}/{childTotal}
-          </span>
+          <>
+            {rating > 0 && (
+              <span className="flex items-center gap-1 text-xs text-gold/80 font-data">
+                <AverageRatingIcon className="w-3.5 h-3.5" />
+                {rating.toFixed(1)}
+              </span>
+            )}
+            <span className={cn(
+              'text-xs font-bold font-data',
+              omnibusComplete ? 'text-auspex' : 'text-slate-400'
+            )}>
+              {childRead}/{childTotal}
+            </span>
+            {expanded ? (
+              <ChevronDown className="w-4 h-4 text-slate-500" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            )}
+          </>
         ) : isRead ? (
           <>
             {rating > 0 && <SkullRating rating={rating} readonly size="sm" />}
@@ -171,6 +203,21 @@ export function BookRow({ book, entryProgress, onOpen }) {
         ) : null}
       </div>
     </button>
+
+    {hasContents && expanded && (
+      <div className="ml-6 mt-1.5 space-y-1.5 border-l-2 border-auspex/20 pl-3">
+        {book.contents.map((child) => (
+          <BookRow
+            key={child.entryId}
+            book={child}
+            entryProgress={getEntryProgress(child)}
+            onOpen={onOpen}
+            getEntryProgress={getEntryProgress}
+          />
+        ))}
+      </div>
+    )}
+    </>
   );
 }
 
