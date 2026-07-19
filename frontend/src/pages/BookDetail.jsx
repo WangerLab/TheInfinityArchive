@@ -5,6 +5,7 @@ import { useArchiveData } from 'context/ArchiveDataContext';
 import { FactionMark } from 'components/FactionMark';
 import { ViewBackdrop } from 'components/ViewBackdrop';
 import { SkullRating } from 'components/SkullRating';
+import { ContextDrop } from 'components/ContextDrop';
 import { Textarea } from 'components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog';
 import {
@@ -274,6 +275,8 @@ export function BookDetail() {
                   )}
                 />
               </div>
+
+              <ContextDrop book={book} />
             </>
           )}
 
