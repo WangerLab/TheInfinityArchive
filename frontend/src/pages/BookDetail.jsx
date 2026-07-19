@@ -113,7 +113,7 @@ export function BookDetail() {
   const cancelStart = () => setReadingPrompt(false);
 
   return (
-    <ViewBackdrop art="/Gilded_reliquary_vitrine_with_skull_202607041801.jpeg" accent="gold">
+    <ViewBackdrop art="/Illuminated_manuscript_lectern_2K_202607192138.jpeg" accent="gold">
       <main className="px-4 py-4 pb-32 max-w-3xl mx-auto">
         {/* Back */}
         <button
