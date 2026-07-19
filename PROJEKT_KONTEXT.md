@@ -15,6 +15,18 @@ architecture.
 
 ## Current Sprint (last completed)
 
+Context Drop — dictated reflection structured by Sonnet 4.6 — COMPLETE (Desktop). HEAD a717ce3 on main. Dreizehn Feature-Commits + ein Backdrop-Tausch + zwei DB-Migrationen (J-1, K-1, beide live via MCP und als Datei dokumentiert). Live abgenommen (Chronicle-Tiefe, APPEND-Verweben, Szenen-Erfassung, Backdrop).
+
+**Kern:** Ein diktierter Roh-Take (via Wispr Flow, OS-seitig) geht an eine neue Vercel Serverless Function `frontend/api/context-drop.js` (erste Function im Projekt), die Claude Sonnet 4.6 (`claude-sonnet-4-6`) via `fetch` aufruft und über erzwungenes `tool_use` in drei Konsumenten-Blöcke strukturiert: **Chronicle** (`jsonb`, mensch-sichtbar, Prosa in Absätzen, mehrere Standouts, Spoiler ok), **Auspex Reading** (`jsonb`, eingeklappt, 16-Achsen-`emotional_register`-Enum + intensity/appetite/fatigue/faction/hooks — Strategium-Input), **Music Scenes** (eigene `jsonb`-Spalte, nur explizit markierte Szenen — Suno-Workflow-Input). Rohdiktat versteckt als Audit-Trail. Persistenz über direkten, nicht-debounced `handleContextDropSave` (RLS-authentifiziert, `lastSyncedRef`-Lockstep). APPEND-Modus verwebt Ergänzungen in die bestehende Chronicle und bewahrt markierte Szenen; RE-DRAFT startet neu. Reflection-UI konsolidiert (Personal Take + Marginalia raus, redundant zur Chronicle; SkullRating bleibt). BookDetail-Backdrop auf bespoke Manuskript-Kunst (Aquila) — Reliquiar frei für Service Record. Lessons in CLAUDE.md.
+
+**Env:** `ANTHROPIC_API_KEY` als Vercel-Env-Var (Production + Preview, sensitive, KEIN `REACT_APP_`-Präfix — serverseitig). DB: user_progress um `chronicle`, `auspex_reading`, `music_scenes`, `context_drop_raw`, `context_drop_at`, `context_drop_model`, `context_drop_schema_version` erweitert (J-1 + K-1). `personal_take`/`notes` bleiben (Koexistenz).
+
+**⚠️ Offen (unverändert aus Vor-Sprints):** Zähl-Logik dreifach; `calc(100vh-270px)` in Auspex unkalibriert; `duplicate_of` vs. Seitenzahlen; Alliance-vs-POV-Sweep; Dropdown-Zähler statisch. Auspex live-Verifikation aus dem Vor-Sprint gilt als erledigt (im Omnibus-Split-Sprint bestätigt).
+
+---
+
+**Sprint Auspex Omnibus-Split + Row-Layout + Sigil-Sanity (COMPLETE)**
+
 Auspex Omnibus-Split + Row-Layout + Sigil-Sanity — COMPLETE (Desktop). HEAD 06bd041 on main (Sigil-Fixes live via MCP, kein Commit). Sieben Commits plus zwei DB-Korrekturen.
 
 **Omnibus-Auftrennung im Auspex (`1157d69`, `ccf39cb`):** Der flache Katalog zeigte Omnibusse als eine Zeile; die einzelnen Romane und Kurzgeschichten darin waren über die Filter nicht erreichbar. `allBooks` in Archive.jsx ersetzt jeden Omnibus-Entry durch seine Kinder (`flatMap` über `contents`, jedes Kind per Spread mit `parentTitle`/`parentEntryId` angereichert), Einzelbücher unverändert, `duplicate_of`-Filter bleibt auf Entry-Ebene VOR der Auftrennung. Header zählt dadurch von 175 auf 313 (175 − 50 Parents + 188 Kinder). Campaign/Phase-View unberührt — rendert direkt aus projectData, nicht aus allBooks. Kinder tragen im Katalog bereits alle Filterfelder (`grand_alliance` 0 NULL, `faction_sigil` 9 NULL → NO_FACTION-Sentinel, mood 15 leer → moodOk lässt leere durch), daher KEINE Migration nötig. O-Badge (`ccf39cb`): kleines auspex-getöntes O-Ring + "PART OF <Omnibus>" unter dem Titel, nur wenn `parentTitle` gesetzt.
@@ -526,8 +538,13 @@ writes `status`; `is_read` follows automatically.
 
 ## Next Sprints (planned, not committed)
 
-- **Auspex live verifizieren (zuerst, blockierend):** vier Punkte, siehe
-  Current Sprint. Der Sprint ist code-complete, aber ungeprüft.
+- **Reflection-Status sichtbar + filterbar (nächster Sprint, eigener Chat):**
+  In der Campaign-Übersicht pro gelesenem Buch anzeigen, ob es reflektiert ist
+  (Rating und/oder Chronicle vorhanden); in Auspex als Filter ("gelesen ohne
+  Reflexion" etc.). OFFENE DESIGN-FRAGE zuerst klären: was heißt "reflektiert" —
+  Rating, Chronicle, oder beides? `isReflectionPending` (in ArchiveDataContext)
+  ist die halbe Miete; die Chronicle-Existenz-Prüfung (`bookProgress[id].chronicle`)
+  kam im Context-Drop-Sprint dazu. Beides zusammenführen.
 - **`calc(100vh-270px)` in Auspex kalibrieren (klein):** geerbter Wert aus
   PhaseView, nie gegen Auspex' realen Header gemessen.
 - **Centralise the counting logic (small, high value):** one shared helper for
