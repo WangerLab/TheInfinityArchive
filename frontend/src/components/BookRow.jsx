@@ -59,15 +59,6 @@ function composition(contents) {
   return parts.join(' + ') || null;
 }
 
-function AverageRatingIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="9" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
 export function BookRow({ book, entryProgress, onOpen, getEntryProgress }) {
   const hasContents = Array.isArray(book.contents) && book.contents.length > 0;
   const [expanded, setExpanded] = useState(false);
@@ -174,18 +165,13 @@ export function BookRow({ book, entryProgress, onOpen, getEntryProgress }) {
       <div className="flex items-center gap-2 shrink-0">
         {hasContents ? (
           <>
-            {rating > 0 && (
-              <span className="flex items-center gap-1 text-xs text-gold/80 font-data">
-                <AverageRatingIcon className="w-3.5 h-3.5" />
-                {rating.toFixed(1)}
+            {omnibusComplete ? (
+              <Check className="w-5 h-5 text-auspex" />
+            ) : (
+              <span className="text-xs font-bold font-data text-slate-400">
+                {childRead}/{childTotal}
               </span>
             )}
-            <span className={cn(
-              'text-xs font-bold font-data',
-              omnibusComplete ? 'text-auspex' : 'text-slate-400'
-            )}>
-              {childRead}/{childTotal}
-            </span>
             {expanded ? (
               <ChevronDown className="w-4 h-4 text-slate-500" />
             ) : (
