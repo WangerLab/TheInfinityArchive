@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
@@ -6,10 +6,9 @@ import { FactionMark } from 'components/FactionMark';
 import { ViewBackdrop } from 'components/ViewBackdrop';
 import { SkullRating } from 'components/SkullRating';
 import { ContextDrop } from 'components/ContextDrop';
-import { Textarea } from 'components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog';
 import {
-  ChevronLeft, MapPin, Clock, User, BookOpen, Check, BookMarked, Feather,
+  ChevronLeft, MapPin, Clock, User, BookOpen, Check, BookMarked,
 } from 'lucide-react';
 
 // Resolve an entryId to its own book. A sub-item id resolves to the sub-item
@@ -39,7 +38,7 @@ export function BookDetail() {
   const {
     projectData, bookProgress, getEntryProgress,
     handleBookStatusChange, handleBookRatingChange,
-    handleBookNotesChange, handleBookPersonalTakeChange, isReflectionPending,
+    isReflectionPending,
     currentReading, handleStartReading,
   } = useArchiveData();
 
@@ -49,16 +48,6 @@ export function BookDetail() {
   );
 
   const [readingPrompt, setReadingPrompt] = useState(false);
-  const [localTake, setLocalTake] = useState('');
-  const [localNotes, setLocalNotes] = useState('');
-
-  const seedProgress = resolved ? bookProgress[resolved.book.entryId] : null;
-  const seedTake = seedProgress?.personalTake ?? '';
-  const seedNotes = seedProgress?.notes ?? '';
-  useEffect(() => {
-    setLocalTake(seedTake);
-    setLocalNotes(seedNotes);
-  }, [seedTake, seedNotes]);
 
   if (!resolved) {
     return (
@@ -229,7 +218,8 @@ export function BookDetail() {
                 <h2 className="font-tactical text-[11px] tracking-[0.2em] text-auspex/70">
                   YOUR VERDICT
                 </h2>
-                {isReflectionPending(book.entryId) && (
+                {isReflectionPending(book.entryId) &&
+                 !(bookProgress[book.entryId] && bookProgress[book.entryId].chronicle) && (
                   <span className="text-[9px] font-tactical tracking-widest text-gold/70 border border-gold/30 rounded px-1.5 py-0.5">
                     REFLECTION PENDING
                   </span>
@@ -240,41 +230,6 @@ export function BookDetail() {
                 onRatingChange={(r) => handleBookRatingChange(book.entryId, r)}
                 size="md"
               />
-
-              <div className="mt-5">
-                <label className="flex items-center gap-1.5 text-[11px] font-tactical tracking-[0.2em] text-auspex/70 mb-2">
-                  <Feather className="w-3.5 h-3.5" />
-                  PERSONAL TAKE
-                </label>
-                <Textarea
-                  value={localTake}
-                  onChange={(e) => setLocalTake(e.target.value)}
-                  onBlur={() => handleBookPersonalTakeChange(book.entryId, localTake)}
-                  placeholder="Your verdict on this book — what it meant, where it landed…"
-                  className={cn(
-                    'min-h-[120px] font-data text-sm resize-none',
-                    'bg-black/50 border-gold/20 focus:border-gold/50',
-                    'placeholder:text-slate-600 text-slate-100'
-                  )}
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="text-[11px] font-tactical tracking-[0.2em] text-slate-500 mb-2 block">
-                  MARGINALIA
-                </label>
-                <Textarea
-                  value={localNotes}
-                  onChange={(e) => setLocalNotes(e.target.value)}
-                  onBlur={() => handleBookNotesChange(book.entryId, localNotes)}
-                  placeholder="Loose notes, quotes, threads to remember…"
-                  className={cn(
-                    'min-h-[80px] font-data text-sm resize-none',
-                    'bg-black/40 border-slate-700 focus:border-slate-500',
-                    'placeholder:text-slate-600 text-slate-300'
-                  )}
-                />
-              </div>
 
               <ContextDrop book={book} />
             </>
