@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { Textarea } from 'components/ui/textarea';
-import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles } from 'lucide-react';
+import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles, Music } from 'lucide-react';
 
 // Context Drop — dictate a raw reflection (via Wispr Flow at the OS level), have
 // Sonnet 4.6 structure it into Block A (chronicle, human-facing) and Block B
@@ -13,6 +13,7 @@ export function ContextDrop({ book }) {
   const saved = bookProgress[book.entryId] || {};
   const chronicle = saved.chronicle || null;
   const auspex = saved.auspexReading || null;
+  const musicScenes = Array.isArray(saved.musicScenes) ? saved.musicScenes : [];
   const hasDrop = Boolean(chronicle);
 
   const [raw, setRaw] = useState('');
@@ -124,6 +125,31 @@ export function ContextDrop({ book }) {
             );
           })()}
         </div>
+
+        {musicScenes.length > 0 && (
+          <div className="mt-5 rounded-md bg-plasma/5 border border-plasma/20 p-3">
+            <div className="flex items-center gap-2 mb-2.5">
+              <Music className="w-3.5 h-3.5 text-plasma/70" />
+              <h3 className="font-tactical text-[10px] tracking-[0.2em] text-plasma/70">
+                RESONANT SCENES
+              </h3>
+            </div>
+            <ul className="space-y-2.5">
+              {musicScenes.map((s, i) => (
+                <li key={i}>
+                  <p className="text-sm text-slate-300 leading-relaxed font-data">
+                    {s.scene}
+                  </p>
+                  {s.note && (
+                    <p className="text-[12px] text-plasma/60 leading-relaxed font-data italic mt-0.5">
+                      {s.note}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {auspex && (
           <div className="mt-4">
