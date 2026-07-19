@@ -43,11 +43,14 @@ const STRUCTURE_TOOL = {
           resonance: {
             type: 'string',
             description:
-              'A full, rich paragraph (4-7 sentences): what the book did to ' +
-              'the reader, why it stuck (or did not), how it sat within the ' +
-              'wider 40K reading. Draw out everything the reader gestured at ' +
-              'in their dictation — do not compress it to a couple of lines. ' +
-              'Their voice, warm, first-person-friendly. Spoilers fine.',
+              'A full, rich reflection (two to three short paragraphs): what ' +
+              'the book did to the reader, why it stuck (or did not), how it ' +
+              'sat within the wider 40K reading. Draw out everything the reader ' +
+              'gestured at in their dictation — do not compress it. SEPARATE ' +
+              'the paragraphs with a blank line (\\n\\n) so it reads as ' +
+              'distinct thoughts, not one wall of text. Aim for 2-3 paragraphs ' +
+              'of 2-4 sentences each. Their voice, warm, first-person-friendly. ' +
+              'Spoilers fine.',
           },
           standout_moments: {
             type: 'array',

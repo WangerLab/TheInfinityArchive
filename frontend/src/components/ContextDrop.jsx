@@ -80,9 +80,20 @@ export function ContextDrop({ book }) {
             </p>
           )}
           {chronicle.resonance && (
-            <p className="text-sm text-slate-300 leading-relaxed font-data">
-              {chronicle.resonance}
-            </p>
+            <div className="space-y-3">
+              {String(chronicle.resonance)
+                .split(/\n{2,}/)
+                .map((para) => para.trim())
+                .filter(Boolean)
+                .map((para, i) => (
+                  <p
+                    key={i}
+                    className="text-sm text-slate-300 leading-relaxed font-data"
+                  >
+                    {para}
+                  </p>
+                ))}
+            </div>
           )}
           {(() => {
             // Defensive: new drops use standout_moments (array); older drops
