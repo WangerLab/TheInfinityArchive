@@ -40,7 +40,41 @@ const ALLIANCE_TEXT = {
   xenos: 'text-plasma',
 };
 
-export function StrategiumMap({ tree, expandedKey = null, onToggleExpand, onSelectFaction }) {
+const VECTOR_STROKE = {
+  continuation: 'hsl(var(--auspex))',
+  deepening: 'hsl(var(--gold))',
+  pivot: 'hsl(var(--plasma))',
+};
+
+// Gentle curved connector (spec §10): a quadratic bezier bowed perpendicular
+// to the straight line between the two points, so a vector that crosses an
+// alliance box border reads as a deliberate arc rather than a ruler-straight
+// line slicing through unrelated nodes. Not true obstacle-avoidance routing
+// -- a fixed, readable curvature is enough to satisfy "gentle curve" at this
+// node density.
+function curvedPath(x1, y1, x2, y2, bow) {
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const cx = mx + nx * bow;
+  const cy = my + ny * bow;
+  return { d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`, midX: cx, midY: cy };
+}
+
+export function StrategiumMap({
+  tree,
+  expandedKey = null,
+  onToggleExpand,
+  onSelectFaction,
+  positionKey = null,
+  vectors = [],
+  hoveredIndex = null,
+  onHoverVector,
+}) {
   const [hoverKey, setHoverKey] = useState(null);
   // The latch always wins: once something is latched, hover changes elsewhere
   // must not collapse or replace it (spec §5's "overrides hover-collapse").
@@ -100,6 +134,22 @@ export function StrategiumMap({ tree, expandedKey = null, onToggleExpand, onSele
   }, [tree]);
 
   const positions = useForceLayout(simNodes, boxesByKey);
+
+  // Resolve each recommendation vector's endpoint: prefer the target's own
+  // (child) position if it is currently visible -- true only when its
+  // parent happens to be the expanded one -- else fall back to the target's
+  // top-level node, which is always visible. Only one node can be expanded
+  // at a time (spec §3), so at most one of several cross-parent
+  // recommendations gets its precise child endpoint; the rest resolve to
+  // their umbrella node, a readable approximation rather than a crash.
+  const resolvedVectors = vectors
+    .map((v) => {
+      const target = (v.childKey && positions[v.childKey]) || positions[v.topKey];
+      const origin = positionKey ? positions[positionKey] : null;
+      if (!target || !origin) return null;
+      return { ...v, target, origin };
+    })
+    .filter(Boolean);
 
   const handleNodeClick = (node) => {
     if ((node.children || []).length > 0) {
@@ -180,7 +230,8 @@ export function StrategiumMap({ tree, expandedKey = null, onToggleExpand, onSele
                       'absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center',
                       'border transition-opacity duration-300 cursor-pointer',
                       node.isRead ? 'opacity-35' : 'opacity-100',
-                      expandedKey === node.key ? 'ring-2 ring-gold/70' : ''
+                      expandedKey === node.key ? 'ring-2 ring-gold/70' : '',
+                      positionKey === node.key ? 'ring-2 ring-auspex/80' : ''
                     )}
                     style={{
                       left: `${(localX / width) * 100}%`,
@@ -198,6 +249,53 @@ export function StrategiumMap({ tree, expandedKey = null, onToggleExpand, onSele
               })}
             </div>
           </React.Fragment>
+        );
+      })}
+
+      {resolvedVectors.length > 0 && (
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
+          style={{ pointerEvents: 'none' }}
+        >
+          {resolvedVectors.map((v, i) => {
+            const bow = 26 * (i % 2 === 0 ? 1 : -1) * (Math.floor(i / 2) + 1);
+            const { d } = curvedPath(v.origin.x, v.origin.y, v.target.x, v.target.y, bow);
+            const isHovered = hoveredIndex === i;
+            return (
+              <path
+                key={v.entryId}
+                d={d}
+                fill="none"
+                stroke={VECTOR_STROKE[v.vectorClass] || VECTOR_STROKE.continuation}
+                strokeWidth={isHovered ? 3 : 1.5}
+                opacity={hoveredIndex === null || isHovered ? 0.85 : 0.3}
+                style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                onMouseEnter={() => onHoverVector?.(i)}
+                onMouseLeave={() => onHoverVector?.(null)}
+              />
+            );
+          })}
+        </svg>
+      )}
+
+      {resolvedVectors.map((v, i) => {
+        if (hoveredIndex !== i || !v.deviationConsequence) return null;
+        const { midX, midY } = curvedPath(
+          v.origin.x, v.origin.y, v.target.x, v.target.y,
+          26 * (i % 2 === 0 ? 1 : -1) * (Math.floor(i / 2) + 1)
+        );
+        return (
+          <div
+            key={`tip-${v.entryId}`}
+            className="absolute -translate-x-1/2 -translate-y-full pointer-events-none z-20 max-w-[220px] px-2 py-1 rounded bg-slate-950/95 border border-gold/40 text-[10px] text-slate-200 leading-snug"
+            style={{
+              left: `${(midX / CANVAS_WIDTH) * 100}%`,
+              top: `${(midY / CANVAS_HEIGHT) * 100 - 1}%`,
+            }}
+          >
+            {v.deviationConsequence}
+          </div>
         );
       })}
     </div>

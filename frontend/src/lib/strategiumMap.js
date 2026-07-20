@@ -201,3 +201,45 @@ export function getUnreadCandidates(projectData, bookProgress) {
   }
   return out;
 }
+
+// Look up a single book unit (entry or sub-item) by entryId, for the
+// advisory panel to resolve a recommendation's entry_id back to a full
+// book object (title, summary, sigil) without the edge function ever
+// needing to send one.
+export function resolveBookByEntryId(projectData, entryId) {
+  if (!projectData || !entryId) return null;
+  for (const { unit, phase, parentTitle, parentEntryId } of flattenAll(projectData)) {
+    if (unit.entryId === entryId) return { ...unit, phase: phase.title, parentTitle: parentTitle || null, parentEntryId: parentEntryId || null };
+  }
+  return null;
+}
+
+// The reader's taste profile input for the LLM contract (spec §6): derived
+// from EXISTING reflections, never a new field collected for this purpose.
+// Capped to the most recent N read books (by completed_at) so the payload
+// doesn't grow unbounded over years of reading.
+const MAX_REFLECTIONS = 20;
+
+export function getReflections(projectData, bookProgress) {
+  if (!projectData) return [];
+  const units = flattenAll(projectData);
+  const read = [];
+
+  for (const { unit } of units) {
+    const p = bookProgress[unit.entryId];
+    const status = p?.status ?? (p?.isRead ? 'read' : 'unread');
+    if (status !== 'read') continue;
+    if (!p?.rating && !p?.auspexReading) continue; // nothing to learn from
+    read.push({
+      entryId: unit.entryId,
+      title: unit.title,
+      factionPrimary: unit.factionPrimary,
+      rating: p.rating || null,
+      auspexReading: p.auspexReading || null,
+      completedAt: p.completedAt || null,
+    });
+  }
+
+  read.sort((a, b) => (Date.parse(b.completedAt || 0) || 0) - (Date.parse(a.completedAt || 0) || 0));
+  return read.slice(0, MAX_REFLECTIONS);
+}
