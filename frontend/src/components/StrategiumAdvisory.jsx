@@ -77,7 +77,7 @@ export function StrategiumAdvisory({
         </p>
       )}
 
-      <div className="flex flex-col gap-1.5 overflow-y-auto">
+      <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 min-h-0">
         {(recommendations || []).map((rec, i) => {
           const meta = VECTOR_META[rec.vectorClass] || VECTOR_META.continuation;
           const Icon = meta.icon;

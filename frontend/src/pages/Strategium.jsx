@@ -131,16 +131,21 @@ export function Strategium() {
 
   return (
     <ViewBackdrop art="/War-table_projecting_battle-map_2K_202607041801.jpeg" accent="plasma">
-      <div className="min-h-screen px-4 md:px-8 py-6 space-y-4">
-        <div className="text-center">
+      <div className="min-h-screen px-4 md:px-8 py-4 flex flex-col">
+        <div className="text-center mb-3 shrink-0">
           <h1 className="font-display text-2xl text-plasma tracking-wider">STRATEGIUM</h1>
           <p className="text-[11px] text-slate-500 font-tactical tracking-[0.25em]">
             THE STRATEGIUM ADVISES
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 grimdark-panel rounded-xl p-4">
+        {/* Fills the rest of the viewport below the (tight) header above --
+            X is fitted against this page's actual header height, not
+            computed in the abstract; re-check live after deploy and adjust
+            if there's a gap or clipping, same as PhaseView/Archive's own
+            calc-height constants. */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 lg:h-[calc(100vh-160px)]">
+          <div className="lg:col-span-2 grimdark-panel rounded-xl p-4 h-full min-h-[360px]">
             <StrategiumMap
               tree={tree}
               expandedKey={expandedKey}
@@ -153,7 +158,7 @@ export function Strategium() {
             />
           </div>
 
-          <div className="lg:col-span-1 grimdark-panel rounded-xl p-4">
+          <div className="lg:col-span-1 grimdark-panel rounded-xl p-4 h-full overflow-hidden">
             <StrategiumAdvisory
               position={position}
               freeText={freeText}

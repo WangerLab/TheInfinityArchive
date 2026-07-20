@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from 'lib/utils';
 import { FactionSigil } from './FactionSigil';
-import { boxWidths, layoutBox, BOX_HEIGHT, BOX_GAP } from 'lib/strategiumLayout';
+import { boxWidths, layoutBox, BOX_GAP } from 'lib/strategiumLayout';
 import { useForceLayout } from 'hooks/useForceLayout';
 
 // Living meta-map: three fixed alliance volumes (spec §3), each a static
@@ -19,14 +19,15 @@ import { useForceLayout } from 'hooks/useForceLayout';
 // Only one node expands at a time (mid-tier is a single expansion target,
 // not a permanent third layer -- spec §3).
 //
-// Every box and node below is positioned as a PERCENTAGE of the outer
-// aspect-ratio container, never a raw pixel value -- the container is
-// responsive (scales with its parent's width), so a pixel value would drift
-// out of proportion at any width other than the CANVAS_WIDTH virtual unit.
+// The canvas is a MEASURED pixel space (ResizeObserver on the outer
+// container), not a fixed virtual unit scaled by percentage -- the map
+// genuinely fills whatever height/width its panel is given, and node radius
+// (strategiumLayout's radiusFor) scales as a fraction of that real box
+// height, so a taller panel reads as a bigger, richer map rather than the
+// same small grid floating in extra space.
 
-const CANVAS_WIDTH = 900;
-const LABEL_HEIGHT = 44;
-const CANVAS_HEIGHT = BOX_HEIGHT + LABEL_HEIGHT;
+const LABEL_HEIGHT_FRACTION = 0.1;
+const LABEL_HEIGHT_MIN = 28;
 
 const ALLIANCE_BORDER = {
   imperium: 'border-gold/40',
@@ -65,6 +66,26 @@ function curvedPath(x1, y1, x2, y2, bow) {
   return { d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`, midX: cx, midY: cy };
 }
 
+function useMeasuredSize() {
+  const ref = useRef(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      setSize({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, size];
+}
+
 export function StrategiumMap({
   tree,
   expandedKey = null,
@@ -75,12 +96,18 @@ export function StrategiumMap({
   hoveredIndex = null,
   onHoverVector,
 }) {
+  const [containerRef, { width, height }] = useMeasuredSize();
+  const hasSize = width > 0 && height > 0;
+
   const [hoverKey, setHoverKey] = useState(null);
   // The latch always wins: once something is latched, hover changes elsewhere
   // must not collapse or replace it (spec §5's "overrides hover-collapse").
   const activeExpanded = expandedKey ?? hoverKey;
 
-  const widths = boxWidths(tree.alliances, CANVAS_WIDTH);
+  const labelHeight = Math.max(LABEL_HEIGHT_MIN, height * LABEL_HEIGHT_FRACTION);
+  const boxHeight = Math.max(0, height - labelHeight);
+
+  const widths = hasSize ? boxWidths(tree.alliances, width) : [];
   const maxBookCount = Math.max(
     1,
     ...tree.alliances.flatMap((a) => a.nodes.map((n) => n.bookCount))
@@ -88,9 +115,9 @@ export function StrategiumMap({
 
   let cursorX = 0;
   const boxes = tree.alliances.map((alliance, i) => {
-    const width = widths[i];
-    const box = { alliance, x: cursorX, width };
-    cursorX += width + BOX_GAP;
+    const boxWidth = widths[i] || 0;
+    const box = { alliance, x: cursorX, width: boxWidth };
+    cursorX += boxWidth + BOX_GAP;
     return box;
   });
 
@@ -112,26 +139,27 @@ export function StrategiumMap({
   }, [tree, activeExpanded]);
 
   const simNodes = useMemo(() => {
+    if (!hasSize) return [];
     const flat = [];
-    for (const { alliance, x, width } of boxes) {
+    for (const { alliance, x, width: boxWidth } of boxes) {
       const visible = visibleByAlliance[alliance.key];
-      const anchors = layoutBox(visible, width, BOX_HEIGHT, maxBookCount);
+      const anchors = layoutBox(visible, boxWidth, boxHeight, maxBookCount);
       for (const anchor of anchors) {
         flat.push({ key: anchor.key, x: anchor.x + x, y: anchor.y, r: anchor.r, boxKey: alliance.key });
       }
     }
     return flat;
     // eslint-disable-next-line
-  }, [visibleByAlliance]);
+  }, [visibleByAlliance, width, height]);
 
   const boxesByKey = useMemo(() => {
     const map = {};
-    for (const { alliance, x, width } of boxes) {
-      map[alliance.key] = { left: x, top: 0, width, height: BOX_HEIGHT };
+    for (const { alliance, x, width: boxWidth } of boxes) {
+      map[alliance.key] = { left: x, top: 0, width: boxWidth, height: boxHeight };
     }
     return map;
     // eslint-disable-next-line
-  }, [tree]);
+  }, [tree, width, height]);
 
   const positions = useForceLayout(simNodes, boxesByKey);
 
@@ -162,11 +190,8 @@ export function StrategiumMap({
   };
 
   return (
-    <div
-      className="relative w-full"
-      style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
-    >
-      {boxes.map(({ alliance, x, width }) => {
+    <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
+      {hasSize && boxes.map(({ alliance, x, width: boxWidth }) => {
         const visible = visibleByAlliance[alliance.key];
         const showingChildrenOf = visible.find((n) => n.expandedFromKey)?.expandedFromKey || null;
         const showingChildrenOfLabel = visible.find((n) => n.expandedFromKey)?.expandedFromLabel || null;
@@ -178,24 +203,14 @@ export function StrategiumMap({
                 'absolute text-center font-tactical text-[11px] tracking-[0.25em] uppercase flex items-end justify-center pb-2',
                 ALLIANCE_TEXT[alliance.key]
               )}
-              style={{
-                left: `${(x / CANVAS_WIDTH) * 100}%`,
-                top: 0,
-                width: `${(width / CANVAS_WIDTH) * 100}%`,
-                height: `${(LABEL_HEIGHT / CANVAS_HEIGHT) * 100}%`,
-              }}
+              style={{ left: x, top: 0, width: boxWidth, height: labelHeight }}
             >
               {alliance.label}
             </div>
 
             <div
               className={cn('absolute rounded-lg border bg-slate-950/40', ALLIANCE_BORDER[alliance.key])}
-              style={{
-                left: `${(x / CANVAS_WIDTH) * 100}%`,
-                top: `${(LABEL_HEIGHT / CANVAS_HEIGHT) * 100}%`,
-                width: `${(width / CANVAS_WIDTH) * 100}%`,
-                height: `${(BOX_HEIGHT / CANVAS_HEIGHT) * 100}%`,
-              }}
+              style={{ left: x, top: labelHeight, width: boxWidth, height: boxHeight }}
             >
               {showingChildrenOf && (
                 <button
@@ -234,10 +249,10 @@ export function StrategiumMap({
                       positionKey === node.key ? 'ring-2 ring-auspex/80' : ''
                     )}
                     style={{
-                      left: `${(localX / width) * 100}%`,
-                      top: `${(pos.y / BOX_HEIGHT) * 100}%`,
-                      width: `${(pos.r * 2 / width) * 100}%`,
-                      height: `${(pos.r * 2 / BOX_HEIGHT) * 100}%`,
+                      left: localX,
+                      top: pos.y,
+                      width: pos.r * 2,
+                      height: pos.r * 2,
                       borderColor: 'var(--acc)',
                       background: 'hsl(var(--void) / 0.7)',
                     }}
@@ -252,10 +267,12 @@ export function StrategiumMap({
         );
       })}
 
-      {resolvedVectors.length > 0 && (
+      {hasSize && resolvedVectors.length > 0 && (
         <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
+          className="absolute inset-0"
+          width={width}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
           style={{ pointerEvents: 'none' }}
         >
           {resolvedVectors.map((v, i) => {
@@ -279,7 +296,7 @@ export function StrategiumMap({
         </svg>
       )}
 
-      {resolvedVectors.map((v, i) => {
+      {hasSize && resolvedVectors.map((v, i) => {
         if (hoveredIndex !== i || !v.deviationConsequence) return null;
         const { midX, midY } = curvedPath(
           v.origin.x, v.origin.y, v.target.x, v.target.y,
@@ -289,10 +306,7 @@ export function StrategiumMap({
           <div
             key={`tip-${v.entryId}`}
             className="absolute -translate-x-1/2 -translate-y-full pointer-events-none z-20 max-w-[220px] px-2 py-1 rounded bg-slate-950/95 border border-gold/40 text-[10px] text-slate-200 leading-snug"
-            style={{
-              left: `${(midX / CANVAS_WIDTH) * 100}%`,
-              top: `${(midY / CANVAS_HEIGHT) * 100 - 1}%`,
-            }}
+            style={{ left: midX, top: midY - 6 }}
           >
             {v.deviationConsequence}
           </div>

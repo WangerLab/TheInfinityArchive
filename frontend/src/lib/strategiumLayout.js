@@ -1,30 +1,37 @@
 // Anchor layout for the Strategium meta-map: grid-packs each alliance box's
-// faction nodes into fixed rest positions. Physics (wired in a later commit)
-// only ever displaces nodes AWAY from these anchors and settles them back --
-// this grid IS the rest state (spec §4: "anchored, not free-drift"), not a
-// placeholder that gets replaced.
+// faction nodes into fixed rest positions. Physics only ever displaces nodes
+// AWAY from these anchors and settles them back -- this grid IS the rest
+// state (spec §4: "anchored, not free-drift"), not a placeholder.
+//
+// All dimensions here are REAL measured pixels (StrategiumMap.jsx measures
+// its container via ResizeObserver), not a fixed virtual unit -- the map
+// fills whatever space its panel actually has, and node radius scales with
+// that real box height so a bigger panel reads as a bigger, richer map
+// instead of the same small grid floating in extra padding.
 
-export const BOX_HEIGHT = 260;
-export const BOX_GAP = 24;
-export const BOX_PADDING = 28;
-export const NODE_RADIUS_MIN = 14;
-export const NODE_RADIUS_MAX = 30;
+export const BOX_GAP = 20;
+export const BOX_PADDING = 24;
 
-// Node radius scales with book count (catalog frequency = prominence, per
-// the Strategium planning decision) between a floor and a ceiling so a
-// single-book faction never disappears and a 70-book one never swallows
-// its box.
-export function radiusFor(bookCount, maxBookCount) {
-  if (maxBookCount <= 0) return NODE_RADIUS_MIN;
+// Radius bounds as a FRACTION of the box's own height, not a fixed pixel
+// value -- so the map uses whatever room it's given rather than staying
+// pinned to a small constant regardless of panel size.
+const RADIUS_MIN_FRACTION = 0.05;
+const RADIUS_MAX_FRACTION = 0.12;
+
+export function radiusFor(bookCount, maxBookCount, boxHeight) {
+  const min = boxHeight * RADIUS_MIN_FRACTION;
+  const max = boxHeight * RADIUS_MAX_FRACTION;
+  if (maxBookCount <= 0) return min;
   const t = Math.sqrt(bookCount / maxBookCount);
-  return NODE_RADIUS_MIN + t * (NODE_RADIUS_MAX - NODE_RADIUS_MIN);
+  return min + t * (max - min);
 }
 
 // Lay out one alliance's nodes on a grid inside its box (local coordinates,
-// origin top-left of the box). Returns { key, x, y, r } per node.
+// origin top-left of the box). Returns { key, x, y, r } per node, all in
+// real pixels relative to the box's own top-left.
 export function layoutBox(nodes, boxWidth, boxHeight, maxBookCount) {
   const n = nodes.length;
-  if (n === 0) return [];
+  if (n === 0 || boxWidth <= 0 || boxHeight <= 0) return [];
   const cols = Math.max(1, Math.ceil(Math.sqrt(n * (boxWidth / boxHeight))));
   const rows = Math.ceil(n / cols);
   const cellW = (boxWidth - 2 * BOX_PADDING) / cols;
@@ -37,7 +44,7 @@ export function layoutBox(nodes, boxWidth, boxHeight, maxBookCount) {
       key: node.key,
       x: BOX_PADDING + cellW * (col + 0.5),
       y: BOX_PADDING + cellH * (row + 0.5),
-      r: radiusFor(node.bookCount, maxBookCount),
+      r: radiusFor(node.bookCount, maxBookCount, boxHeight),
     };
   });
 }
