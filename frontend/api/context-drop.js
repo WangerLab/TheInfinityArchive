@@ -29,10 +29,13 @@ const STRUCTURE_TOOL = {
     'Block A (chronicle) is warm human-facing prose the reader will re-read ' +
     'in years — full spoilers are fine, it is their private memory. Block B ' +
     '(auspex_reading) is cold machine-readable signal for a downstream ' +
-    'recommendation model; never shown to the reader by default. Infer every ' +
-    'field ONLY from what the reader actually said — do not invent enthusiasm ' +
-    'or fatigue that is not in the dictation. If the reader was lukewarm, say ' +
-    'so (register "distant", low intensity). Write in English.',
+    'recommendation model; never shown to the reader by default. ' +
+    'FIDELITY OVER LENGTH: infer every field ONLY from what the reader ' +
+    'actually said. Never invent enthusiasm, detail, drama, or significance ' +
+    'that is not in the dictation. The output length must follow the input: ' +
+    'a rich dictation yields a rich chronicle, a thin one yields a short ' +
+    'chronicle — never pad a thin reflection to hit a length. If the reader ' +
+    'was lukewarm, say so (register "distant", low intensity). Write in English.',
   input_schema: {
     type: 'object',
     properties: {
@@ -43,24 +46,28 @@ const STRUCTURE_TOOL = {
           resonance: {
             type: 'string',
             description:
-              'A full, rich reflection (two to three short paragraphs): what ' +
-              'the book did to the reader, why it stuck (or did not), how it ' +
-              'sat within the wider 40K reading. Draw out everything the reader ' +
-              'gestured at in their dictation — do not compress it. SEPARATE ' +
-              'the paragraphs with a blank line (\\n\\n) so it reads as ' +
-              'distinct thoughts, not one wall of text. Aim for 2-3 paragraphs ' +
-              'of 2-4 sentences each. Their voice, warm, first-person-friendly. ' +
-              'Spoilers fine.',
+              'A reflection in the reader\'s voice: what the book did to them, why ' +
+              'it stuck (or did not), how it sat within their wider 40K reading. ' +
+              'Structure and lift what they actually said into clear, warm prose — ' +
+              'give shape to thoughts they expressed messily, but add NOTHING they ' +
+              'did not gesture at. Do not invent motifs, scenes, or significance to ' +
+              'fill space. LENGTH FOLLOWS THE INPUT: if they said a lot, write ' +
+              'several paragraphs; if they said little, a few sentences is correct ' +
+              'and honest — never inflate. When there are multiple distinct thoughts, ' +
+              'separate paragraphs with a blank line (\\n\\n) so it does not read as ' +
+              'one wall of text. First-person-friendly, their voice. Spoilers fine.',
           },
           standout_moments: {
             type: 'array',
             description:
-              'The 2-4 beats, characters, images, or ideas that will remain ' +
-              'with the reader. Each a single vivid sentence. Pull out ' +
-              'everything distinct they emphasised — do not collapse several ' +
-              'into one. Spoilers ok.',
+              'Beats, characters, images, or ideas the reader genuinely ' +
+              'emphasised as staying with them. Each a single vivid sentence in ' +
+              'their voice. Include ONLY what they actually singled out — if they ' +
+              'emphasised one thing, return one; if they dwelt on nothing in ' +
+              'particular, return an empty array. Do not manufacture standouts to ' +
+              'reach a count. Spoilers ok.',
             items: { type: 'string' },
-            minItems: 1,
+            minItems: 0,
             maxItems: 4,
           },
           verdict_line: {
