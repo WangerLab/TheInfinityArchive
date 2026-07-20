@@ -98,6 +98,7 @@ export function useSupabaseProgress() {
             notes: row.notes ?? '',
             personalTake: row.personal_take ?? '',
             startedAt: row.started_at ?? null,
+            completedAt: row.completed_at ?? null,
             chronicle: row.chronicle ?? null,
             auspexReading: row.auspex_reading ?? null,
             contextDropRaw: row.context_drop_raw ?? '',

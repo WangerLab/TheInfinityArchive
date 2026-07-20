@@ -51,7 +51,7 @@ export function useCatalog() {
               .order('sort_order', { ascending: true }),
             supabase
               .from('books')
-              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance, faction_sigil, duplicate_of')
+              .select('id, phase_id, parent_book_id, title, author, pages, type, tags, sort_order, row_type, entry_id, location_primary, location_segmentum, in_universe_date, protagonist, key_characters, sub_faction, faction_primary, parent_faction, mood_tags, semantic_tags, spoiler_free_summary, grand_alliance, faction_sigil, duplicate_of')
               .order('sort_order', { ascending: true }),
             supabase
               .from('book_series')
@@ -121,6 +121,7 @@ export function useCatalog() {
               keyCharacters: Array.isArray(entry.key_characters) ? entry.key_characters : [],
               subFaction: entry.sub_faction ?? null,
               factionPrimary: entry.faction_primary ?? null,
+              parentFaction: entry.parent_faction ?? null,
               grandAlliance: entry.grand_alliance ?? null,
               factionSigil: entry.faction_sigil ?? null,
               duplicateOf: entry.duplicate_of ?? null,
@@ -142,6 +143,8 @@ export function useCatalog() {
                 protagonist: sub.protagonist ?? null,
                 keyCharacters: Array.isArray(sub.key_characters) ? sub.key_characters : [],
                 subFaction: sub.sub_faction ?? null,
+                factionPrimary: sub.faction_primary ?? null,
+                parentFaction: sub.parent_faction ?? null,
                 grandAlliance: sub.grand_alliance ?? null,
                 factionSigil: sub.faction_sigil ?? null,
                 moodTags: Array.isArray(sub.mood_tags) ? sub.mood_tags : [],
