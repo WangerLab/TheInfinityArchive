@@ -15,6 +15,32 @@ architecture.
 
 ## Current Sprint (last completed)
 
+Chronicle-Interview — Fidelity-Fix, Opus-Wechsel, schwebendes Interview-Modal — COMPLETE (Desktop). HEAD `144f5c1` on main. Neun Commits, alle live-grün und live abgenommen. Base `a84d99f`.
+
+**Standouts als eigener gold-Kasten (`08b1b4d`):** Die Standouts waren eine nackte graue Liste im Chronicle-Container (`text-slate-400 italic`), schlecht lesbar. Zu eigenem gold-getöntem Kasten (`bg-gold/5 border-gold/20`, Star-Icon) hochgezogen, strukturell gespiegelt vom plasma Resonant-Kasten, zwischen Chronicle-Prosa und Resonant sitzend. Die defensive `standout_moments`/`standout_moment`-Ableitung in den Komponenten-Body gehoben (eine Quelle statt Inline-IIFE).
+
+**Chronicle-Länge folgt Input (`d829e31`):** Die `resonance`-Schema-Beschreibung befahl feste „2-3 paragraphs", was bei dünnem Input Halluzination erzwang (der APPEND-Bug: eine Szenennotiz → zwei erfundene Absätze). Umgeschrieben auf „FIDELITY OVER LENGTH, length follows input, add nothing not gestured at". `standout_moments` `minItems` 1→0.
+
+**Opus 4.8 (`ce334c1`):** `MODEL` von legacy `claude-sonnet-4-6` auf `claude-opus-4-8`. Seltener, qualitätskritischer Call → Modellqualität schlägt Token-Kosten. Live-Vergleich bestätigte: Opus ordnet treuer ein, bläht nicht auf.
+
+**Interview-Feature, vier Commits (`9e3b17a`→`ef64123`):** Das Modell gibt beim Structure-Call `open_questions` zurück — `correction` (fraglicher Eigenname, aggressive Schwelle: bei Zweifel fragen) oder `deepening` (dünner Strang, sparsame Schwelle). Bei offenen Fragen speichert `structure()` NICHT sofort, sondern hält das Ergebnis in `pending`-State und öffnet ein shadcn-Dialog-Modal („THE COGITATOR ASKS", amber). Ein Antwortfeld pro Frage. ABSCHLIESSEN → resolve-Call webt Antworten ein (correction ersetzt Namen verbatim, deepening webt in Prosa), speichert. ABBRECHEN/Escape/X → alles verworfen, nichts gespeichert (schwebender Flow). Klick-außerhalb deaktiviert. Backend hat einen dritten `isResolve`-Modus neben new/append.
+
+**Standout-Bugfix, drei Anläufe (`07417b7`→`364c27d`→`144f5c1`):** Nach dem Interview fehlten die Standouts. Erst nach einem DB-Query (`chronicle->'standout_moments'` = `[]` schon nach dem ersten Call) war klar: Opus lässt Beats, die an fraglichen Namen hängen, aus den Standouts, bis die Namen geklärt sind — die Wurzel lag im ERSTEN Call, nicht im resolve. Erste zwei Fixes (Prompt-„preserve", dann Code-Merge der leeren Original-Standouts) lagen falsch. Finaler Fix: der resolve-Call LEITET die Standouts frisch ab, wo die Namen geklärt sind (`144f5c1`). Live bestätigt: vier Standouts mit „C'tan" statt der Transkriptionsfehler.
+
+**Cepharil-Anwendungsfall live durchgelaufen:** Diktat „Cepharil"/„Katanen" → Modal fängt beide in einer correction-Frage → Nutzer antwortet „C'tan" → Chronicle, Standouts und Resonant Scenes durchgängig „C'tan", Prosa unverändert sonst.
+
+**⚠️ DB-Feld `open_questions` (`L-1`) ist im schwebenden Flow UNGENUTZT** — bewusste, dokumentierte Reserve für einen möglichen „Fragen für später"-Modus. Kein toter Code, aber aktuell nicht befüllt (die Fragen leben nur im Modal-Moment).
+
+**⚠️ Offen (unverändert aus Vor-Sprints):** Zähl-Logik dreifach; `calc(100vh-270px)` in Auspex unkalibriert; `duplicate_of` vs. Seitenzahlen; Alliance-vs-POV-Sweep; Dropdown-Zähler statisch.
+
+**Nächste Sprint-Kandidaten:** Längen-Sweet-Spot der Chronicle justieren (Opus längt anders als Sonnet — nach ein paar echten Läufen `max_tokens` oder eine Kürze-Präferenz kalibrieren); Strategium (AI-Lesebegleiter für nicht-lineare Abweichung) als größeres eigenes Projekt; der `815800d`-Opacity-Revert steht weiter offen (in diesem Sprint nicht berührt — ContextDrop nutzt kein `.grimdark-panel`).
+
+Lessons in CLAUDE.md (Abschnitt „Sprint Chronicle-Interview").
+
+---
+
+**Sprint Campaign-Cleanup (COMPLETE)**
+
 Campaign-Cleanup — Omnibus-Expansion zurück + Listenzeilen-Status aufgeräumt — COMPLETE (Desktop). HEAD `39400d6` on main. Drei kleine Commits, alle live-grün und live abgenommen. Base `adce6af`.
 
 **Omnibus wieder inline ausklappbar (`4957d66`):** Der Omnibus-Sub-Items-Sprint hatte die Inline-Expansion in der Phasenliste bewusst gegen „Klick → Dossier mit CONTENTS-Liste" getauscht. Tim wollte sie zurück (geänderte Anforderung, keine Fehlerkorrektur). `BookRow` bekam einen lokalen `expanded`-State; bei Omnibussen togglet der Zeilen-Klick die Ausklappung statt zu navigieren, ausgeklappt rendert `BookRow` sich rekursiv pro Kind (Tiefe hart 2 durch Daten — Kinder haben nie `contents`). Kinder-Block als SIBLING außerhalb des äußeren `<button>` (keine verschachtelten Buttons). Klick auf ein Kind öffnet dessen Einzel-Dossier wie ein normales Buch. `getEntryProgress` wird von `PhaseDetail` als Prop an `BookRow` durchgereicht (kein Context-Import — `BookRow` bleibt router-/context-frei). `getEntryProgress` liefert für Omnibusse jetzt ein echtes Ø-Rating (Durchschnitt der bewerteten Kinder) statt hartem `0`.
