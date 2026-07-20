@@ -271,12 +271,15 @@ export default async function handler(req, res) {
         `standout_moments entry, and in music_scenes. Change NOTHING else.\n` +
         `- "deepening": weave the reader's added thought into the resonance ` +
         `prose naturally. Do not invent beyond what they said.\n` +
-        `CRITICAL PRESERVATION: return resonance, standout_moments, and ` +
-        `verdict_line with the SAME content and the SAME number of entries as ` +
-        `the existing Chronicle, except for a verbatim term substitution from a ` +
-        `correction. Do NOT drop, shorten, merge, or empty standout_moments. ` +
-        `Do NOT rewrite verdict_line. Preserve all existing music_scenes. ` +
-        `Return open_questions as an empty array.\n\n` +
+        `Now that the reader has clarified the flagged names, the Chronicle is ` +
+        `no longer uncertain. Apply the corrections to the resonance prose, and ` +
+        `DERIVE standout_moments freshly from the corrected Chronicle: 2-4 vivid ` +
+        `single-sentence beats the reader clearly emphasised, now that the names ` +
+        `they hang on are resolved. This is the one place you SHOULD produce ` +
+        `standouts even though the first pass left them empty — the uncertainty ` +
+        `that suppressed them is gone. Keep verdict_line unless a correction ` +
+        `changes a name in it. Preserve all existing music_scenes. Return ` +
+        `open_questions as an empty array.\n\n` +
         `Existing Chronicle:\n"""${JSON.stringify(existing.chronicle, null, 2)}"""\n\n` +
         (Array.isArray(existing.music_scenes) && existing.music_scenes.length > 0
           ? `Existing music scenes (preserve all):\n"""${JSON.stringify(existing.music_scenes, null, 2)}"""\n\n`

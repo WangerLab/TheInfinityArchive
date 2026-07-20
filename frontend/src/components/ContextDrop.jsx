@@ -131,43 +131,6 @@ export function ContextDrop({ book }) {
           throw new Error(data?.error || `Request failed (${res.status})`);
         }
         result = data;
-
-        // Deterministic preservation: the model reliably edits the resonance
-        // prose (name substitution + deepening weave-in) but keeps dropping
-        // standout_moments and verdict_line on the resolve call. So we do NOT
-        // trust the model for those two structured fields — we take them from
-        // the ORIGINAL chronicle and apply the same correction substitutions in
-        // code. Corrections are verbatim string replaces; deepenings never
-        // touch standouts/verdict. This guarantees the Standouts survive.
-        const origChron = pending.data.chronicle || {};
-        const applyCorrections = (text) => {
-          if (typeof text !== 'string' || !text) return text;
-          let out = text;
-          for (const a of answered) {
-            if (a.type === 'correction' && a.context && a.answer) {
-              // Replace every occurrence of the flagged term with the answer.
-              out = out.split(a.context).join(a.answer);
-            }
-          }
-          return out;
-        };
-        const origStandouts = Array.isArray(origChron.standout_moments)
-          ? origChron.standout_moments
-          : origChron.standout_moment
-            ? [origChron.standout_moment]
-            : [];
-        result = {
-          ...result,
-          chronicle: {
-            ...result.chronicle,
-            // resonance: keep the model's edited prose.
-            // standouts + verdict: preserve from original, apply corrections.
-            standout_moments: origStandouts.map(applyCorrections),
-            verdict_line: applyCorrections(
-              origChron.verdict_line ?? result.chronicle?.verdict_line ?? ''
-            ),
-          },
-        };
       }
 
       await handleContextDropSave(book.entryId, {
