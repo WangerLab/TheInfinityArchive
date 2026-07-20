@@ -1,5 +1,5 @@
 // POST /api/context-drop
-// Takes a raw dictated reflection + book context, calls Claude Sonnet 4.6 to
+// Takes a raw dictated reflection + book context, calls Claude Opus 4.8 to
 // structure it into two blocks, returns them to the client. Does NOT persist —
 // the client writes the result through the RLS-authenticated progress hook.
 //
@@ -9,7 +9,7 @@
 // Structure is enforced via tool_use (input_schema) rather than "return JSON",
 // so the model cannot prepend prose — the API shape guarantees a schema object.
 
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-opus-4-8';
 const SCHEMA_VERSION = 1;
 
 const REGISTER_ENUM = [
