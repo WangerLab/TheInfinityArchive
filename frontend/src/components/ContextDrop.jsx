@@ -98,8 +98,43 @@ export function ContextDrop({ book }) {
     setFinishing(true);
     setError(null);
     try {
+      const questions = Array.isArray(pending.data.open_questions)
+        ? pending.data.open_questions
+        : [];
+      // Collect only answered questions (non-empty answer field).
+      const answered = questions
+        .map((q, i) => ({ ...q, answer: (answers[i] || '').trim() }))
+        .filter((q) => q.answer.length > 0);
+
+      let result = pending.data;
+      if (answered.length > 0) {
+        // Second call: weave the answers into the held Chronicle.
+        const res = await fetch('/api/context-drop', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            book: {
+              title: book.title,
+              author: book.author,
+              factionPrimary: book.factionPrimary,
+              subFaction: book.subFaction,
+            },
+            existing: {
+              chronicle: pending.data.chronicle,
+              music_scenes: pending.data.music_scenes,
+            },
+            answers: answered,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || `Request failed (${res.status})`);
+        }
+        result = data;
+      }
+
       await handleContextDropSave(book.entryId, {
-        ...pending.data,
+        ...result,
         open_questions: [],
         raw: pending.mergedRaw,
       });

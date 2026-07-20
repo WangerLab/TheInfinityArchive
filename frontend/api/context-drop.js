@@ -218,8 +218,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server missing ANTHROPIC_API_KEY' });
   }
 
-  const { raw, book, existing } = req.body || {};
-  if (!raw || typeof raw !== 'string' || !raw.trim()) {
+  const { raw, book, existing, answers } = req.body || {};
+  const isResolve = Array.isArray(answers) && answers.length > 0;
+  if (!isResolve && (!raw || typeof raw !== 'string' || !raw.trim())) {
     return res.status(400).json({ error: 'Missing raw reflection text' });
   }
 
@@ -253,17 +254,45 @@ export default async function handler(req, res) {
         existingScenes
       : '';
 
-  const instruction = existingBlock
-    ? `The reader dictated the following ADDITION to their reflection. ` +
-      `Structure the combined result with the record_reflection tool.`
-    : `The reader just finished this book and dictated the following raw ` +
-      `reflection. Structure it with the record_reflection tool.`;
+  // Resolve path: the reader answered open questions from a prior structuring.
+  // Corrections replace a mis-transcribed term verbatim wherever it appears and
+  // change NOTHING else; deepenings weave a new thought in naturally. Both may
+  // be present. Only answered questions are sent — unanswered ones are dropped
+  // by the client and must be left exactly as they are.
+  const answersBlock =
+    Array.isArray(answers) && answers.length > 0 && existing && existing.chronicle
+      ? `The reader reviewed this Chronicle and answered some clarifying ` +
+        `questions about it. Apply their answers to produce a corrected, single ` +
+        `coherent Chronicle. Rules by answer type:\n` +
+        `- "correction": replace the flagged term VERBATIM with the reader's ` +
+        `answer everywhere it appears (chronicle prose, standout_moments, and ` +
+        `music_scenes). Change NOTHING else — do not rewrite, embellish, or ` +
+        `re-order. A correction is surgical.\n` +
+        `- "deepening": weave the reader's added thought into the chronicle ` +
+        `naturally, as an enrichment. Do not invent beyond what they said.\n` +
+        `Preserve everything not touched by an answer, including all existing ` +
+        `music_scenes. Return open_questions as an empty array.\n\n` +
+        `Existing Chronicle:\n"""${JSON.stringify(existing.chronicle, null, 2)}"""\n\n` +
+        (Array.isArray(existing.music_scenes) && existing.music_scenes.length > 0
+          ? `Existing music scenes (preserve all):\n"""${JSON.stringify(existing.music_scenes, null, 2)}"""\n\n`
+          : '') +
+        `The reader's answers:\n"""${JSON.stringify(answers, null, 2)}"""\n\n`
+      : '';
 
-  const userText =
-    (ctx ? `Book context:\n${ctx}\n\n` : '') +
-    existingBlock +
-    instruction + `\n\n` +
-    `Raw ${existingBlock ? 'addition' : 'reflection'}:\n"""${raw.trim()}"""`;
+  const instruction = answersBlock
+    ? `Apply the reader's answers with the record_reflection tool.`
+    : existingBlock
+      ? `The reader dictated the following ADDITION to their reflection. ` +
+        `Structure the combined result with the record_reflection tool.`
+      : `The reader just finished this book and dictated the following raw ` +
+        `reflection. Structure it with the record_reflection tool.`;
+
+  const userText = answersBlock
+    ? (ctx ? `Book context:\n${ctx}\n\n` : '') + answersBlock + instruction
+    : (ctx ? `Book context:\n${ctx}\n\n` : '') +
+      existingBlock +
+      instruction + `\n\n` +
+      `Raw ${existingBlock ? 'addition' : 'reflection'}:\n"""${raw.trim()}"""`;
 
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
