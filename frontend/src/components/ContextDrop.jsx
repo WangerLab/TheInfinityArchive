@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { Textarea } from 'components/ui/textarea';
-import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles, Music, Star } from 'lucide-react';
+import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles, Music, Star, HelpCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog';
 
 // Context Drop — dictate a raw reflection (via Wispr Flow at the OS level), have
 // Sonnet 4.6 structure it into Block A (chronicle, human-facing) and Block B
@@ -27,6 +33,13 @@ export function ContextDrop({ book }) {
   const [auspexOpen, setAuspexOpen] = useState(false);
   const [redrafting, setRedrafting] = useState(false);
   const [appending, setAppending] = useState(false);
+
+  // Floating interview state: when structure() returns open_questions, the
+  // result is held here UNSAVED and the modal opens. Completing saves it;
+  // cancelling discards it — nothing is persisted until the reader completes.
+  const [pending, setPending] = useState(null); // { data, mergedRaw } or null
+  const [answers, setAnswers] = useState({});
+  const [finishing, setFinishing] = useState(false);
 
   const structure = async (mode = 'new') => {
     if (!raw.trim() || busy) return;
@@ -57,10 +70,19 @@ export function ContextDrop({ book }) {
       const mergedRaw = isAppend && priorRaw
         ? `${priorRaw}\n\n--- ADDITION ---\n\n${raw}`
         : raw;
-      await handleContextDropSave(book.entryId, { ...data, raw: mergedRaw });
-      setRaw('');
-      setRedrafting(false);
-      setAppending(false);
+
+      const questions = Array.isArray(data.open_questions) ? data.open_questions : [];
+      if (questions.length > 0) {
+        // Hold the result unsaved; open the modal to resolve questions first.
+        setPending({ data, mergedRaw });
+        setAnswers({});
+      } else {
+        // No questions: save immediately, as before.
+        await handleContextDropSave(book.entryId, { ...data, raw: mergedRaw });
+        setRaw('');
+        setRedrafting(false);
+        setAppending(false);
+      }
     } catch (e) {
       setError(String(e.message || e));
     } finally {
@@ -68,10 +90,123 @@ export function ContextDrop({ book }) {
     }
   };
 
+  // Complete the interview: save the held result. In this commit answers are
+  // not yet woven in (that is commit 4) — completing saves the pending result
+  // as-is, with open_questions cleared.
+  const finishInterview = async () => {
+    if (!pending || finishing) return;
+    setFinishing(true);
+    setError(null);
+    try {
+      await handleContextDropSave(book.entryId, {
+        ...pending.data,
+        open_questions: [],
+        raw: pending.mergedRaw,
+      });
+      setPending(null);
+      setAnswers({});
+      setRaw('');
+      setRedrafting(false);
+      setAppending(false);
+    } catch (e) {
+      setError(String(e.message || e));
+    } finally {
+      setFinishing(false);
+    }
+  };
+
+  // Cancel the interview: discard the held result entirely. Nothing is saved.
+  const cancelInterview = () => {
+    setPending(null);
+    setAnswers({});
+  };
+
+  const questionsModal = (
+    <Dialog open={pending !== null} onOpenChange={(open) => { if (!open) cancelInterview(); }}>
+      <DialogContent
+        className="bg-slate-950 border-amber-500/40 max-w-lg"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 font-tactical text-sm tracking-[0.15em] text-amber-400/90">
+            <HelpCircle className="w-4 h-4" />
+            THE COGITATOR ASKS
+          </DialogTitle>
+        </DialogHeader>
+        {pending && (
+          <div className="space-y-4">
+            <p className="text-[11px] text-slate-400 font-data leading-relaxed">
+              A few points before this Chronicle is committed. Answer what you like,
+              leave the rest blank, then complete — or cancel to discard.
+            </p>
+            <ul className="space-y-3">
+              {(Array.isArray(pending.data.open_questions) ? pending.data.open_questions : []).map((q, i) => (
+                <li key={i} className="space-y-1.5">
+                  <div className="flex gap-2">
+                    {q.type === 'correction' ? (
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400/70" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400/50" />
+                    )}
+                    <span className="text-sm text-slate-200 leading-relaxed font-data">
+                      {q.question}
+                    </span>
+                  </div>
+                  <Textarea
+                    value={answers[i] || ''}
+                    onChange={(e) => setAnswers((prev) => ({ ...prev, [i]: e.target.value }))}
+                    placeholder={
+                      q.type === 'correction'
+                        ? 'Correct it, or leave blank to keep as is…'
+                        : 'Add a thought, or leave blank to skip…'
+                    }
+                    className={cn(
+                      'min-h-[52px] font-data text-sm resize-none ml-5',
+                      'bg-black/40 border-amber-500/20 focus:border-amber-500/50',
+                      'placeholder:text-slate-600 text-slate-100'
+                    )}
+                  />
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                type="button"
+                onClick={cancelInterview}
+                disabled={finishing}
+                className="text-[10px] font-tactical tracking-[0.2em] text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-50"
+              >
+                ABBRECHEN
+              </button>
+              <button
+                type="button"
+                onClick={finishInterview}
+                disabled={finishing}
+                className={cn(
+                  'inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold tracking-wider transition-all text-[11px]',
+                  'bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                )}
+              >
+                {finishing ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> ABSCHLIESSEN…</>
+                ) : (
+                  'ABSCHLIESSEN'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   // Existing drop, not redrafting: show the chronicle + collapsed auspex.
   if (hasDrop && !redrafting && !appending) {
     return (
-      <div className="mt-6 border-t border-gold/15 pt-5">
+      <>
+        {questionsModal}
+        <div className="mt-6 border-t border-gold/15 pt-5">
         <div className="flex items-center gap-2 mb-3">
           <ScrollText className="w-3.5 h-3.5 text-gold/70" />
           <h2 className="font-tactical text-[11px] tracking-[0.2em] text-gold/70">
@@ -229,13 +364,16 @@ export function ContextDrop({ book }) {
             RE-DRAFT
           </button>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   // No drop yet, redrafting, or appending: show the input.
   return (
-    <div className="mt-6 border-t border-gold/15 pt-5">
+    <>
+      {questionsModal}
+      <div className="mt-6 border-t border-gold/15 pt-5">
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-3.5 h-3.5 text-gold/70" />
         <h2 className="font-tactical text-[11px] tracking-[0.2em] text-gold/70">
@@ -303,7 +441,8 @@ export function ContextDrop({ book }) {
           </button>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
