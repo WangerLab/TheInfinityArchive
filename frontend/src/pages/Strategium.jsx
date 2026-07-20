@@ -131,20 +131,28 @@ export function Strategium() {
 
   return (
     <ViewBackdrop art="/War-table_projecting_battle-map_2K_202607041801.jpeg" accent="plasma">
-      <div className="min-h-screen px-4 md:px-8 py-4 flex flex-col">
-        <div className="text-center mb-3 shrink-0">
-          <h1 className="font-display text-2xl text-plasma tracking-wider">STRATEGIUM</h1>
-          <p className="text-[11px] text-slate-500 font-tactical tracking-[0.25em]">
+      {/* Plain block wrapper, NOT flex -- a flex-fill main axis (flex-1)
+          overrides an explicit height on its child and robs the grid below
+          of a defined reference height (the documented Campaign-Finish scroll
+          lesson: "an overflow scroll container on outer main is incompatible
+          with inner columns that need their own h-full"). PhaseView/Archive
+          both use this same plain-block + calc-height shape; mirror it
+          exactly rather than reaching for flex again. */}
+      <div className="px-4 md:px-8 py-4">
+        <div className="text-center mb-3">
+          <h1 className="font-display text-2xl text-plasma tracking-wider text-glow-plasma">STRATEGIUM</h1>
+          <p className="text-xs text-plasma/70 font-tactical tracking-[0.25em]">
             THE STRATEGIUM ADVISES
           </p>
         </div>
 
-        {/* Fills the rest of the viewport below the (tight) header above --
-            X is fitted against this page's actual header height, not
-            computed in the abstract; re-check live after deploy and adjust
-            if there's a gap or clipping, same as PhaseView/Archive's own
-            calc-height constants. */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 lg:h-[calc(100vh-160px)]">
+        {/* X is fitted against this page's own (tight) header above, not
+            computed in the abstract -- re-check live after deploy and adjust
+            if there's a gap or a clipped scroller, same as PhaseView/
+            Archive's own calc-height constants (both currently 270px, sized
+            for their own much taller headers -- this page's header is far
+            smaller, hence the lower starting estimate). */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:h-[calc(100vh-150px)]">
           <div className="lg:col-span-2 grimdark-panel rounded-xl p-4 h-full min-h-[360px]">
             <StrategiumMap
               tree={tree}
