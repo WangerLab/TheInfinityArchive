@@ -57,14 +57,24 @@ This app is developed via a two-Claude model:
   Plans sprints, writes prompts for Claude Code. Does NOT write direct
   code changes.
 - **Claude Code** (Sonnet, on Tim's device) = executor. Runs the
-  prompts, shows full file contents for review, commits on Tim's go.
+  prompts, shows full file contents for review, then commits and
+  pushes autonomously.
 
-Claude Code stops and waits for Tim's explicit go before push. On that go Claude Code executes the push/merge itself (device-dependent, below); Tim gives the go and verifies the result, he does not run the push/merge commands himself.
+As of 2026-07-20, Claude Code commits and pushes automatically by default —
+no explicit go-signal required, for doc-only AND code changes alike
+(device-dependent execution mechanics, below). The Mandatory Build Smoke
+Test (below) is the only automated gate before code reaches Vercel; Tim
+verifies the result afterward on the live deployment rather than reviewing
+before push, and does not run the push/merge commands himself. Tim can
+still ask Claude Code to pause and wait for an explicit go on any single
+task ("wait for my go on this one") — that overrides the default for that
+task only, no file edit required.
 
 ## Device Mode — Per Session
 
-- **Desktop:** local filesystem, `git diff` review allowed, push directly
-  to main after approval.
+- **Desktop:** local filesystem, `git diff` shown for transparency, push
+  directly to main automatically once the build is green — no approval
+  step required.
 - **Mobile:** push only via `claude/*`-branch, then PR + squash-merge via
   the `gh` CLI in one pass (see Mobile Release Sequence). No
   `git push origin HEAD:main` (HTTP 403 from the Anthropic harness). Full
@@ -75,8 +85,8 @@ Claude Code stops and waits for Tim's explicit go before push. On that go Claude
 
 ## Mobile Release Sequence
 
-After Tim's go-signal at sprint-commit completion, Claude Code executes
-in one shot:
+Immediately upon sprint-commit completion — no go-signal required, per the
+2026-07-20 full-automation change — Claude Code executes in one shot:
 
 ````
 git push origin HEAD:claude/<sprint-id>
@@ -98,6 +108,10 @@ before the commit is finalized. Non-negotiable after the Sprint A → B-0
 lesson where CRACO removal silently broke alias resolution.
 
 Doc-only commits (no `frontend/` changes) are exempt.
+
+Since commits push automatically without a human review step (2026-07-20),
+this smoke test is the ONLY automated gate standing between a broken build
+and a live Vercel deploy. Never skip it, however trivial the change looks.
 
 ## Lessons Learned
 
@@ -405,6 +419,34 @@ build before commit; broken build → no commit/push); Tim's live test catches
 runtime issues; forward-fix if something breaks (Vercel Instant Rollback + git
 revert are the nets). Vercel-live is the better runtime check for a single-user
 app anyway (real env vars, auth redirect URLs, real build).
+
+### Workflow change (2026-07-20): full commit+push automation, no go-signal at all
+
+Tim's explicit decision, after being shown the trade-off (code now goes live on
+Vercel with no human review checkpoint before push): Claude Code commits and
+pushes automatically for BOTH doc and code changes, with no "Go" message
+required at all. This is the change that actually finishes what the
+2026-07-02 note above intended but never enforced — every commit between
+2026-07-02 and 2026-07-20 still needed a separate, explicit "Go. Commit und
+push..." message from Tim before the push happened (visible across the whole
+session history in between). This entry is the one that removes that gate
+for real, by updating the authoritative "Two-Claude Workflow" / "Device Mode"
+sections themselves rather than only noting a preference here.
+
+**What stays as the safety net:** the Mandatory Build Smoke Test is now the
+ONLY automated check before code reaches Vercel — a red build still blocks
+the commit. Tim continues to live-test on the Vercel deployment after the
+fact instead of reviewing a diff before push.
+
+**Override, per task:** Tim can ask for an explicit go on any single task —
+that overrides the default for that task only, no file edit needed.
+
+LEHRE: a workflow-automation preference stated once in a Lessons Learned
+entry is not the same as an enforced rule. Until the operative section that
+actually governs the behavior (here: "Two-Claude Workflow" / "Device Mode")
+says "no go-signal required," the executor keeps asking anyway — a lesson
+entry is a note, not an instruction the executor reliably reads before every
+action. Encode standing authorization in the section that governs it.
 
 ### Interface/Navigation Rework — visible block: layout route + Outlet for nav
 
@@ -998,3 +1040,18 @@ Ein Sprint über den Context-Drop/Chronicle-Pfad: das Aufblähen gestoppt, auf O
 - **Ein Modal aus einem schwebenden, ungespeicherten Zwischenzustand — Abbruch verwirft, kein Persistenz-Halbzustand.** Das Interview ist ein „floating flow": `structure()` speichert bei offenen Fragen NICHT sofort, sondern hält das Ergebnis in `pending`-State und öffnet ein shadcn-Dialog-Modal. ABSCHLIESSEN speichert (ggf. nach einem resolve-Call, der Antworten einwebt), ABBRECHEN/Escape/X verwirft alles. Klick-außerhalb ist deaktiviert (`onPointerDownOutside preventDefault`) gegen versehentlichen Verlust. Der resolve-Pfad im Backend ist ein dritter Modus neben new/append (`isResolve`-Guard, damit die `raw`-Pflicht ihn nicht blockiert — ein resolve-Call hat kein Diktat). WICHTIG: Die zwischenzeitlich gebaute `open_questions`-DB-Spalte (`L-1`) ist im schwebenden Flow UNGENUTZT — bewusste, dokumentierte Reserve für einen möglichen „Fragen für später aufheben"-Modus, kein toter Code. LEHRE: „Entwurf muss überleben" (persistent) und „Abbruch verwirft alles" (schwebend) sind unvereinbare Flows — die Wahl früh treffen, sonst baut man Persistenz, die der Flow nie nutzt.
 
 - **Widersprüchliche Nutzer-Entscheidungen früh auflösen, nicht beide bauen.** Mitten im Interview-Design kippte die Anforderung von „Entwurf muss überleben" (→ DB-Feld gebaut) zu „Abbruch verwirft alles" (→ schwebend). Das machte das gerade gebaute DB-Feld ungenutzt. Statt es zurückzurollen (Revert-Commit) blieb es als dokumentierte Reserve — billig, additiv, mit klarer Notiz in Commit-Message und Handover, warum es da aber ungenutzt ist. LEHRE: wenn eine späte Entscheidung eine frühere entwertet, ist „stehen lassen + dokumentieren warum ungenutzt" oft günstiger als ein Revert — aber nur mit expliziter Notiz, sonst wird es später als Bug missverstanden.
+
+## Strategium — Pre-Build Constraints (2026-07-20)
+
+Forward-looking constraints for the Strategium view (concept specced 2026-07-20; full spec `TIA-Strategium-Concept-2026-07-20.md` in Project Knowledge). A builder must respect these:
+
+- **New runtime dependency: d3-force.** The meta-map is a live simulation (forceCollide + forceX/Y to home anchors + per-tick bounding-box clamp), not a static SVG. Freeze the sim after settle (`alpha(0)`) on mobile.
+- **Physics anchor is a fixed code value, NOT a user setting.** Single-user/curator app — no settings module for physics. Set the anchor strength once (mid-firm: recognisable slots that yield on expansion), then leave it.
+- **Two distinct expansion states.** Hover-expand = transient (mouse-leave collapses). Recommendation-expand = latched (stays open until the next query; overrides hover-collapse). Build as one small state machine, or the advised chapter vanishes on mouse-leave.
+- **Auto-expand is in-situ, not promote-and-pin.** A rec targeting a sub-faction expands its parent aggregate and docks the vector inside it. The recommendation payload must carry "expand this parent + dock here", not just "mark this node".
+- **Vectors follow-after-settle.** A docked vector endpoint sits on a node inside the physics fan and moves until the sim rests — update per tick, or draw once `alpha` drops below threshold, else it jitters.
+- **Vectors need curved routing.** A pivot crosses alliance-box borders (correct — it leaves the alliance), but a straight line slashes through unrelated nodes at dense layouts. Use a gentle curved connector routing around nodes.
+- **`prefers-reduced-motion` is mandatory.** Compute the final layout and snap to it, no animation, when the setting is on.
+- **Box size proportional to alliance faction count, not book count.** 24/12/8 today. Book count would make the Imperium overwhelming (AM alone = 70 books).
+- **Sigil fallback required.** ~62 factions are sigil-NULL; the fan-out has holes without a fallback glyph.
+- **Data prerequisites gate the frontend.** Grand-alliance mapping, `parent_faction` grouping, `prominence` signal, and sigil completion are a data sprint that must land first.

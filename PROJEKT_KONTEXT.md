@@ -600,10 +600,32 @@ writes `status`; `is_read` follows automatically.
 - **Palette migration v1.0 → v1.3 (deferred):** ~123 hard-wired
   text-gold/text-auspex/text-plasma utilities to token consumption.
 - **Analysis View:** content-design session before build.
-- **AI Recommendation Companion:** Anthropic-API read-advisor; Strategium.
+- **AI Recommendation Companion / Strategium:** Anthropic-API read-advisor. Konzept specced 2026-07-20 — siehe "## Strategium — Concept (Pre-Build, 2026-07-20)" unten und `TIA-Strategium-Concept-2026-07-20.md` im Project Knowledge. Ein Daten-Sprint (Alliance-Mapping, parent_faction, prominence, Sigil-Vervollständigung) geht dem Frontend voraus.
 - **Map View:** galactic map via location_primary / location_segmentum.
 - **BL-GRP:** finish Phase 1 (Infinite and the Divine, Ahriman saga),
   then Phases 2–7.
+
+## Strategium — Concept (Pre-Build, 2026-07-20)
+
+**Status:** Konzept-Spec aus der Session 2026-07-20. Kein committed Scope. Vollspec: `TIA-Strategium-Concept-2026-07-20.md` im Project Knowledge.
+
+**Role.** AI reading-advisor console (`/strategium`, "THE STRATEGIUM ADVISES"). Owns the taste/faction-affinity axis + advice — distinct from Campaign (phase sequence), Oculus/Map (geography), Auspex (flat filtering). Boundary vs Oculus: the meta-map clusters by grand alliance/faction, NOT geography — alliances don't cluster spatially, so it cannot duplicate the segmentum map.
+
+**Layout.** 2/3 living meta-map left, 1/3 advisory right, both visible. Click a recommended node → right panel shows that book's detail. Map ↔ card coupled.
+
+**Meta-map.** Three fixed alliance volumes, box size proportional to faction count: Imperium ~24, Chaos ~12, Xenos ~8 (from distinct `faction_primary`). Static frame; nodes carry faction sigils. Two visible tiers: alliance + faction node; mid-tier (Astartes → chapters) is an expansion target, not a permanent layer. `prominence` drives node radius.
+
+**Fluid physics (anchored).** d3-force: forceCollide + forceX/Y to fixed home anchors + bounding-box clamp per tick. Anchored, not free-drift (keeps map recognisable). Anchor strength = one fixed code value (mid-firm), NOT a user setting. Freeze sim after settle on mobile.
+
+**Recommendation moment.** Position = faction of last-completed book. Three vectors = three recs; geometry is the classification (Continuation = short/same alliance; Deepening = into cluster core; Pivot = long/cross-alliance). Auto-expand latch: a rec targeting a sub-faction auto-expands its parent and keeps it open until the next query (distinct from transient hover-expand). Read-state dimming overlay.
+
+**LLM contract.** Edge Function pulls history + reflections + phase docs + unread candidates (summaries + semantic_tags + faction + phase) + Tim's free-text intent. Output: exactly 3, each = existing short summary + personalised rationale (references prior reflections) + vector class + deviation-consequence line (from phase docs). Recs ephemeral/runtime-only; `recommendations_log` records the event.
+
+**Data prerequisites (data sprint BEFORE frontend):** grand-alliance mapping (no column today), `parent_faction` grouping (Astartes→chapters, Chaos→gods), `prominence` signal, sigil completion for ~62 NULL factions.
+
+**QoL staffelung.** Build: read-state dimming, map↔card highlight, rationale-on-vector-hover. Later: vector draw-in animation, position-glide on "Set as next" (map re-plots). Skip: mood-lens (Auspex' job), saga-progress rings (noise).
+
+**Open frictions:** in-situ auto-expand (not promote-and-pin) → payload must carry "expand parent + dock here"; vectors need curved routing around nodes; vectors follow-after-settle; right panel hybrid (assessment + tappable rows) vs. three full cards — confirm before build.
 
 ## Cross-Project Note
 
