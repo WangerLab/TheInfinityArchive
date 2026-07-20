@@ -88,20 +88,27 @@ export function buildFactionTree(projectData, bookProgress) {
     }
   }
 
-  // An umbrella's own votes may be empty (no direct books) -- fall back to
-  // pooling its children's votes so it still lands in the right alliance box.
+  // Pool a vote-map field (allianceVotes or sigilVotes) across every child of
+  // an umbrella, weighted implicitly since each child's map already holds one
+  // vote per book. Used whenever the umbrella has no votes of its own (no
+  // direct books) -- it must still resolve to a real alliance/sigil rather
+  // than fall through to the unaligned/no-sigil default.
+  const poolChildVotes = (key, field) => {
+    const kids = children.get(key);
+    if (!kids) return new Map();
+    const pooled = new Map();
+    for (const child of kids.values()) {
+      for (const [value, n] of child[field]) {
+        pooled.set(value, (pooled.get(value) || 0) + n);
+      }
+    }
+    return pooled;
+  };
+
   const allianceOf = (key, node) => {
     const own = winnerOf(node.allianceVotes);
     if (own) return own;
-    const kids = children.get(key);
-    if (!kids) return 'unaligned';
-    const pooled = new Map();
-    for (const child of kids.values()) {
-      for (const [alliance, n] of child.allianceVotes) {
-        pooled.set(alliance, (pooled.get(alliance) || 0) + n);
-      }
-    }
-    return winnerOf(pooled) || 'unaligned';
+    return winnerOf(poolChildVotes(key, 'allianceVotes')) || 'unaligned';
   };
 
   const byAlliance = new Map();
@@ -124,10 +131,27 @@ export function buildFactionTree(projectData, bookProgress) {
     const ownBookCount = node.entryIds.length;
     const childBookCount = childNodes.reduce((sum, c) => sum + c.bookCount, 0);
 
+    // A pure single-child umbrella (no books of its own, exactly one child --
+    // the four Chaos gods, each hiding one legion) carries no information: it
+    // just relabels its only child behind a name the sigil can't show. Emit
+    // the child directly at top level instead of the umbrella wrapper.
+    if (ownBookCount === 0 && childNodes.length === 1) {
+      const only = childNodes[0];
+      byAlliance.get(alliance).push({ ...only, parentKey: null, children: [] });
+      continue;
+    }
+
+    // An umbrella with real grouping value (2+ children, or its own books)
+    // may still have no sigil votes of its own -- derive one from its
+    // children's sigils (mirrors useCatalog's own omnibus-parent fallback)
+    // instead of silently degrading every such node to the same generic
+    // alliance glyph.
+    const sigil = winnerOf(node.sigilVotes) || winnerOf(poolChildVotes(key, 'sigilVotes'));
+
     byAlliance.get(alliance).push({
       key,
       label: key,
-      sigil: winnerOf(node.sigilVotes),
+      sigil,
       bookCount: ownBookCount + childBookCount,
       isRead:
         ownBookCount + childBookCount > 0 &&
