@@ -71,6 +71,33 @@ export function layoutBox(nodes, boxWidth, boxHeight, maxBookCount) {
   });
 }
 
+// Positions a parent's children as a ring of satellites AROUND its own
+// anchor (spec §10: "expand this parent + dock here" -- explicitly not
+// promote-and-pin). Additive, not a replacement: the parent stays exactly
+// where it was, so the existing collide force genuinely has more nodes to
+// push apart on expand and fewer once collapsed (spec §4's "expanding a
+// group pushes neighbours aside, they settle back on collapse" -- the
+// previous swap-the-parent-for-its-children model never triggered this,
+// since node count never changed). Returns satellite anchors only, in the
+// SAME local coordinate space as the parent's own anchor.
+export function satelliteAnchors(parentAnchor, children, boxHeight, maxBookCount) {
+  const n = children.length;
+  if (n === 0) return [];
+  const radii = children.map((c) => radiusFor(c.bookCount, maxBookCount, boxHeight));
+  const avgRadius = radii.reduce((s, r) => s + r, 0) / n;
+  const ring = parentAnchor.r * 1.15 + avgRadius + 16;
+
+  return children.map((child, i) => {
+    const angle = -Math.PI / 2 + i * ((2 * Math.PI) / n);
+    return {
+      key: child.key,
+      x: parentAnchor.x + ring * Math.cos(angle),
+      y: parentAnchor.y + ring * Math.sin(angle),
+      r: radii[i],
+    };
+  });
+}
+
 // Widths for the alliance boxes, proportional to faction count (spec §3/§7:
 // "box size proportional to alliance faction count"), floored so an alliance
 // with few factions still reads as a real box rather than a sliver.
