@@ -1,7 +1,8 @@
-// Anchor layout for the Strategium meta-map: grid-packs each alliance box's
-// faction nodes into fixed rest positions. Physics only ever displaces nodes
-// AWAY from these anchors and settles them back -- this grid IS the rest
-// state (spec §4: "anchored, not free-drift"), not a placeholder.
+// Anchor layout for the Strategium meta-map: packs each alliance box's
+// faction nodes into fixed rest positions on a prominence-ranked radial
+// scatter (see layoutBox below). Physics only ever displaces nodes AWAY from
+// these anchors and settles them back -- this scatter IS the rest state
+// (spec §4: "anchored, not free-drift"), not a placeholder.
 //
 // All dimensions here are REAL measured pixels (StrategiumMap.jsx measures
 // its container via ResizeObserver), not a fixed virtual unit -- the map
@@ -26,25 +27,46 @@ export function radiusFor(bookCount, maxBookCount, boxHeight) {
   return min + t * (max - min);
 }
 
-// Lay out one alliance's nodes on a grid inside its box (local coordinates,
-// origin top-left of the box). Returns { key, x, y, r } per node, all in
-// real pixels relative to the box's own top-left.
+// The golden angle (~137.5°) -- the phyllotaxis constant that spaces
+// successive points around a spiral with no two rings ever aligning, so a
+// prominence-ranked sequence reads as an organic cluster rather than a grid.
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
+// Lay out one alliance's nodes as a prominence-ranked radial scatter (a
+// phyllotaxis spiral, index-based and fully deterministic -- anchors never
+// reshuffle between renders): the most-prominent factions land in the
+// cluster CORE (small ring index), the long tail scatters toward the rim.
+// Fitted to an ELLIPSE matching the box's own aspect ratio, not a circle
+// inscribed in its shorter side, so a wide box actually uses its width.
+// This makes spec §5's "deepening = into the cluster core" literally true
+// in the geometry, not only in the vector's label. Returns { key, x, y, r }
+// per node, all in real pixels relative to the box's own top-left.
 export function layoutBox(nodes, boxWidth, boxHeight, maxBookCount) {
   const n = nodes.length;
   if (n === 0 || boxWidth <= 0 || boxHeight <= 0) return [];
-  const cols = Math.max(1, Math.ceil(Math.sqrt(n * (boxWidth / boxHeight))));
-  const rows = Math.ceil(n / cols);
-  const cellW = (boxWidth - 2 * BOX_PADDING) / cols;
-  const cellH = (boxHeight - 2 * BOX_PADDING) / rows;
 
-  return nodes.map((node, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
+  const sorted = [...nodes].sort((a, b) => b.bookCount - a.bookCount);
+  const radii = sorted.map((node) => radiusFor(node.bookCount, maxBookCount, boxHeight));
+  const maxNodeRadius = Math.max(...radii);
+
+  const cx = boxWidth / 2;
+  const cy = boxHeight / 2;
+  const availableX = Math.max(0, boxWidth / 2 - BOX_PADDING - maxNodeRadius);
+  const availableY = Math.max(0, boxHeight / 2 - BOX_PADDING - maxNodeRadius);
+  // sqrt(i) is the phyllotaxis ring for index i; the outermost node (n-1)
+  // must land at the box's usable edge, so that ring calibrates the scale.
+  const maxRing = Math.sqrt(Math.max(1, n - 1));
+  const scaleX = availableX / maxRing;
+  const scaleY = availableY / maxRing;
+
+  return sorted.map((node, i) => {
+    const ring = Math.sqrt(i);
+    const angle = i * GOLDEN_ANGLE;
     return {
       key: node.key,
-      x: BOX_PADDING + cellW * (col + 0.5),
-      y: BOX_PADDING + cellH * (row + 0.5),
-      r: radiusFor(node.bookCount, maxBookCount, boxHeight),
+      x: cx + ring * scaleX * Math.cos(angle),
+      y: cy + ring * scaleY * Math.sin(angle),
+      r: radii[i],
     };
   });
 }
