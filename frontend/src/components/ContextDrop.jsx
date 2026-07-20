@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { cn } from 'lib/utils';
 import { useArchiveData } from 'context/ArchiveDataContext';
 import { Textarea } from 'components/ui/textarea';
-import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles, Music } from 'lucide-react';
+import { ScrollText, Loader2, ChevronRight, AlertTriangle, Sparkles, Music, Star } from 'lucide-react';
 
 // Context Drop — dictate a raw reflection (via Wispr Flow at the OS level), have
 // Sonnet 4.6 structure it into Block A (chronicle, human-facing) and Block B
@@ -14,6 +14,11 @@ export function ContextDrop({ book }) {
   const chronicle = saved.chronicle || null;
   const auspex = saved.auspexReading || null;
   const musicScenes = Array.isArray(saved.musicScenes) ? saved.musicScenes : [];
+  const standoutMoments = Array.isArray(chronicle?.standout_moments)
+    ? chronicle.standout_moments
+    : chronicle?.standout_moment
+      ? [chronicle.standout_moment]
+      : [];
   const hasDrop = Boolean(chronicle);
 
   const [raw, setRaw] = useState('');
@@ -96,35 +101,29 @@ export function ContextDrop({ book }) {
                 ))}
             </div>
           )}
-          {(() => {
-            // Defensive: new drops use standout_moments (array); older drops
-            // (e.g. pre-commit-6) used standout_moment (string). Support both.
-            const moments = Array.isArray(chronicle.standout_moments)
-              ? chronicle.standout_moments
-              : chronicle.standout_moment
-                ? [chronicle.standout_moment]
-                : [];
-            if (moments.length === 0) return null;
-            return (
-              <div>
-                <p className="text-[10px] font-tactical tracking-[0.2em] text-slate-500 mb-1.5">
-                  {moments.length > 1 ? 'STANDOUTS' : 'STANDOUT'}
-                </p>
-                <ul className="space-y-1.5">
-                  {moments.map((m, i) => (
-                    <li
-                      key={i}
-                      className="text-sm text-slate-400 leading-relaxed font-data italic flex gap-2"
-                    >
-                      <span className="text-gold/40 not-italic select-none">›</span>
-                      <span>{m}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })()}
         </div>
+
+        {standoutMoments.length > 0 && (
+          <div className="mt-5 rounded-md bg-gold/5 border border-gold/20 p-3">
+            <div className="flex items-center gap-2 mb-2.5">
+              <Star className="w-3.5 h-3.5 text-gold/70" />
+              <h3 className="font-tactical text-[10px] tracking-[0.2em] text-gold/70">
+                {standoutMoments.length > 1 ? 'STANDOUTS' : 'STANDOUT'}
+              </h3>
+            </div>
+            <ul className="space-y-2">
+              {standoutMoments.map((m, i) => (
+                <li
+                  key={i}
+                  className="text-sm text-slate-300 leading-relaxed font-data flex gap-2"
+                >
+                  <span className="text-gold/50 select-none">›</span>
+                  <span>{m}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {musicScenes.length > 0 && (
           <div className="mt-5 rounded-md bg-plasma/5 border border-plasma/20 p-3">
