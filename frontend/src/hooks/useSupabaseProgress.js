@@ -76,7 +76,7 @@ export function useSupabaseProgress() {
 
         const { data: progressRows, error: progressError } = await supabase
           .from('user_progress')
-          .select('book_id, status, is_read, rating, notes, personal_take, started_at, completed_at, chronicle, auspex_reading, context_drop_raw, context_drop_at, context_drop_model, context_drop_schema_version, music_scenes');
+          .select('book_id, status, is_read, rating, notes, personal_take, started_at, completed_at, chronicle, auspex_reading, context_drop_raw, context_drop_at, context_drop_model, context_drop_schema_version, music_scenes, open_questions');
         if (progressError) throw progressError;
 
         const next = {};
@@ -103,6 +103,7 @@ export function useSupabaseProgress() {
             contextDropRaw: row.context_drop_raw ?? '',
             contextDropAt: row.context_drop_at ?? null,
             musicScenes: row.music_scenes ?? null,
+            openQuestions: row.open_questions ?? null,
           };
           if (parentId == null) {
             const existing = next[entryId] || {};
@@ -268,6 +269,7 @@ export function useSupabaseProgress() {
       chronicle: result.chronicle ?? null,
       auspex_reading: result.auspex_reading ?? null,
       music_scenes: result.music_scenes ?? null,
+      open_questions: result.open_questions ?? null,
       context_drop_raw: result.raw ?? null,
       context_drop_at: nowIso,
       context_drop_model: result.meta?.model ?? null,
@@ -285,6 +287,7 @@ export function useSupabaseProgress() {
         chronicle: row.chronicle,
         auspexReading: row.auspex_reading,
         musicScenes: row.music_scenes,
+        openQuestions: row.open_questions,
         contextDropRaw: row.context_drop_raw ?? '',
         contextDropAt: nowIso,
       };
@@ -296,6 +299,7 @@ export function useSupabaseProgress() {
           chronicle: row.chronicle,
           auspexReading: row.auspex_reading,
           musicScenes: row.music_scenes,
+          openQuestions: row.open_questions,
           contextDropRaw: row.context_drop_raw ?? '',
           contextDropAt: nowIso,
         };
