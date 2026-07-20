@@ -154,8 +154,57 @@ const STRUCTURE_TOOL = {
           required: ['scene', 'note'],
         },
       },
+      open_questions: {
+        type: 'array',
+        description:
+          'Points where the reflection would benefit from the reader ' +
+          'clarifying or expanding — surfaced as questions back to them. ' +
+          'Two kinds, with DELIBERATELY DIFFERENT thresholds:\n' +
+          '- type "correction": a proper noun (character, faction, place, ' +
+          'ship, planet) in the dictation that does not cleanly match known ' +
+          'Warhammer 40,000 nomenclature and may be a dictation/transcription ' +
+          'error. Be GENEROUS here — if a name looks even slightly off or you ' +
+          'cannot place it, ask. A wrongly-kept name lodges permanently in the ' +
+          'reader\'s Chronicle; a needless question costs one click. When in ' +
+          'doubt about a name, ASK.\n' +
+          '- type "deepening": a thread the reader clearly cared about but ' +
+          'barely developed — worth inviting them to expand. Be SPARING here — ' +
+          'only genuinely under-served threads they emphasised, never routine ' +
+          '"you could say more about X". Most reflections need zero deepening ' +
+          'questions.\n' +
+          'No fixed maximum, but stay disciplined: an empty array is the normal ' +
+          'case for a clear, complete dictation. Never invent questions to seem ' +
+          'thorough.',
+        items: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['correction', 'deepening'],
+              description: 'correction = possible mis-transcribed proper noun; deepening = under-developed thread.',
+            },
+            question: {
+              type: 'string',
+              description:
+                'The question addressed to the reader, first-person-friendly. ' +
+                'For a correction: name the term and ask if it was meant, e.g. ' +
+                '"I read the name \'Cepharil\' but can\'t place it in 40K lore — ' +
+                'did you mean a different name?" For a deepening: invite them ' +
+                'warmly to expand on the specific thread.',
+            },
+            context: {
+              type: 'string',
+              description:
+                'For correction: the exact suspect term as it appeared. For ' +
+                'deepening: the thread/topic in a few words. Lets the UI and the ' +
+                'follow-up call know what the question refers to.',
+            },
+          },
+          required: ['type', 'question', 'context'],
+        },
+      },
     },
-    required: ['chronicle', 'auspex_reading', 'music_scenes'],
+    required: ['chronicle', 'auspex_reading', 'music_scenes', 'open_questions'],
   },
 };
 
@@ -253,12 +302,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const { chronicle, auspex_reading, music_scenes } = toolUse.input;
+    const { chronicle, auspex_reading, music_scenes, open_questions } = toolUse.input;
 
     return res.status(200).json({
       chronicle,
       auspex_reading,
       music_scenes: Array.isArray(music_scenes) ? music_scenes : [],
+      open_questions: Array.isArray(open_questions) ? open_questions : [],
       meta: {
         model: MODEL,
         schema_version: SCHEMA_VERSION,
