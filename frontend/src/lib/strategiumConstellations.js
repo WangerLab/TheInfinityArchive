@@ -207,19 +207,28 @@ export const REGION_PLANS = {
         },
       ],
     },
+    // Same second-pass fix as Imperium's Ordos, applied to Undivided: the
+    // clearHub label-width bug (strategiumLayout.js) raised its ideal
+    // radius from ~80px to ~130px. Chaos only carries ONE ring (vs
+    // Imperium's two), so there's real slack here -- Undivided gets full
+    // ideal-radius clearance with margin on both axes (~16px width, ~8px
+    // height), wider than Ordos needed to be. Ruinous keeps its single
+    // row of 4 (its own chain order), now sitting right at the region's
+    // lower edge -- its footprint spills a little into the inter-region
+    // gutter, verified clear of Xenos's own content by ~40px.
     chaos: {
       rows: 4,
       blocks: [
         {
-          key: 'undivided', rowStart: 0, rowSpan: 2.8, xStart: 0, xSpan: 0.6, cols: 3,
+          key: 'undivided', rowStart: 0, rowSpan: 3.5, xStart: 0, xSpan: 0.74, cols: 3,
           slots: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2]],
         },
         {
-          key: 'renegades', rowStart: 0, rowSpan: 2, xStart: 0.6, xSpan: 0.4, cols: 1,
+          key: 'renegades', rowStart: 0, rowSpan: 2, xStart: 0.74, xSpan: 0.26, cols: 1,
           slots: [[0, 0], [1, 0]],
         },
         {
-          key: 'ruinous', rowStart: 2.8, rowSpan: 1.2, xStart: 0, xSpan: 1, cols: 4,
+          key: 'ruinous', rowStart: 3.5, rowSpan: 0.5, xStart: 0, xSpan: 1, cols: 4,
           slots: [[0, 0], [0, 1], [0, 2], [0, 3]],
         },
       ],
