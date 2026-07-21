@@ -110,6 +110,41 @@ function curvedPath(x1, y1, x2, y2, bow) {
   return { d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`, midX: cx, midY: cy };
 }
 
+// Trims each endpoint by r+CONNECTOR_TRIM along the tangent toward the
+// control point, so a constellation connector meets a star's rim instead of
+// vanishing under its sigil. Computes the control point against the
+// UNTRIMMED centers first (a few px of trim doesn't meaningfully shift
+// where the curve actually bows through), then hands the trimmed endpoints
+// to the same curvedPath used for recommendation vectors.
+const CONNECTOR_TRIM = 5;
+function curvedConnectorPath(x1, y1, r1, x2, y2, r2, bow) {
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const cx = mx + (-dy / len) * bow;
+  const cy = my + (dx / len) * bow;
+
+  const d1x = cx - x1;
+  const d1y = cy - y1;
+  const d1len = Math.sqrt(d1x * d1x + d1y * d1y) || 1;
+  const t1 = r1 + CONNECTOR_TRIM;
+
+  const d2x = cx - x2;
+  const d2y = cy - y2;
+  const d2len = Math.sqrt(d2x * d2x + d2y * d2y) || 1;
+  const t2 = r2 + CONNECTOR_TRIM;
+
+  return curvedPath(
+    x1 + (d1x / d1len) * t1,
+    y1 + (d1y / d1len) * t1,
+    x2 + (d2x / d2len) * t2,
+    y2 + (d2y / d2len) * t2,
+    bow
+  );
+}
+
 // Tiny deterministic PRNG (mulberry32) -- a fixed seed means the decorative
 // starfield's dot positions are stable across every render AND every resize
 // (they're generated once in fractional 0-1 space and scaled to the
@@ -327,6 +362,48 @@ export function StrategiumMap({
           />
         );
       })}
+
+      {/* Constellation connector lines -- thin, alliance-tinted links between
+          a curated group's members (strategiumConstellations.js). Sits after
+          the nebula and BEFORE captions/nodes in DOM order (these siblings
+          carry no z-index, so paint order follows DOM order) -- a connector
+          can never sit on top of a label or a star. Endpoints read from the
+          same live `positions` map the nodes use, so lines breathe with the
+          wobble instead of staying pinned to the static anchors. */}
+      {hasSize && (
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          width={width}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
+        >
+          {layout.edges.map((edge, i) => {
+            const from = positions[edge.a];
+            const to = positions[edge.b];
+            if (!from || !to) return null;
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const vert = Math.abs(dy) / len;
+            // A fully vertical edge bows 132px (66px lateral deviation),
+            // clearing a 56px label half-width by 10px -- the curve arcs
+            // AROUND the upper member's label instead of through it. A
+            // horizontal edge gets a 10px bow, just enough to read as drawn.
+            const bow = (10 + 122 * vert) * (i % 2 === 0 ? 1 : -1);
+            const { d } = curvedConnectorPath(from.x, from.y, from.r, to.x, to.y, to.r, bow);
+            return (
+              <path
+                key={edge.id}
+                d={d}
+                fill="none"
+                stroke={ALLIANCE_COLOR[edge.allianceKey](0.3)}
+                strokeWidth={1}
+                strokeLinecap="round"
+              />
+            );
+          })}
+        </svg>
+      )}
 
       {/* One caption per alliance, anchored to a fixed canvas corner (see
           CAPTION_CORNER) -- independent of region/cluster geometry, so it
