@@ -151,32 +151,48 @@ export const CONSTELLATIONS = {
 // single-source structure exists to protect.
 export const REGION_PLANS = {
   wide: {
+    // Ring-placed blocks (astartes, ordos -- see placeHubRing in
+    // strategiumLayout.js) need a footprint sized for their IDEAL ring
+    // radius, not the flat-grid dimensions they inherited when placeHubRing
+    // was first added: a live test showed those grid dimensions capping the
+    // ring well below what it wanted (Astartes at 69% of its ideal radius,
+    // Ordos at 82%), which is exactly what read as cramped/overlapping
+    // labels. `rows` stays 7 (unchanged) to avoid touching pitchY, and thus
+    // the global star radius, as a side effect -- a ring block needs less
+    // WIDTH than the old full-region grid gave it (its ideal half-extent is
+    // far smaller than the region width), so the freed width goes to a
+    // narrow sibling placed BESIDE it in the same row-band instead of
+    // stacked below it. That recovers the height rings actually need
+    // without changing rows/pitchY/rMax anywhere. `cols`/`slots` on a
+    // ring-placed block are unused by placeHubRing but kept intact for the
+    // generic-fallback path (validatePlan) if this alliance's data ever
+    // stops matching the curated table.
     imperium: {
       rows: 7,
       blocks: [
         {
-          key: 'astartes', rowStart: 0, rowSpan: 3, xStart: 0, xSpan: 1, cols: 4,
+          key: 'astartes', rowStart: 0, rowSpan: 4, xStart: 0, xSpan: 0.75, cols: 4,
           slots: [[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [1, 2], [1, 3], [2, 1], [2, 2]],
         },
         {
-          key: 'ordos', rowStart: 3, rowSpan: 2, xStart: 0, xSpan: 0.5, cols: 2,
+          key: 'militarum', rowStart: 0, rowSpan: 3, xStart: 0.75, xSpan: 0.25, cols: 1,
+          slots: [[0, 0], [1, 0], [2, 0]],
+        },
+        {
+          key: 'ordos', rowStart: 4, rowSpan: 3, xStart: 0, xSpan: 0.45, cols: 2,
           slots: [[0, 0], [0, 1], [1, 1], [1, 0]],
         },
         {
-          key: 'militarum', rowStart: 3, rowSpan: 2, xStart: 0.5, xSpan: 0.5, cols: 2,
-          slots: [[0, 1], [1, 1], [1, 0]],
-        },
-        {
-          key: 'forge', rowStart: 5, rowSpan: 2, xStart: 0, xSpan: 1 / 3, cols: 1,
+          key: 'forge', rowStart: 4, rowSpan: 2, xStart: 0.45, xSpan: 0.275, cols: 1,
           slots: [[0, 0], [1, 0]],
         },
         {
-          key: 'throne', rowStart: 5, rowSpan: 2, xStart: 1 / 3, xSpan: 1 / 3, cols: 1,
+          key: 'throne', rowStart: 4, rowSpan: 2, xStart: 0.725, xSpan: 0.275, cols: 1,
           slots: [[0, 0], [1, 0]],
         },
         {
-          key: 'lex', rowStart: 5, rowSpan: 2, xStart: 2 / 3, xSpan: 1 / 3, cols: 1,
-          slots: [[0, 0], [1, 0]],
+          key: 'lex', rowStart: 6, rowSpan: 1, xStart: 0.45, xSpan: 0.55, cols: 2,
+          slots: [[0, 0], [0, 1]],
         },
       ],
     },
@@ -184,16 +200,16 @@ export const REGION_PLANS = {
       rows: 4,
       blocks: [
         {
-          key: 'undivided', rowStart: 0, rowSpan: 2, xStart: 0, xSpan: 1, cols: 3,
+          key: 'undivided', rowStart: 0, rowSpan: 2.8, xStart: 0, xSpan: 0.6, cols: 3,
           slots: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2]],
         },
         {
-          key: 'ruinous', rowStart: 2, rowSpan: 2, xStart: 0, xSpan: 2 / 3, cols: 2,
-          slots: [[0, 0], [0, 1], [1, 1], [1, 0]],
+          key: 'renegades', rowStart: 0, rowSpan: 2, xStart: 0.6, xSpan: 0.4, cols: 1,
+          slots: [[0, 0], [1, 0]],
         },
         {
-          key: 'renegades', rowStart: 2, rowSpan: 2, xStart: 2 / 3, xSpan: 1 / 3, cols: 1,
-          slots: [[0, 0], [1, 0]],
+          key: 'ruinous', rowStart: 2.8, rowSpan: 1.2, xStart: 0, xSpan: 1, cols: 4,
+          slots: [[0, 0], [0, 1], [0, 2], [0, 3]],
         },
       ],
     },
