@@ -40,7 +40,11 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 // golden-angle spiral outward per node until it clears every circle already
 // placed. Deterministic, non-overlapping, most-prominent node at dead center.
 const PACK_RADIAL_STEP = 2;
-const PACK_GAP = 14;
+// Bumped 14 -> 18: every node's label is now always visible (not just a
+// top-3-per-cluster subset), so adjacent rest positions need a bit more
+// lateral breathing room for their label footprints, not just their star
+// circles, to avoid touching.
+const PACK_GAP = 18;
 
 function packNodesRadially(sortedNodes, radii) {
   const placed = [];
