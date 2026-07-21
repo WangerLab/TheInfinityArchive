@@ -35,6 +35,10 @@ const GLOW_SCALE = 2.6;
 // Sigil diameter as a fraction of the star's hit-area diameter -- big enough
 // to read clearly, small enough to leave a visible ring of glow around it.
 const SIGIL_SCALE = 0.75;
+// Current-position ring diameter as a multiple of the star's OWN diameter
+// (replaces a flat +12px, which shrank relatively as star size grew -- +12
+// on an 18px-radius star is +33%, on a 30px-radius star only +20%).
+const RING_SCALE = 1.3;
 const PERMANENT_LABELS_PER_CLUSTER = 3;
 
 const ALLIANCE_TEXT = {
@@ -220,7 +224,7 @@ export function StrategiumMap({
     // Prominence maps to halo brightness within a narrow band -- the star
     // reads brighter, never bigger-sphere.
     const glowAlpha = 0.3 + 0.3 * Math.sqrt(bookCount / maxBookCount);
-    const ringDiameter = pos.r * 2 + 12;
+    const ringDiameter = pos.r * 2 * RING_SCALE;
     const showLabel = permanentLabelKeys.has(key) || key === hoverLabelKey || key === positionKey;
 
     return (
@@ -260,8 +264,8 @@ export function StrategiumMap({
               style={{
                 width: ringDiameter,
                 height: ringDiameter,
-                border: '1px solid hsl(var(--auspex) / 0.85)',
-                boxShadow: '0 0 10px hsl(var(--auspex) / 0.5)',
+                border: '2px solid hsl(var(--auspex) / 0.9)',
+                boxShadow: '0 0 16px 3px hsl(var(--auspex) / 0.6)',
               }}
             />
           )}
