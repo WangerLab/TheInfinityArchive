@@ -24,16 +24,37 @@ import {
 
 export function Strategium() {
   const navigate = useNavigate();
-  const { projectData, bookProgress } = useArchiveData();
+  const { projectData, bookProgress, currentReading } = useArchiveData();
 
   const tree = useMemo(
     () => buildFactionTree(projectData, bookProgress),
     [projectData, bookProgress]
   );
-  const position = useMemo(
+  const lastCompleted = useMemo(
     () => getPosition(projectData, bookProgress),
     [projectData, bookProgress]
   );
+  // Position anchors on what the reader is ACTUALLY doing right now: if a
+  // book is being read, that's the position (label "Currently reading"),
+  // not whatever was last finished -- showing the last-completed book while
+  // mid-read elsewhere made no sense. Falls back to last-completed only
+  // when nothing is currently reading, or the reading book has no faction
+  // to anchor on (e.g. a NULL-faction row).
+  const position = useMemo(() => {
+    const readingBook = currentReading?.book;
+    if (readingBook?.factionPrimary) {
+      return {
+        entryId: readingBook.entryId,
+        title: readingBook.title,
+        factionPrimary: readingBook.factionPrimary,
+        parentFaction: readingBook.parentFaction || null,
+        grandAlliance: readingBook.grandAlliance,
+        nodeKey: readingBook.parentFaction || readingBook.factionPrimary,
+        status: 'reading',
+      };
+    }
+    return lastCompleted ? { ...lastCompleted, status: 'completed' } : null;
+  }, [currentReading, lastCompleted]);
 
   // The latch: null when nothing is pinned open, or a top-level node key
   // once a recommendation targets one of its children, or the reader clicks

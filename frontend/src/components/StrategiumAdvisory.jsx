@@ -1,7 +1,9 @@
 import React from 'react';
-import { ArrowRight, Layers, Shuffle, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Layers, Shuffle, ChevronDown, ChevronRight, Loader2, Compass } from 'lucide-react';
 import { cn } from 'lib/utils';
 import { FactionSigil } from './FactionSigil';
+
+const POSITION_LABEL = { reading: 'Currently reading', completed: 'Last completed' };
 
 // Hybrid advisory panel (spec §10, decided this session): a short overall
 // assessment plus 3 tappable rows, each expanding in place to that book's
@@ -39,27 +41,28 @@ export function StrategiumAdvisory({
 
       {position ? (
         <p className="text-xs text-slate-400">
-          Position: <span className="text-slate-200">{position.title}</span> ({position.factionPrimary})
+          <span className="text-slate-500">{POSITION_LABEL[position.status] || 'Position'}:</span>{' '}
+          <span className="text-slate-200">{position.title}</span> ({position.factionPrimary})
         </p>
       ) : (
-        <p className="text-xs text-slate-500">No completed reading yet — recommending broadly.</p>
+        <p className="text-xs text-slate-500">Nothing read yet — recommending broadly.</p>
       )}
 
-      <div className="flex gap-2">
-        <input
-          type="text"
+      <div className="flex flex-col gap-2">
+        <textarea
+          rows={3}
           value={freeText}
           onChange={(e) => onFreeTextChange(e.target.value)}
-          placeholder="Optional intent — what are you in the mood for?"
-          className="flex-1 min-w-0 bg-slate-900/60 border border-slate-700 rounded-md px-2.5 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-plasma/60"
+          placeholder="Optional intent — what are you in the mood for? (mood, faction, how it should land after your last read...)"
+          className="w-full resize-none bg-slate-900/60 border border-slate-700 rounded-md px-2.5 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-plasma/60"
         />
         <button
           type="button"
           onClick={onSubmitQuery}
           disabled={loading}
           className={cn(
-            'shrink-0 px-3 py-1.5 rounded-md font-tactical text-[11px] tracking-wider uppercase',
-            'border border-plasma/40 text-plasma hover:bg-plasma/10 transition-colors',
+            'w-full px-3 py-2 rounded-md font-tactical text-[11px] tracking-wider uppercase',
+            'border border-plasma/40 text-plasma hover:bg-plasma/10 transition-colors flex items-center justify-center gap-2',
             loading && 'opacity-50 cursor-wait'
           )}
         >
@@ -78,6 +81,18 @@ export function StrategiumAdvisory({
       )}
 
       <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 min-h-0">
+        {(!recommendations || recommendations.length === 0) && !loading && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center px-4">
+            <Compass className="w-8 h-8 text-slate-700" />
+            <p className="text-[11px] text-slate-600 font-tactical tracking-[0.2em] uppercase">
+              Advisory query — awaiting input
+            </p>
+            <p className="text-[11px] text-slate-700 max-w-[200px]">
+              State an intent or query blind — the Strategium reads your position and taste either way.
+            </p>
+          </div>
+        )}
+
         {(recommendations || []).map((rec, i) => {
           const meta = VECTOR_META[rec.vectorClass] || VECTOR_META.continuation;
           const Icon = meta.icon;
@@ -132,12 +147,6 @@ export function StrategiumAdvisory({
           );
         })}
       </div>
-
-      {(!recommendations || recommendations.length === 0) && !loading && (
-        <p className="text-[11px] text-slate-500 font-tactical tracking-[0.2em] uppercase mt-auto">
-          Advisory query — awaiting input
-        </p>
-      )}
     </div>
   );
 }
