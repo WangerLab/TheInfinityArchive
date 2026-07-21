@@ -178,8 +178,65 @@ function pushEdges(group, edges, allianceKey) {
   }
 }
 
+// A hub group this size or larger reads better as a compact ring (hub at
+// the centre, spokes evenly spaced around it, Tim's explicit ask: "the
+// other chapters grouped AROUND it") than as a flat multi-column grid --
+// which, especially in a wide block, can put the hub and a spoke at
+// opposite ends of a row with a long, crossing connector between them.
+// Pairs/chains (3 members or fewer, or no hub at all) stay on the grid
+// path below; a ring is meaningless for 2-3 members already sitting close.
+const HUB_RING_MIN_MEMBERS = 4;
+
+// Hub at the block's own centre; spokes evenly spaced on a ring around it
+// (angle = -90° + i*360/n, starting straight up -- the same convention the
+// pre-flatten satellite-ring mechanic used, now a fixed curated arrangement
+// rather than a click-driven expand). Ring radius is the larger of "clears
+// the hub's own footprint" and "enough circumference for n spoke
+// footprints side by side", capped to whatever the block's OWN existing
+// rowSpan/cols footprint actually allows -- the region/block split itself
+// is not re-derived, only the arrangement inside an unchanged block.
+function placeHubRing(group, block, nodesByKey, region, pitchY, maxBookCount, rMin, rMax, allianceKey) {
+  const anchors = [];
+  const spokes = group.members.filter((k) => k !== group.hub);
+  const hubNode = nodesByKey.get(group.hub);
+  const hubR = radiusForRange(hubNode.bookCount, maxBookCount, rMin, rMax);
+  const spokeRadii = spokes.map((k) => radiusForRange(nodesByKey.get(k).bookCount, maxBookCount, rMin, rMax));
+  const maxSpokeR = Math.max(...spokeRadii);
+  const avgSpokeR = spokeRadii.reduce((s, r) => s + r, 0) / spokeRadii.length;
+  const n = spokes.length;
+
+  const clearHub = hubR + maxSpokeR + MIN_GAP_X + 2 * WOBBLE_AMPLITUDE;
+  const circumferenceBudget = (n * (2 * avgSpokeR + CONSTELLATION_LABEL_WIDTH * 0.6 + MIN_GAP_X)) / (2 * Math.PI);
+  const idealRadius = Math.max(clearHub, circumferenceBudget);
+
+  const blockW = region.w * block.xSpan;
+  const blockHalfW = blockW / 2 - INSET_X;
+  const blockHalfH = (block.rowSpan * pitchY) / 2 - INSET_X;
+  const maxRadius = Math.max(1, Math.min(blockHalfW, blockHalfH) - maxSpokeR - LABEL_BLOCK / 2 - MIN_GAP_X);
+  const ringRadius = Math.min(idealRadius, maxRadius);
+
+  const centerX = region.x + region.w * block.xStart + blockW / 2;
+  const centerY = region.y + (block.rowStart + block.rowSpan / 2) * pitchY - LABEL_BLOCK / 2;
+
+  anchors.push({ key: group.hub, x: centerX, y: centerY, r: hubR, allianceKey });
+  spokes.forEach((key, i) => {
+    const angle = -Math.PI / 2 + i * ((2 * Math.PI) / n);
+    anchors.push({
+      key,
+      x: centerX + ringRadius * Math.cos(angle),
+      y: centerY + ringRadius * Math.sin(angle),
+      r: spokeRadii[i],
+      allianceKey,
+    });
+  });
+  return anchors;
+}
+
 // Curated path: each group placed via its authored block (rowStart/rowSpan +
-// xStart/xSpan fractions + per-block column count), members mapped 1:1 to
+// xStart/xSpan fractions + per-block column count). A hub group with
+// HUB_RING_MIN_MEMBERS or more total members uses placeHubRing instead of
+// the block's grid slots (its slots are still authored and reserved for the
+// generic-fallback case, see validatePlan); everything else maps 1:1 to
 // `block.slots` in the SAME order as `group.members`.
 function placeCurated(groups, plan, nodesByKey, region, maxBookCount, rMin, rMax, fh, allianceKey) {
   const anchors = [];
@@ -190,6 +247,13 @@ function placeCurated(groups, plan, nodesByKey, region, maxBookCount, rMin, rMax
 
   for (const group of groups) {
     const block = blocksByKey.get(group.key);
+
+    if (group.hub && group.members.length >= HUB_RING_MIN_MEMBERS) {
+      anchors.push(...placeHubRing(group, block, nodesByKey, region, pitchY, maxBookCount, rMin, rMax, allianceKey));
+      pushEdges(group, edges, allianceKey);
+      continue;
+    }
+
     const blockX = region.x + region.w * block.xStart;
     const blockW = region.w * block.xSpan;
     const subW = (blockW - 2 * INSET_X) / block.cols;
