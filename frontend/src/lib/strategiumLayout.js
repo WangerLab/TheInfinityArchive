@@ -80,27 +80,6 @@ function footprintsClear(x, y, r, p) {
   return bottom + FOOTPRINT_MARGIN <= pTop || pBottom + FOOTPRINT_MARGIN <= top;
 }
 
-function packNodesRadially(sortedNodes, radii) {
-  const placed = [];
-  for (let i = 0; i < sortedNodes.length; i++) {
-    const r = radii[i];
-    const angle = i * GOLDEN_ANGLE;
-    let radius = 0;
-    if (i > 0) {
-      let clear = false;
-      while (!clear) {
-        radius += PACK_RADIAL_STEP;
-        const x = radius * Math.cos(angle);
-        const y = radius * Math.sin(angle);
-        clear = placed.every((p) => footprintsClear(x, y, r, p));
-        if (radius > 20000) clear = true; // safety valve, never expected to hit
-      }
-    }
-    placed.push({ key: sortedNodes[i].key, x: radius * Math.cos(angle), y: radius * Math.sin(angle), r });
-  }
-  return placed;
-}
-
 // Cluster centroids as fractions of the canvas. Landscape: Imperium (most
 // nodes) owns the left half; Chaos and Xenos split the right side
 // vertically. A tall/narrow panel (mobile single column) stacks the three
@@ -124,74 +103,33 @@ const CLUSTER_ANCHORS_TALL = {
   xenos: { fx: 0.5, fy: 0.82 },
 };
 
-// Keep-out margin subtracted from each cluster's territory extents so rest
-// anchors never hug the canvas edge or a neighbouring cluster's centroid.
-const EDGE_KEEPOUT = 18;
-
-// How much of its available territory a cluster fills at rest (positions
-// only, never radii -- see the scale computation below for why). 0.9 -> 0.93
-// reclaims a bit of the fill the territory-halving fix took away. Kept well
-// below ~0.98: computeTerritory halves the DIAGONAL centroid distance but
-// applies it along a single axis, so a diagonal neighbour pair (e.g.
-// Imperium <-> Chaos/Xenos) has a small Pythagorean safety margin that
-// narrows as this approaches 1 -- verified comfortable at 0.93.
-const FILL_FRACTION = 0.93;
-
-// Per-cluster territory: FOUR independent extents (left/right/top/bottom),
-// not one isotropic radius. An isotropic circle is capped in every direction
-// by whichever neighbour/edge is closest -- Chaos and Xenos share the right
-// half of the canvas stacked vertically, so their mutual (vertical) distance
-// capped their ENTIRE circle, even though there is plenty of free WIDTH to
-// their right that a circle can never reach. Each other cluster constrains
-// only the axis along which it's separated from this one (whichever of
-// dx/dy is larger for that pair) -- at HALF the centroid-to-centroid
-// distance, a true midpoint partition (same halving the original isotropic
-// circle always used, just applied per-axis instead of isotropically). An
-// earlier version of this function used the FULL distance ("a generous fill
-// budget, the real backstop is forceCollide") -- that was wrong: the nebula
-// glow and caption position are static per-alliance visuals with zero
-// collision-awareness against OTHER alliances, so a live test immediately
-// showed Chaos/Xenos/Imperium bleeding into each other in the shared middle
-// once both sides of a pair grew toward that budget. Verified against the
-// real WIDE anchors on a ~1230x900 canvas: Chaos<->Xenos's mutual extent is
-// now 207px each side (414px total, safely under their 450px centroid
-// distance -- a clean 36px buffer), Imperium's rightward reach is ~272px
-// (still the entire left half of the canvas, up to the neighbours' own left
-// boundary, with no dead gap between them). Degenerates correctly for the
-// TALL (single-column) anchors too: every pair there has dx=0, so every
-// neighbour is automatically classified dy-dominant and left/right fall
-// back to plain edge distance -- no special-casing needed.
-function computeTerritory(cx, cy, centers, selfKey, width, height) {
-  let left = cx;
-  let right = width - cx;
-  let top = cy;
-  let bottom = height - cy;
-  for (const other of centers) {
-    if (other.alliance.key === selfKey) continue;
-    const dx = other.cx - cx;
-    const dy = other.cy - cy;
-    const halfDist = Math.hypot(dx, dy) / 2;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 0) right = Math.min(right, halfDist);
-      else left = Math.min(left, halfDist);
-    } else if (dy > 0) {
-      bottom = Math.min(bottom, halfDist);
-    } else {
-      top = Math.min(top, halfDist);
-    }
-  }
-  return {
-    left: Math.max(1, left - EDGE_KEEPOUT),
-    right: Math.max(1, right - EDGE_KEEPOUT),
-    top: Math.max(1, top - EDGE_KEEPOUT),
-    bottom: Math.max(1, bottom - EDGE_KEEPOUT),
-  };
-}
-
-// Lay out all alliances into the shared width×height canvas. Returns
-// { [allianceKey]: { cx, cy, spread, anchors: [{ key, x, y, r }] } } with all
-// coordinates GLOBAL canvas pixels. `spread` = farthest anchor distance from
-// the centroid incl. its radius -- feeds the nebula size and caption position.
+// Lay out all alliances into the shared width×height canvas via ONE
+// cross-cluster packing pass. Returns { [allianceKey]: { cx, cy, spread,
+// anchors: [{ key, x, y, r }] } } with all coordinates GLOBAL canvas pixels.
+// `spread` = farthest anchor distance from the centroid incl. its radius --
+// feeds the nebula size and caption position.
+//
+// DELIBERATE REVERSAL of the prior per-cluster-territory approach: each
+// alliance used to pack independently (its own local placed-list, reset per
+// alliance) and then fit-scale its result into a `computeTerritory` budget
+// computed from centroid distances alone. That budget measured "how much
+// room does this cluster need" using only the bare icon radius -- never the
+// much larger icon+label FOOTPRINT the packer actually respects (see
+// footprintsClear above). Once labels became always-visible and the packer
+// footprint-aware, every cluster's natural size grew well past its
+// territory allocation, and the territory fit's own "never shrink" rule
+// (needed to preserve the packer's non-overlap guarantee) let clusters
+// simply grow straight through their neighbours -- exactly the seam-crowding
+// a live test showed (Word Bearers/Tyranids, Alpha Legion/Drukhari/Navis
+// Nobilite all tangled at the Chaos/Xenos/Imperium boundaries).
+//
+// Fix: pack every alliance into the SAME shared placed-list, in
+// ALLIANCE_ORDER, each still spiralling out from its own centroid -- an
+// alliance packed later sees every node already placed by an earlier one
+// and routes around it directly, the same mechanism that already keeps
+// same-alliance nodes apart, just no longer reset between alliances. This
+// makes actual collision avoidance the ONLY thing keeping clusters apart --
+// no separate territory-budget approximation to fall out of sync again.
 export function layoutClusters(alliances, width, height, maxBookCount) {
   if (width <= 0 || height <= 0) return {};
   const config = width / height < TALL_ASPECT ? CLUSTER_ANCHORS_TALL : CLUSTER_ANCHORS_WIDE;
@@ -201,48 +139,38 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
     return { alliance, cx: cfg.fx * width, cy: cfg.fy * height };
   });
 
+  const placedGlobal = [];
   const result = {};
+
   for (const { alliance, cx, cy } of centers) {
     if (alliance.nodes.length === 0) {
       result[alliance.key] = { cx, cy, spread: 0, anchors: [] };
       continue;
     }
 
-    const territory = computeTerritory(cx, cy, centers, alliance.key, width, height);
-
     const sorted = [...alliance.nodes].sort((a, b) => b.bookCount - a.bookCount);
-    const radii = sorted.map((node) => radiusFor(node.bookCount, maxBookCount));
-    const packed = packNodesRadially(sorted, radii);
+    const anchors = [];
+    for (let i = 0; i < sorted.length; i++) {
+      const r = radiusFor(sorted[i].bookCount, maxBookCount);
+      const angle = i * GOLDEN_ANGLE;
+      let radius = 0;
+      let x = cx;
+      let y = cy;
+      if (i > 0 || placedGlobal.length > 0) {
+        let clear = false;
+        while (!clear) {
+          radius += PACK_RADIAL_STEP;
+          x = cx + radius * Math.cos(angle);
+          y = cy + radius * Math.sin(angle);
+          clear = placedGlobal.every((p) => footprintsClear(x, y, r, p));
+          if (radius > 20000) clear = true; // safety valve, never expected to hit
+        }
+      }
+      const anchor = { key: sorted[i].key, x, y, r };
+      anchors.push(anchor);
+      placedGlobal.push(anchor);
+    }
 
-    // Positional scale ONLY (never radii -- every star keeps its global,
-    // prominence-driven size regardless of cluster geometry), applied
-    // independently per direction so a cluster can use a generous side while
-    // still respecting a tight one -- an isotropic single scale (the prior
-    // fix) is capped by whichever direction is tightest, exactly the
-    // structural limit computeTerritory's four extents exist to escape.
-    // Floored at 1 in every direction (never shrinks below the natural
-    // pack): shrinking would pull stars closer together without shrinking
-    // their radii too, breaking the greedy packer's own non-overlap
-    // guarantee. A cluster whose natural pack already exceeds its territory
-    // in some direction (a large Imperium) is simply left at its natural
-    // size there -- the shared canvas clamp (useForceLayout) and the real
-    // distance between cluster centroids are the actual backstop, not this
-    // scale.
-    const farthestXPos = Math.max(1, ...packed.map((p) => p.x + p.r));
-    const farthestXNeg = Math.max(1, ...packed.map((p) => -p.x + p.r));
-    const farthestYPos = Math.max(1, ...packed.map((p) => p.y + p.r));
-    const farthestYNeg = Math.max(1, ...packed.map((p) => -p.y + p.r));
-    const scaleXPos = Math.max(1, (territory.right * FILL_FRACTION) / farthestXPos);
-    const scaleXNeg = Math.max(1, (territory.left * FILL_FRACTION) / farthestXNeg);
-    const scaleYPos = Math.max(1, (territory.bottom * FILL_FRACTION) / farthestYPos);
-    const scaleYNeg = Math.max(1, (territory.top * FILL_FRACTION) / farthestYNeg);
-
-    const anchors = packed.map((p) => ({
-      key: p.key,
-      x: cx + p.x * (p.x >= 0 ? scaleXPos : scaleXNeg),
-      y: cy + p.y * (p.y >= 0 ? scaleYPos : scaleYNeg),
-      r: p.r,
-    }));
     const spread = Math.max(
       STAR_R_MAX,
       ...anchors.map((a) => Math.hypot(a.x - cx, a.y - cy) + a.r)
