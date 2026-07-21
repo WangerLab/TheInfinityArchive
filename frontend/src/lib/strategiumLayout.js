@@ -245,16 +245,9 @@ function placeGeneric(groups, nodesByKey, region, maxBookCount, rMin, rMax, fh, 
   return { anchors, edges };
 }
 
-// Lays out every alliance's factions via curated constellations, falling
-// back to a plain lattice per-alliance when that alliance's curated data no
-// longer matches the catalog (see buildGroups/validatePlan). Returns GLOBAL
-// canvas-pixel anchors/edges plus the metrics StrategiumMap.jsx's label JSX
-// and physics-free wobble hook both need to read from this SAME source.
-export function layoutConstellations(alliances, width, height, maxBookCount) {
-  if (width <= 0 || height <= 0) {
-    return { metrics: null, regions: {}, anchors: [], edges: [], requiredHeight: height };
-  }
-
+// WIDE (landscape) layout: three curated regions (imperium/chaos/xenos),
+// each fitted to the given width/height via computeRegions.
+function layoutWide(alliances, width, height, maxBookCount) {
   const regions = computeRegions(width, height);
   const minRowPitch = Math.min(...Object.values(regions).map((r) => r.h / r.rows));
   const rMax = Math.min(
@@ -302,4 +295,92 @@ export function layoutConstellations(alliances, width, height, maxBookCount) {
     edges,
     requiredHeight: height,
   };
+}
+
+// Below this size the map panel loses its height entirely (Strategium.jsx
+// drops its calc-height class under `lg`, per its own comment on why -- the
+// header shrinks and there's no reliable viewport-relative height left to
+// divide three ways). The WIDE region split would silently starve every
+// region of room in that regime, so STACKED is a distinct layout, not a
+// smaller version of WIDE.
+const WIDE_MIN_WIDTH = 980;
+const WIDE_MIN_HEIGHT = 620;
+
+// Fixed, deliberately smaller star size for the stacked/short-panel case --
+// chosen once, not derived from a given height, because STACKED computes
+// its OWN required height as an OUTPUT (there is no incoming height to fit).
+const STACKED_R_MAX = 16;
+const STACKED_R_MIN = Math.round(STACKED_R_MAX * 0.58);
+const STACKED_FH = 2 * STACKED_R_MAX + LABEL_BLOCK;
+const STACKED_PITCH_Y = STACKED_FH + MIN_GAP_Y + 2 * WOBBLE_AMPLITUDE + 2 * MIN_JITTER_Y;
+
+// STACKED (short/mobile) layout: three full-width regions stacked
+// vertically, each placed via placeGeneric -- curated multi-column blocks
+// are tuned for the WIDE region widths and wouldn't read sensibly this
+// narrow anyway, so there is no separate hand-authored stacked plan, just
+// the same lattice mechanism in one column. Returns a `requiredHeight`
+// StrategiumMap.jsx uses to size a scrollable inner canvas, since there is
+// no real viewport height to fit into here.
+function layoutStacked(alliances, width, maxBookCount) {
+  const regionW = Math.max(1, width - 2 * PAD_X);
+  const cols = Math.max(1, Math.floor((regionW - 2 * INSET_X) / MIN_PITCH_X));
+
+  const anchors = [];
+  const edges = [];
+  const regions = {};
+  let cursorY = PAD_TOP;
+
+  for (const alliance of alliances) {
+    if (alliance.nodes.length === 0) continue;
+    const nodesByKey = new Map(alliance.nodes.map((n) => [n.key, n]));
+    const groups = buildGroups(alliance.key, [...nodesByKey.keys()]);
+    const rows = groups.reduce((sum, g) => sum + Math.ceil(g.members.length / cols), 0) || 1;
+    const regionH = rows * STACKED_PITCH_Y;
+    const region = { x: PAD_X, y: cursorY, w: regionW, h: regionH, rows };
+    regions[alliance.key] = region;
+
+    const { anchors: regionAnchors, edges: regionEdges } = placeGeneric(
+      groups, nodesByKey, region, maxBookCount, STACKED_R_MIN, STACKED_R_MAX, STACKED_FH, alliance.key
+    );
+    anchors.push(...regionAnchors);
+    edges.push(...regionEdges);
+
+    cursorY += regionH + GUTTER_Y;
+  }
+
+  return {
+    metrics: {
+      labelWidth: CONSTELLATION_LABEL_WIDTH,
+      labelLines: CONSTELLATION_LABEL_LINES,
+      fontSize: CONSTELLATION_FONT_SIZE,
+      lineHeight: CONSTELLATION_LINE_HEIGHT,
+      labelGap: CONSTELLATION_LABEL_GAP,
+      rMin: STACKED_R_MIN,
+      rMax: STACKED_R_MAX,
+      glowScale: CONSTELLATION_GLOW_SCALE,
+      sigilScale: CONSTELLATION_SIGIL_SCALE,
+      wobble: WOBBLE_AMPLITUDE,
+    },
+    regions,
+    anchors,
+    edges,
+    requiredHeight: Math.max(1, cursorY - GUTTER_Y + PAD_BOTTOM),
+  };
+}
+
+// Lays out every alliance's factions via curated constellations, falling
+// back to a plain lattice per-alliance when that alliance's curated data no
+// longer matches the catalog (see buildGroups/validatePlan). Returns GLOBAL
+// canvas-pixel anchors/edges plus the metrics StrategiumMap.jsx's label JSX
+// and physics-free wobble hook both need to read from this SAME source.
+// Dispatches to the WIDE (curated, three side-by-side regions) or STACKED
+// (generic, one column) layout depending on the measured panel size.
+export function layoutConstellations(alliances, width, height, maxBookCount) {
+  if (width <= 0) {
+    return { metrics: null, regions: {}, anchors: [], edges: [], requiredHeight: height };
+  }
+  if (width >= WIDE_MIN_WIDTH && height >= WIDE_MIN_HEIGHT) {
+    return layoutWide(alliances, width, height, maxBookCount);
+  }
+  return layoutStacked(alliances, width, maxBookCount);
 }
