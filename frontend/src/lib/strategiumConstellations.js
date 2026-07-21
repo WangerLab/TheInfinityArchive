@@ -146,9 +146,9 @@ export const CONSTELLATIONS = {
 // rows, `xStart`/`xSpan` are fractions of the region's width. `slots` are
 // BLOCK-relative [row, col] pairs (0-indexed from the block's own
 // rowStart), one per member, in the SAME order as the constellation's
-// `members` array -- this positional pairing is what `layoutClusters.js`
-// relies on, and is exactly the invariant this file's single-source
-// structure exists to protect.
+// `members` array -- this positional pairing is what `strategiumLayout.js`'s
+// `layoutConstellations` relies on, and is exactly the invariant this file's
+// single-source structure exists to protect.
 export const REGION_PLANS = {
   wide: {
     imperium: {

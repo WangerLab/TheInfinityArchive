@@ -1,38 +1,42 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from 'lib/utils';
 import { FactionSigil } from './FactionSigil';
-import { layoutClusters } from 'lib/strategiumLayout';
+import { layoutConstellations, NEBULA_SCALE } from 'lib/strategiumLayout';
 import { useForceLayout } from 'hooks/useForceLayout';
 
-// Living meta-map: ONE shared canvas holding three alliance clusters (the
-// per-alliance bounding boxes are gone -- see strategiumLayout.js's header
-// for the deliberate constraint reversal). Alliance membership is carried by
-// colour; only the faction nodes move, via a real d3-force simulation
-// anchored to a prominence-ranked radial scatter per cluster (spec §4,
-// strategiumLayout.js). Read factions dim (spec §5's read-state overlay) so
-// the unread flank stands out.
+// Living meta-map: ONE shared canvas holding three alliance REGIONS (rects,
+// never rendered as visible boxes -- only the soft nebula glow marks them).
+// Every faction has a CURATED home (strategiumConstellations.js): a fixed
+// lattice cell inside a disjoint block inside its alliance's region, not a
+// position found by search. Four rounds of search-based placement (isotropic
+// circle territory, per-axis rectangle + fit-scale, repeated PACK_GAP tuning,
+// a shared cross-cluster collision list) each failed differently, because a
+// search that "keeps going until clear" eventually terminates somewhere
+// wrong. Lookup instead of search removes that failure class entirely --
+// overlap is impossible by construction (layoutConstellations.js), not
+// something a runtime check has to keep re-proving. Read factions dim
+// (spec §5's read-state overlay) so the unread flank stands out.
 //
 // FLAT: every faction is its own node, always visible -- no expand/collapse
 // state, no satellite ring, no umbrella-vs-chapter nesting (see
 // strategiumMap.js's buildFactionTree header for why that reversal happened).
-// A click just selects a faction directly.
+// A click just selects a faction directly. Thematically related factions
+// still read as a group: a curated constellation's members are joined by
+// thin connector lines (see the edges layer below).
 //
 // The canvas is a MEASURED pixel space (ResizeObserver on the outer
-// container) -- the map genuinely fills whatever height/width its panel is
-// given; node radius is a fixed global size (strategiumLayout.js), so a
-// bigger panel gives every cluster more room to spread, not bigger stars.
+// container); layoutConstellations derives region sizes and star radii from
+// the real measured width/height, so a bigger panel means more breathing
+// room, not bigger stars for their own sake -- prominence (book count)
+// remains the only thing that makes one star bigger than another.
 //
 // Labels: every faction's name is always visible under its star (Tim's
 // explicit ask once the map had real room) -- no top-N-permanent/hover-only
-// split anymore.
+// split. Label geometry (width/lines/font-size/line-height/gap) is read from
+// `layout.metrics`, the SAME source layoutConstellations used to prove no two
+// footprints can overlap -- two places disagreeing about this number is
+// exactly what broke prior iterations of this map.
 
-// Star halo diameter as a multiple of the node's hit-area diameter. The halo
-// is soft light, not a solid body -- overlap between neighbouring halos is
-// fine (nebula feel), only the cores must stay apart (collide handles that).
-const GLOW_SCALE = 2.6;
-// Sigil diameter as a fraction of the star's hit-area diameter -- big enough
-// to read clearly, small enough to leave a visible ring of glow around it.
-const SIGIL_SCALE = 0.75;
 // Current-position ring diameter as a multiple of the star's OWN diameter
 // (replaces a flat +12px, which shrank relatively as star size grew -- +12
 // on an 18px-radius star is +33%, on a 30px-radius star only +20%).
@@ -174,25 +178,18 @@ export function StrategiumMap({
     }));
   }, []);
 
-  // Rest anchors for every node -- all coordinates are GLOBAL canvas pixels
-  // (the cluster centroid is already added inside layoutClusters).
-  const clusters = useMemo(() => {
-    if (!hasSize) return {};
-    return layoutClusters(tree.alliances, width, height, maxBookCount);
+  // Curated constellation layout -- all coordinates are GLOBAL canvas pixels,
+  // region rects and the label/size metrics come from the SAME call.
+  const layout = useMemo(() => {
+    if (!hasSize) return { metrics: null, regions: {}, anchors: [], edges: [], requiredHeight: height };
+    return layoutConstellations(tree.alliances, width, height, maxBookCount);
     // eslint-disable-next-line
   }, [tree, width, height]);
 
-  const simNodes = useMemo(() => {
-    if (!hasSize) return [];
-    const flat = [];
-    for (const alliance of tree.alliances) {
-      const anchors = clusters[alliance.key]?.anchors || [];
-      for (const anchor of anchors) {
-        flat.push({ key: anchor.key, x: anchor.x, y: anchor.y, r: anchor.r });
-      }
-    }
-    return flat;
-  }, [clusters, tree]);
+  const simNodes = useMemo(
+    () => layout.anchors.map((a) => ({ key: a.key, x: a.x, y: a.y, r: a.r })),
+    [layout]
+  );
 
   const bounds = useMemo(() => ({ width, height }), [width, height]);
   const positions = useForceLayout(simNodes, bounds);
@@ -217,6 +214,7 @@ export function StrategiumMap({
     const pos = positions[key];
     if (!pos) return null;
     const tint = ALLIANCE_COLOR[allianceKey];
+    const { glowScale, sigilScale, labelWidth, labelLines, fontSize, lineHeight, labelGap } = layout.metrics;
     // Prominence maps to halo brightness within a narrow band -- the star
     // reads brighter, never bigger-sphere.
     const glowAlpha = 0.3 + 0.3 * Math.sqrt(bookCount / maxBookCount);
@@ -242,8 +240,8 @@ export function StrategiumMap({
           <div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
             style={{
-              width: pos.r * 2 * GLOW_SCALE,
-              height: pos.r * 2 * GLOW_SCALE,
+              width: pos.r * 2 * glowScale,
+              height: pos.r * 2 * glowScale,
               background: `radial-gradient(circle, ${tint(glowAlpha)} 0%, ${tint(glowAlpha * 0.4)} 40%, transparent 70%)`,
             }}
           />
@@ -262,7 +260,7 @@ export function StrategiumMap({
               }}
             />
           )}
-          <FactionSigil sigil={sigil} alliance={allianceKey} sizePx={Math.round(pos.r * 2 * SIGIL_SCALE)} className="relative" />
+          <FactionSigil sigil={sigil} alliance={allianceKey} sizePx={Math.round(pos.r * 2 * sigilScale)} className="relative" />
         </div>
         <div
           className={cn(
@@ -272,12 +270,14 @@ export function StrategiumMap({
           )}
           style={{
             left: pos.x,
-            top: pos.y + pos.r + 8,
-            width: 100,
-            fontSize: 10,
+            top: pos.y + pos.r + labelGap,
+            width: labelWidth,
+            fontSize,
+            lineHeight: `${lineHeight}px`,
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: labelLines,
             WebkitBoxOrient: 'vertical',
+            overflowWrap: 'anywhere',
             opacity: 0.75,
           }}
         >
@@ -310,22 +310,24 @@ export function StrategiumMap({
         </svg>
       )}
 
-      {/* Nebula layer: borderless soft colour fields behind each cluster --
-          no boxes, no contours, no header rules. Sized from the cluster's
-          actual spread so the field hugs its stars without a hard edge. */}
+      {/* Nebula layer: borderless soft colour fields, one ellipse per
+          alliance REGION (never a visible box/border). NEBULA_SCALE is
+          derived, not tuned: ALLIANCE_FIELD's gradients reach full
+          transparency at their 78% stop, and 1.28 * 0.78 ~= 1, so the
+          visible glow boundary lands almost exactly on the region rect. */}
       {hasSize && tree.alliances.map((alliance) => {
-        const cluster = clusters[alliance.key];
-        if (!cluster || cluster.anchors.length === 0) return null;
-        const nebulaRadius = cluster.spread * 1.6 + 40;
+        if (alliance.nodes.length === 0) return null;
+        const region = layout.regions[alliance.key];
+        if (!region) return null;
         return (
           <div
             key={`nebula-${alliance.key}`}
             className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             style={{
-              left: cluster.cx,
-              top: cluster.cy,
-              width: nebulaRadius * 2,
-              height: nebulaRadius * 2,
+              left: region.x + region.w / 2,
+              top: region.y + region.h / 2,
+              width: region.w * NEBULA_SCALE,
+              height: region.h * NEBULA_SCALE,
               background: ALLIANCE_FIELD[alliance.key],
             }}
           />
@@ -333,12 +335,11 @@ export function StrategiumMap({
       })}
 
       {/* One caption per alliance, anchored to a fixed canvas corner (see
-          CAPTION_CORNER) -- independent of cluster geometry, so it never
-          drifts toward the middle of the canvas or over another alliance's
-          content. */}
+          CAPTION_CORNER) -- independent of region/cluster geometry, so it
+          never drifts toward the middle of the canvas or over another
+          alliance's content. */}
       {hasSize && tree.alliances.map((alliance) => {
-        const cluster = clusters[alliance.key];
-        if (!cluster || cluster.anchors.length === 0) return null;
+        if (alliance.nodes.length === 0) return null;
         return (
           <span
             key={`caption-${alliance.key}`}
