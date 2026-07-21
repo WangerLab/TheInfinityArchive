@@ -205,7 +205,23 @@ function placeHubRing(group, block, nodesByKey, region, pitchY, maxBookCount, rM
   const avgSpokeR = spokeRadii.reduce((s, r) => s + r, 0) / spokeRadii.length;
   const n = spokes.length;
 
-  const clearHub = hubR + maxSpokeR + MIN_GAP_X + 2 * WOBBLE_AMPLITUDE;
+  // Spokes sit at angle = -90deg + i*(360/n) -- for n=3 or n=4 (Ordos,
+  // Undivided) that puts a spoke at or near 0deg/180deg, i.e. due
+  // right/left of the hub, at almost exactly the hub's own y. At that
+  // angle the hub-to-spoke separation is PURELY horizontal and equal to
+  // the ring radius itself -- and BOTH the hub's own label and that
+  // spoke's label extend +-LABEL_WIDTH/2 horizontally from their icon
+  // centers. Bounding this by icon radius alone (the old `hubR + maxSpokeR`
+  // clearHub) badly underestimates it: LABEL_WIDTH/2 (56) dwarfs any real
+  // icon radius (14-24), so a ring sized only for icon clearance renders
+  // with hub and a horizontally-aligned spoke's LABELS overlapping even
+  // though their icons never touch -- confirmed live (Ordos, Undivided
+  // rings both cramped) and confirmed NOT accidental: Astartes (n=8) never
+  // showed this because its circumferenceBudget term already exceeded the
+  // real label-clearance need, masking the bug there.
+  const clearHub = Math.max(hubR, CONSTELLATION_LABEL_WIDTH / 2)
+    + Math.max(maxSpokeR, CONSTELLATION_LABEL_WIDTH / 2)
+    + MIN_GAP_X + 2 * WOBBLE_AMPLITUDE;
   const circumferenceBudget = (n * (2 * avgSpokeR + CONSTELLATION_LABEL_WIDTH * 0.6 + MIN_GAP_X)) / (2 * Math.PI);
   const idealRadius = Math.max(clearHub, circumferenceBudget);
 

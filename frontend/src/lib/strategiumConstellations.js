@@ -154,44 +154,55 @@ export const REGION_PLANS = {
     // Ring-placed blocks (astartes, ordos -- see placeHubRing in
     // strategiumLayout.js) need a footprint sized for their IDEAL ring
     // radius, not the flat-grid dimensions they inherited when placeHubRing
-    // was first added: a live test showed those grid dimensions capping the
-    // ring well below what it wanted (Astartes at 69% of its ideal radius,
-    // Ordos at 82%), which is exactly what read as cramped/overlapping
-    // labels. `rows` stays 7 (unchanged) to avoid touching pitchY, and thus
-    // the global star radius, as a side effect -- a ring block needs less
-    // WIDTH than the old full-region grid gave it (its ideal half-extent is
-    // far smaller than the region width), so the freed width goes to a
-    // narrow sibling placed BESIDE it in the same row-band instead of
-    // stacked below it. That recovers the height rings actually need
-    // without changing rows/pitchY/rMax anywhere. `cols`/`slots` on a
-    // ring-placed block are unused by placeHubRing but kept intact for the
-    // generic-fallback path (validatePlan) if this alliance's data ever
-    // stops matching the curated table.
+    // was first added. `rows` stays 7 (unchanged) to avoid touching pitchY,
+    // and thus the global star radius, as a side effect.
+    //
+    // Second pass, after a live test with the clearHub label-width fix
+    // (strategiumLayout.js) showed Ordos still visibly cramped -- the fix
+    // corrected the FORMULA (raising Ordos's ideal radius from ~66px to
+    // ~130px, dominated by LABEL_WIDTH/2 clearance for its horizontally-
+    // aligned spokes, not icon size), but the block dimensions from the
+    // first pass were sized against the OLD, too-small ideal and still
+    // capped the new one hard. Astartes' own ideal (~185px half-extent,
+    // computed from real per-faction book counts, not a worst-case guess)
+    // turned out to have real slack in its rowSpan=4 allocation -- shrunk
+    // to rowSpan=3.6 (margin ~7px) to free height for Ordos's now-larger
+    // footprint, moved beside a narrowed Militarum. Ordos widens
+    // (xSpan 0.45->0.60, rowSpan 3->3.4) with Forge/Throne/Lex each
+    // becoming a single 2-column row beside it instead of their old
+    // 2-row single-column stacks -- verified at a 1230x900 reference
+    // panel: Ordos now reaches ~181px of its own required ~173px half-
+    // extent (margin ~8px), each Forge/Throne/Lex row's subW clears
+    // LABEL_WIDTH by ~3px. Deliberately modest margins, not the ~15-20px
+    // seen elsewhere in this file: two rings sharing one 616x786 region
+    // is a genuine capacity constraint, verified arithmetically, not a
+    // rounding choice -- flag for a closer live look if it still reads
+    // tight.
     imperium: {
       rows: 7,
       blocks: [
         {
-          key: 'astartes', rowStart: 0, rowSpan: 4, xStart: 0, xSpan: 0.75, cols: 4,
+          key: 'astartes', rowStart: 0, rowSpan: 3.6, xStart: 0, xSpan: 0.65, cols: 4,
           slots: [[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [1, 2], [1, 3], [2, 1], [2, 2]],
         },
         {
-          key: 'militarum', rowStart: 0, rowSpan: 3, xStart: 0.75, xSpan: 0.25, cols: 1,
+          key: 'militarum', rowStart: 0, rowSpan: 3, xStart: 0.65, xSpan: 0.35, cols: 1,
           slots: [[0, 0], [1, 0], [2, 0]],
         },
         {
-          key: 'ordos', rowStart: 4, rowSpan: 3, xStart: 0, xSpan: 0.45, cols: 2,
+          key: 'ordos', rowStart: 3.6, rowSpan: 3.4, xStart: 0, xSpan: 0.6, cols: 2,
           slots: [[0, 0], [0, 1], [1, 1], [1, 0]],
         },
         {
-          key: 'forge', rowStart: 4, rowSpan: 2, xStart: 0.45, xSpan: 0.275, cols: 1,
-          slots: [[0, 0], [1, 0]],
+          key: 'forge', rowStart: 3.6, rowSpan: 1, xStart: 0.6, xSpan: 0.4, cols: 2,
+          slots: [[0, 0], [0, 1]],
         },
         {
-          key: 'throne', rowStart: 4, rowSpan: 2, xStart: 0.725, xSpan: 0.275, cols: 1,
-          slots: [[0, 0], [1, 0]],
+          key: 'throne', rowStart: 4.6, rowSpan: 1, xStart: 0.6, xSpan: 0.4, cols: 2,
+          slots: [[0, 0], [0, 1]],
         },
         {
-          key: 'lex', rowStart: 6, rowSpan: 1, xStart: 0.45, xSpan: 0.55, cols: 2,
+          key: 'lex', rowStart: 5.6, rowSpan: 1, xStart: 0.6, xSpan: 0.4, cols: 2,
           slots: [[0, 0], [0, 1]],
         },
       ],
