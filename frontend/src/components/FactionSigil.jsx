@@ -107,18 +107,22 @@ const SIZES = {
 // replaced — the query string changes the cache key and forces a fresh fetch.
 const ASSET_VERSION = 2;
 
-export function FactionSigil({ sigil, alliance, size = 'sm', className, title }) {
+export function FactionSigil({ sigil, alliance, size = 'sm', sizePx, className, title }) {
   const [failed, setFailed] = useState(false);
 
   // No mapped sigil, or the asset failed to load: degrade to the alliance mark.
   if (!sigil || failed) {
     return (
-      <FactionMark alliance={alliance} size={size} className={className} title={title} />
+      <FactionMark alliance={alliance} size={size} sizePx={sizePx} className={className} title={title} />
     );
   }
 
   const url = `/sigils/${sigil}.png?v=${ASSET_VERSION}`;
-  const box = SIZES[size] || SIZES.sm;
+  // sizePx is an escape hatch for callers computing a size at runtime (e.g.
+  // the Strategium map scaling a sigil to a star's live radius) -- a
+  // Tailwind arbitrary class can't see a value that only exists at runtime,
+  // so this sets the box via inline style instead and skips the token class.
+  const box = sizePx ? undefined : (SIZES[size] || SIZES.sm);
   const tint = TINT_BG[SIGIL_ALLIANCE[sigil]] || TINT_BG[alliance] || TINT_BG.unaligned;
 
   return (
@@ -129,6 +133,7 @@ export function FactionSigil({ sigil, alliance, size = 'sm', className, title })
         aria-label={title || alliance || sigil}
         className={cn(box, tint, 'shrink-0 inline-block', className)}
         style={{
+          ...(sizePx ? { width: sizePx, height: sizePx } : null),
           WebkitMaskImage: `url(${url})`,
           maskImage: `url(${url})`,
           WebkitMaskSize: 'contain',

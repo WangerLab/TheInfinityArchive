@@ -30,12 +30,16 @@ const ASSET_VERSION = 2;
 
 // grandAlliance is NOT NULL across the catalog, but guard anyway: an unknown
 // value renders nothing rather than crashing.
-export function FactionMark({ alliance, size = 'sm', className, title }) {
+export function FactionMark({ alliance, size = 'sm', sizePx, className, title }) {
   const [failed, setFailed] = useState(false);
   const mark = MARKS[alliance];
   if (!mark) return null;
 
-  const box = SIZES[size] || SIZES.sm;
+  // sizePx is an escape hatch for a runtime-computed size (a Tailwind
+  // arbitrary class can't see a value that only exists at render time) --
+  // sets the box via inline style instead and skips the token class.
+  const box = sizePx ? undefined : (SIZES[size] || SIZES.sm);
+  const sizeStyle = sizePx ? { width: sizePx, height: sizePx } : undefined;
 
   // lucide-backed (unaligned) or asset failed to load: render the glyph.
   if (mark.icon || (mark.asset && failed)) {
@@ -43,6 +47,7 @@ export function FactionMark({ alliance, size = 'sm', className, title }) {
     return (
       <Icon
         className={cn(box, mark.textTint, 'shrink-0', className)}
+        style={sizeStyle}
         aria-label={title || mark.label}
       />
     );
@@ -57,6 +62,7 @@ export function FactionMark({ alliance, size = 'sm', className, title }) {
         aria-label={title || mark.label}
         className={cn(box, mark.bgTint, 'shrink-0 inline-block', className)}
         style={{
+          ...sizeStyle,
           WebkitMaskImage: `url(${url})`,
           maskImage: `url(${url})`,
           WebkitMaskSize: 'contain',
