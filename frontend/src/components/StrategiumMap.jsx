@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from 'lib/utils';
 import { FactionSigil } from './FactionSigil';
-import { boxWidths, layoutBox, satelliteAnchors, BOX_GAP } from 'lib/strategiumLayout';
+import { layoutClusters, satelliteAnchors } from 'lib/strategiumLayout';
 import { useForceLayout } from 'hooks/useForceLayout';
 
-// Living meta-map: three fixed alliance volumes (spec §3), rendered as
-// borderless clouds in one shared field rather than boxed panels -- only the
-// faction nodes inside move, via a real d3-force simulation anchored to a
-// prominence-ranked radial scatter (spec §4, strategiumLayout.js). Read
-// factions dim (spec §5's read-state overlay) so the unread flank stands out.
+// Living meta-map: ONE shared canvas holding three alliance clusters (the
+// per-alliance bounding boxes are gone -- see strategiumLayout.js's header
+// for the deliberate constraint reversal). Alliance membership is carried by
+// colour; only the faction nodes move, via a real d3-force simulation
+// anchored to a prominence-ranked radial scatter per cluster (spec §4,
+// strategiumLayout.js). Read factions dim (spec §5's read-state overlay) so
+// the unread flank stands out.
 //
 // Expansion is a two-state machine (spec §5/§7): TRANSIENT hover-expand
 // (collapses the moment the pointer leaves) and LATCHED recommendation-
@@ -27,8 +29,6 @@ import { useForceLayout } from 'hooks/useForceLayout';
 // container) -- the map genuinely fills whatever height/width its panel is
 // given, and node radius scales as a fraction of that real box height.
 
-const LABEL_HEIGHT_FRACTION = 0.1;
-const LABEL_HEIGHT_MIN = 28;
 const PARENT_EXPANDED_SCALE = 1.18;
 const DEFOCUS_OPACITY = 0.25;
 const DEFOCUS_BLUR = '2px';
@@ -125,31 +125,18 @@ export function StrategiumMap({
   // must not collapse or replace it (spec §5's "overrides hover-collapse").
   const activeExpanded = expandedKey ?? hoverKey;
 
-  const labelHeight = Math.max(LABEL_HEIGHT_MIN, height * LABEL_HEIGHT_FRACTION);
-  const boxHeight = Math.max(0, height - labelHeight);
-
-  const widths = hasSize ? boxWidths(tree.alliances, width) : [];
   const maxBookCount = Math.max(
     1,
     ...tree.alliances.flatMap((a) => a.nodes.map((n) => n.bookCount))
   );
 
-  let cursorX = 0;
-  const boxes = tree.alliances.map((alliance, i) => {
-    const boxWidth = widths[i] || 0;
-    const box = { alliance, x: cursorX, width: boxWidth };
-    cursorX += boxWidth + BOX_GAP;
-    return box;
-  });
-
   // Rest anchors for the TOP-LEVEL nodes only -- the base scatter never
   // reshuffles when something expands, since expansion is additive now.
-  const topAnchorsByAlliance = useMemo(() => {
-    const map = {};
-    for (const { alliance, width: boxWidth } of boxes) {
-      map[alliance.key] = layoutBox(alliance.nodes, boxWidth, boxHeight, maxBookCount);
-    }
-    return map;
+  // All anchor coordinates are GLOBAL canvas pixels (the cluster centroid is
+  // already added inside layoutClusters).
+  const clusters = useMemo(() => {
+    if (!hasSize) return {};
+    return layoutClusters(tree.alliances, width, height, maxBookCount);
     // eslint-disable-next-line
   }, [tree, width, height]);
 
@@ -175,13 +162,13 @@ export function StrategiumMap({
   const simNodes = useMemo(() => {
     if (!hasSize) return [];
     const flat = [];
-    for (const { alliance, x } of boxes) {
-      const anchors = topAnchorsByAlliance[alliance.key] || [];
+    for (const alliance of tree.alliances) {
+      const anchors = clusters[alliance.key]?.anchors || [];
       for (const anchor of anchors) {
         const isExpandedParent = expandedParent && anchor.key === expandedParent.node.key;
         flat.push({
           key: anchor.key,
-          x: anchor.x + x,
+          x: anchor.x,
           y: anchor.y,
           r: isExpandedParent ? anchor.r * PARENT_EXPANDED_SCALE : anchor.r,
           boxKey: alliance.key,
@@ -194,21 +181,24 @@ export function StrategiumMap({
           // Ring radius must clear the parent's SCALED-UP size, not its base
           // anchor radius, or satellites would start slightly inside it.
           const boostedParent = { ...parentAnchor, r: parentAnchor.r * PARENT_EXPANDED_SCALE };
-          const sats = satelliteAnchors(boostedParent, expandedParent.node.children, boxHeight, maxBookCount);
+          const sats = satelliteAnchors(boostedParent, expandedParent.node.children, maxBookCount);
           for (const s of sats) {
-            flat.push({ key: s.key, x: s.x + x, y: s.y, r: s.r, boxKey: alliance.key });
+            flat.push({ key: s.key, x: s.x, y: s.y, r: s.r, boxKey: alliance.key });
           }
         }
       }
     }
     return flat;
     // eslint-disable-next-line
-  }, [topAnchorsByAlliance, expandedParent, width, height]);
+  }, [clusters, expandedParent, width, height]);
 
+  // Transitional shim until useForceLayout grows a canvas-bounds API: every
+  // alliance maps to the SAME full-canvas rect, so the hook's existing
+  // per-box clamp degenerates to a single global clamp with zero hook changes.
   const boxesByKey = useMemo(() => {
     const map = {};
-    for (const { alliance, x, width: boxWidth } of boxes) {
-      map[alliance.key] = { left: x, top: 0, width: boxWidth, height: boxHeight };
+    for (const alliance of tree.alliances) {
+      map[alliance.key] = { left: 0, top: 0, width, height };
     }
     return map;
     // eslint-disable-next-line
@@ -243,10 +233,9 @@ export function StrategiumMap({
     onSelectFaction?.(child.key, parentKey);
   };
 
-  const renderNode = ({ key, label, sigil, bookCount, isRead, allianceKey, boxX, isExpandedParent, onClick, onEnter, onLeave }) => {
+  const renderNode = ({ key, label, sigil, bookCount, isRead, allianceKey, isExpandedParent, onClick, onEnter, onLeave }) => {
     const pos = positions[key];
     if (!pos) return null;
-    const localX = pos.x - boxX;
     // Focus (expansion) and read-state are independent signals -- a docked
     // satellite that happens to be fully read still dims for read-state,
     // exactly like any top-level node.
@@ -263,7 +252,7 @@ export function StrategiumMap({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
           className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer transition-[opacity,filter] duration-300"
           style={{
-            left: localX,
+            left: pos.x,
             top: pos.y,
             width: pos.r * 2,
             height: pos.r * 2,
@@ -288,7 +277,7 @@ export function StrategiumMap({
             ALLIANCE_TEXT[allianceKey]
           )}
           style={{
-            left: localX,
+            left: pos.x,
             top: pos.y + pos.r + 4,
             width: 140,
             fontSize: 10,
@@ -307,87 +296,64 @@ export function StrategiumMap({
 
   return (
     <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
-      {hasSize && boxes.map(({ alliance, x, width: boxWidth }) => (
-        <React.Fragment key={alliance.key}>
-          {/* Header docked onto the territory's top edge: a rule in the
-              alliance tint, fading out to both sides, with the label sitting
-              on a small cutout patch so the line doesn't cross the letters --
-              anchors the heading TO its territory instead of floating loose
-              above empty space. */}
+      {/* Nebula layer: borderless soft colour fields behind each cluster --
+          no boxes, no contours, no header rules. Sized from the cluster's
+          actual spread so the field hugs its stars. */}
+      {hasSize && tree.alliances.map((alliance) => {
+        const cluster = clusters[alliance.key];
+        if (!cluster || cluster.anchors.length === 0) return null;
+        const nebulaDiameter = (cluster.spread + 60) * 2;
+        return (
           <div
-            className="absolute flex items-center justify-center"
-            style={{ left: x, top: 0, width: boxWidth, height: labelHeight }}
-          >
-            <div
-              className="absolute left-0 right-0"
-              style={{
-                top: '50%',
-                height: 1,
-                background: `linear-gradient(to right, transparent, ${ALLIANCE_COLOR[alliance.key](0.4)} 50%, transparent)`,
-              }}
-            />
-            <span
-              className={cn(
-                'relative font-tactical text-xs tracking-[0.3em] uppercase px-3',
-                ALLIANCE_TEXT[alliance.key]
-              )}
-              style={{ background: 'hsl(var(--void) / 0.55)' }}
-            >
-              {alliance.label}
-            </span>
-          </div>
-
-          <div
-            className="absolute"
+            key={`nebula-${alliance.key}`}
+            className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             style={{
-              left: x,
-              top: labelHeight,
-              width: boxWidth,
-              height: boxHeight,
+              left: cluster.cx,
+              top: cluster.cy,
+              width: nebulaDiameter,
+              height: nebulaDiameter,
               background: ALLIANCE_FIELD[alliance.key],
-              border: `1px solid ${ALLIANCE_COLOR[alliance.key](0.25)}`,
-              borderRadius: 24,
             }}
-          >
-            {alliance.nodes.map((node) =>
+          />
+        );
+      })}
+
+      {hasSize && tree.alliances.map((alliance) => (
+        <React.Fragment key={alliance.key}>
+          {alliance.nodes.map((node) =>
+            renderNode({
+              key: node.key,
+              label: node.label,
+              sigil: node.sigil,
+              bookCount: node.bookCount,
+              isRead: node.isRead,
+              allianceKey: alliance.key,
+              expandable: (node.children || []).length > 0,
+              isSatellite: false,
+              isExpandedParent: expandedParent?.node.key === node.key,
+              onClick: () => handleTopNodeClick(node),
+              onEnter: () => (node.children || []).length > 0 && setHoverKey(node.key),
+              onLeave: () => setHoverKey((k) => (k === node.key ? null : k)),
+            })
+          )}
+
+          {expandedParent && expandedParent.allianceKey === alliance.key &&
+            expandedParent.node.children.map((child) =>
               renderNode({
-                key: node.key,
-                label: node.label,
-                sigil: node.sigil,
-                bookCount: node.bookCount,
-                isRead: node.isRead,
+                key: child.key,
+                label: child.label,
+                sigil: child.sigil,
+                bookCount: child.bookCount,
+                isRead: child.isRead,
                 allianceKey: alliance.key,
-                boxX: x,
-                boxWidth,
-                expandable: (node.children || []).length > 0,
-                isSatellite: false,
-                isExpandedParent: expandedParent?.node.key === node.key,
-                onClick: () => handleTopNodeClick(node),
-                onEnter: () => (node.children || []).length > 0 && setHoverKey(node.key),
-                onLeave: () => setHoverKey((k) => (k === node.key ? null : k)),
+                expandable: false,
+                isSatellite: true,
+                isExpandedParent: false,
+                onClick: () => handleSatelliteClick(child, expandedParent.node.key),
+                onEnter: () => {},
+                onLeave: () => {},
               })
             )}
-
-            {expandedParent && expandedParent.allianceKey === alliance.key &&
-              expandedParent.node.children.map((child) =>
-                renderNode({
-                  key: child.key,
-                  label: child.label,
-                  sigil: child.sigil,
-                  bookCount: child.bookCount,
-                  isRead: child.isRead,
-                  allianceKey: alliance.key,
-                  boxX: x,
-                  boxWidth,
-                  expandable: false,
-                  isSatellite: true,
-                  isExpandedParent: false,
-                  onClick: () => handleSatelliteClick(child, expandedParent.node.key),
-                  onEnter: () => {},
-                  onLeave: () => {},
-                })
-              )}
-          </div>
         </React.Fragment>
       ))}
 
