@@ -38,6 +38,20 @@ const SIGIL_SCALE = 0.75;
 // on an 18px-radius star is +33%, on a 30px-radius star only +20%).
 const RING_SCALE = 1.3;
 
+// Alliance captions anchor to a fixed CANVAS corner, independent of where
+// that alliance's own cluster happens to sit -- Tim's explicit ask (Imperium
+// top-left, Chaos top-right, Xenos bottom-right). Previously the caption
+// position was computed from the cluster's own cx/cy/spread (a leftover
+// from the original per-alliance box-header design, where the header sat
+// directly above its own box) and never revisited as layouts changed --
+// which is why it could drift toward canvas-center territory and overlap
+// unrelated content once a cluster's spread grew large.
+const CAPTION_CORNER = {
+  imperium: { left: 24, top: 24 },
+  chaos: { right: 24, top: 24 },
+  xenos: { right: 24, bottom: 24 },
+};
+
 const ALLIANCE_TEXT = {
   imperium: 'text-gold',
   chaos: 'text-purple-400',
@@ -318,21 +332,21 @@ export function StrategiumMap({
         );
       })}
 
-      {/* One small caption per cluster -- the only orientation aid now that
-          the bordered box + docked header rule are gone. Clamped to stay
-          on-canvas even when a cluster sits near the top edge. */}
+      {/* One caption per alliance, anchored to a fixed canvas corner (see
+          CAPTION_CORNER) -- independent of cluster geometry, so it never
+          drifts toward the middle of the canvas or over another alliance's
+          content. */}
       {hasSize && tree.alliances.map((alliance) => {
         const cluster = clusters[alliance.key];
         if (!cluster || cluster.anchors.length === 0) return null;
-        const top = Math.min(Math.max(cluster.cy - cluster.spread - 34, 8), height - 24);
         return (
           <span
             key={`caption-${alliance.key}`}
             className={cn(
-              'absolute -translate-x-1/2 pointer-events-none font-tactical text-sm font-bold tracking-[0.3em] uppercase opacity-80',
+              'absolute pointer-events-none font-tactical text-base font-bold tracking-[0.35em] uppercase opacity-90',
               ALLIANCE_TEXT[alliance.key]
             )}
-            style={{ left: cluster.cx, top }}
+            style={CAPTION_CORNER[alliance.key]}
           >
             {alliance.label}
           </span>
