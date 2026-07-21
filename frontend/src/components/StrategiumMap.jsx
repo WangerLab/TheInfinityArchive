@@ -42,6 +42,16 @@ import { useStellarDrift } from 'hooks/useStellarDrift';
 // on an 18px-radius star is +33%, on a 30px-radius star only +20%).
 const RING_SCALE = 1.3;
 
+// Temporarily off: Tim's ask after the ring-placement live test was to get
+// cluster spacing right FIRST (ring blocks were cramped, capping their
+// radius well below what placeHubRing wanted) and re-introduce the lines
+// afterward, with a gentler bow (the current formula was tuned for the old
+// flat-grid layout's long, mixed-distance pairs -- a ring's short,
+// roughly-equal hub-to-spoke distances made the same bow read as an
+// exaggerated loop). One flag, trivially reversible -- the edge data and
+// curvedConnectorPath are untouched, only the render is gated off.
+const SHOW_CONSTELLATION_LINES = false;
+
 // Alliance captions anchor to a fixed CANVAS corner, independent of where
 // that alliance's own cluster happens to sit -- Tim's explicit ask (Imperium
 // top-left, Chaos top-right, Xenos bottom-right). Previously the caption
@@ -370,7 +380,7 @@ export function StrategiumMap({
           can never sit on top of a label or a star. Endpoints read from the
           same live `positions` map the nodes use, so lines breathe with the
           wobble instead of staying pinned to the static anchors. */}
-      {hasSize && (
+      {SHOW_CONSTELLATION_LINES && hasSize && (
         <svg
           className="absolute inset-0 pointer-events-none"
           width={width}
