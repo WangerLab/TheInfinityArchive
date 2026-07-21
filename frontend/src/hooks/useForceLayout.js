@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
 
-// Every node carries a label underneath it -- collision must clear the whole
-// node+label footprint, not just the sphere, or two labels can overlap even
-// while their spheres look politely spaced apart.
-const COLLIDE_PADDING = 14;
-// Extra clearance reserved at the BOTTOM of each box only, so a node's label
-// never clips past its territory's lower edge even after physics displaces
-// it toward the rim.
-const LABEL_BOTTOM_CLEARANCE = 24;
+// Small constellation stars mostly show their label on hover now (see
+// StrategiumMap's label policy), so collision only needs to clear the star's
+// own core + glow footprint, not a permanent label block -- a soft halo
+// overlap between neighbours is fine (nebula feel), only the cores must not
+// touch.
+const COLLIDE_PADDING = 6;
+// Keep-out from the canvas edge, and extra clearance at the BOTTOM only, so
+// the few permanent/hover/expanded labels never clip past the canvas edge
+// even after physics displaces a node toward the rim.
+const EDGE_MARGIN = 8;
+const BOTTOM_LABEL_CLEARANCE = 16;
 // Single dial between "fixed slots" and "gas waft", set once in code -- not a
 // user setting (spec §4/§7). Mid-firm: nodes read as recognisable slots but
 // yield when a neighbour is displaced (expansion, collision).
@@ -55,11 +58,12 @@ function toPositionMap(nodes) {
   return map;
 }
 
-// Runs a live d3-force simulation over `nodes` (each { key, x, y, r, boxKey },
-// x/y being the rest-anchor position in canvas coordinates) and clamps every
-// node to its own alliance box's rectangle on every tick (spec §4:
-// "per-tick bounding-box clamp"). forceCollide keeps nodes from overlapping;
-// anchored forceX/forceY pull each node back to its rest slot.
+// Runs a live d3-force simulation over `nodes` (each { key, x, y, r }, x/y
+// being the rest-anchor position in canvas coordinates) and clamps every node
+// to the shared canvas rect on every tick (spec §4: "per-tick bounding-box
+// clamp" -- now a single shared space rather than one rect per alliance,
+// since the alliance boxes are gone). forceCollide keeps nodes from
+// overlapping; anchored forceX/forceY pull each node back to its rest slot.
 //
 // On desktop this runs FOREVER at a low held alpha (alphaDecay(0) means d3
 // never decays it, so the sim never crosses alphaMin and never auto-stops)
@@ -68,7 +72,7 @@ function toPositionMap(nodes) {
 // devices and under prefers-reduced-motion, the sim behaves like a one-shot
 // settle: default alpha decay (or skipped entirely for reduced-motion,
 // snapping straight to the anchor position).
-export function useForceLayout(nodes, boxesByKey) {
+export function useForceLayout(nodes, bounds) {
   const [positions, setPositions] = useState(() => toPositionMap(nodes));
   const simRef = useRef(null);
   const rafRef = useRef(null);
@@ -108,10 +112,9 @@ export function useForceLayout(nodes, boxesByKey) {
           n.vx += (Math.random() - 0.5) * JITTER_STRENGTH;
           n.vy += (Math.random() - 0.5) * JITTER_STRENGTH;
         }
-        const box = boxesByKey[n.boxKey];
-        if (!box) continue;
-        n.x = clamp(n.x, box.left + n.r, box.left + box.width - n.r);
-        n.y = clamp(n.y, box.top + n.r, box.top + box.height - n.r - LABEL_BOTTOM_CLEARANCE);
+        if (!bounds) continue;
+        n.x = clamp(n.x, EDGE_MARGIN + n.r, bounds.width - EDGE_MARGIN - n.r);
+        n.y = clamp(n.y, EDGE_MARGIN + n.r, bounds.height - n.r - BOTTOM_LABEL_CLEARANCE);
       }
       if (!rafScheduled) {
         rafScheduled = true;
@@ -125,7 +128,7 @@ export function useForceLayout(nodes, boxesByKey) {
       simRef.current = null;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [nodes, boxesByKey]);
+  }, [nodes, bounds]);
 
   return positions;
 }

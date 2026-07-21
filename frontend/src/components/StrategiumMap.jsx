@@ -175,7 +175,6 @@ export function StrategiumMap({
           x: anchor.x,
           y: anchor.y,
           r: isExpandedParent ? anchor.r * PARENT_EXPANDED_SCALE : anchor.r,
-          boxKey: alliance.key,
         });
       }
 
@@ -187,7 +186,7 @@ export function StrategiumMap({
           const boostedParent = { ...parentAnchor, r: parentAnchor.r * PARENT_EXPANDED_SCALE };
           const sats = satelliteAnchors(boostedParent, expandedParent.node.children, maxBookCount);
           for (const s of sats) {
-            flat.push({ key: s.key, x: s.x, y: s.y, r: s.r, boxKey: alliance.key });
+            flat.push({ key: s.key, x: s.x, y: s.y, r: s.r });
           }
         }
       }
@@ -196,19 +195,8 @@ export function StrategiumMap({
     // eslint-disable-next-line
   }, [clusters, expandedParent, width, height]);
 
-  // Transitional shim until useForceLayout grows a canvas-bounds API: every
-  // alliance maps to the SAME full-canvas rect, so the hook's existing
-  // per-box clamp degenerates to a single global clamp with zero hook changes.
-  const boxesByKey = useMemo(() => {
-    const map = {};
-    for (const alliance of tree.alliances) {
-      map[alliance.key] = { left: 0, top: 0, width, height };
-    }
-    return map;
-    // eslint-disable-next-line
-  }, [tree, width, height]);
-
-  const positions = useForceLayout(simNodes, boxesByKey);
+  const bounds = useMemo(() => ({ width, height }), [width, height]);
+  const positions = useForceLayout(simNodes, bounds);
 
   // Resolve each recommendation vector's endpoint: prefer the target's own
   // (satellite) position if its parent happens to be the expanded one right
