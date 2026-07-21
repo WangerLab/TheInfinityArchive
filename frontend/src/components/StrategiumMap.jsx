@@ -100,6 +100,24 @@ function curvedPath(x1, y1, x2, y2, bow) {
   return { d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`, midX: cx, midY: cy };
 }
 
+// Tiny deterministic PRNG (mulberry32) -- a fixed seed means the decorative
+// starfield's dot positions are stable across every render AND every resize
+// (they're generated once in fractional 0-1 space and scaled to the
+// container's real pixels at render time), never reshuffling underfoot.
+function mulberry32(seed) {
+  let a = seed;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const STARFIELD_SEED = 1337;
+const STARFIELD_COUNT = 110;
+
 function useMeasuredSize() {
   const ref = useRef(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -158,6 +176,20 @@ export function StrategiumMap({
     );
     // eslint-disable-next-line
   }, [tree]);
+
+  // Decorative background dust: a fixed seed generates the SAME dots every
+  // render, in fractional 0-1 coordinates so a resize just rescales them
+  // rather than reshuffling the field underfoot. Purely a pseudo-depth cue --
+  // never interactive, never read for layout.
+  const starfield = useMemo(() => {
+    const rand = mulberry32(STARFIELD_SEED);
+    return Array.from({ length: STARFIELD_COUNT }, () => ({
+      fx: rand(),
+      fy: rand(),
+      r: 0.5 + rand() * 0.7,
+      opacity: 0.12 + rand() * 0.23,
+    }));
+  }, []);
 
   // Rest anchors for the TOP-LEVEL nodes only -- the base scatter never
   // reshuffles when something expands, since expansion is additive now.
@@ -358,6 +390,27 @@ export function StrategiumMap({
 
   return (
     <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
+      {/* Background starfield: pseudo-depth dust, sits behind everything. */}
+      {hasSize && (
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          width={width}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
+        >
+          {starfield.map((s, i) => (
+            <circle
+              key={`dust-${i}`}
+              cx={s.fx * width}
+              cy={s.fy * height}
+              r={s.r}
+              fill="white"
+              opacity={s.opacity}
+            />
+          ))}
+        </svg>
+      )}
+
       {/* Nebula layer: borderless soft colour fields behind each cluster --
           no boxes, no contours, no header rules. Sized from the cluster's
           actual spread so the field hugs its stars without a hard edge. */}
