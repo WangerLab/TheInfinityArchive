@@ -39,6 +39,20 @@ const ALLIANCE_TEXT = {
   xenos: 'text-plasma',
 };
 
+// Per-alliance node tint, returned at a given alpha. `--gold`/`--plasma` are
+// raw HSL triplets (index.css), correct to wrap in hsl(); chaos purple-400
+// has no CSS-var equivalent so it's an RGB literal, same as ALLIANCE_FIELD
+// below. Node styling previously wrote hsl(var(--acc) / a) -- but --acc
+// (ViewBackdrop) is already a COMPLETE hsl(...) value for this whole page
+// (plasma), so that nested hsl(hsl(...) / a) was invalid CSS the browser
+// silently dropped: the sphere gradient and glow never rendered at all,
+// only the bare sigil. This resolves per-ALLIANCE colour directly instead.
+const ALLIANCE_COLOR = {
+  imperium: (a) => `hsl(var(--gold) / ${a})`,
+  chaos: (a) => `rgb(192 132 252 / ${a})`,
+  xenos: (a) => `hsl(var(--plasma) / ${a})`,
+};
+
 // Soft radial field per alliance -- a volume of colour with no hard edge,
 // replacing the earlier bordered box. Values are alliance-tinted CSS
 // variables already defined globally (index.css), so this stays in step
@@ -255,8 +269,8 @@ export function StrategiumMap({
             height: pos.r * 2,
             opacity: isFocused ? (isRead ? 0.35 : 1) : DEFOCUS_OPACITY,
             filter: isFocused ? 'none' : `blur(${DEFOCUS_BLUR})`,
-            background: `radial-gradient(circle at 34% 30%, hsl(var(--acc) / 0.95), hsl(var(--acc) / 0.28) 62%, hsl(var(--void) / 0.92) 100%)`,
-            boxShadow: `0 0 ${Math.max(6, pos.r * 0.9)}px hsl(var(--acc) / 0.55), inset 0 0 ${pos.r * 0.5}px hsl(var(--void) / 0.6)`,
+            background: `radial-gradient(circle at 34% 30%, ${ALLIANCE_COLOR[allianceKey](0.95)}, ${ALLIANCE_COLOR[allianceKey](0.28)} 62%, hsl(var(--void) / 0.92) 100%)`,
+            boxShadow: `0 0 ${Math.max(6, pos.r * 0.9)}px ${ALLIANCE_COLOR[allianceKey](0.55)}, inset 0 0 ${pos.r * 0.5}px hsl(var(--void) / 0.6)`,
             border: isExpandedParent
               ? '2px solid hsl(var(--gold) / 0.85)'
               : key === positionKey
