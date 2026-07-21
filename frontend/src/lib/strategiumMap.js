@@ -8,6 +8,71 @@
 const ALLIANCE_LABEL = { imperium: 'Imperium', chaos: 'Chaos', xenos: 'Xenos' };
 const ALLIANCE_ORDER = ['imperium', 'chaos', 'xenos'];
 
+// A faction NODE's sigil is about the faction itself, never about who
+// narrates one of its books -- pooling book-level POV sigils (the old
+// approach) gave Tyranids an orange Ultramarines glyph, because Tyranids'
+// only book (Leviathan) happens to be Ultramarine-narrated. This is a
+// straight inversion of FactionSigil.jsx's SIGIL_LABEL (sigil key -> label)
+// back to label -> key, plus explicit overrides for umbrella/generic nodes
+// that have no single narrating book to derive from. Curated once, here --
+// never re-derived from votes. A name absent from this table (e.g. a
+// catch-all that was resolved to NULL faction_primary) returns null, which
+// FactionSigil already renders as the correctly-tinted alliance fallback
+// glyph -- never a crash, never a wrong glyph.
+const FACTION_SIGIL = {
+  // Imperium
+  'Astra Militarum': 'astra_militarum',
+  'Adeptus Astartes': 'astartes_generic',
+  'Space Marines': 'astartes_generic',
+  'Soul Drinkers': 'astartes_generic', // no dedicated asset, per I-1 migration
+  'Adepta Sororitas': 'sororitas',
+  'Inquisition': 'inquisition',
+  'Adeptus Mechanicus': 'admech',
+  'Ultramarines': 'ultramarines',
+  'Blood Angels': 'blood_angels',
+  'Dark Angels': 'dark_angels',
+  'Adeptus Custodes': 'custodes',
+  'Imperial Knights': 'imperial_knights',
+  'Adeptus Arbites': 'arbites',
+  'Space Wolves': 'space_wolves',
+  'Salamanders': 'salamanders',
+  'Deathwatch': 'deathwatch',
+  'Imperial Fists': 'imperial_fists',
+  'Grey Knights': 'grey_knights',
+  'Officio Assassinorum': null,
+  'Navis Nobilite': 'navis',
+  'Imperial Navy': null, // distinct in-universe body from Navis Nobilite (M-2)
+  'Enforcers': null,
+
+  // Chaos
+  'Chaos Undivided': 'chaos_generic',
+  'Chaos Space Marines': 'chaos_generic',
+  'Red Corsairs': 'chaos_generic',
+  'Word Bearers': 'word_bearers',
+  'Night Lords': 'night_lords',
+  'Alpha Legion': 'alpha_legion',
+  'Black Legion': 'black_legion',
+  'Iron Warriors': 'iron_warriors',
+  'Death Guard': 'death_guard',
+  'Thousand Sons': 'thousand_sons',
+  'World Eaters': 'world_eaters',
+  "Emperor's Children": 'emperors_children',
+
+  // Xenos
+  'Aeldari': 'aeldari',
+  'Drukhari': 'drukhari',
+  'Necrons': 'necrons',
+  'Orks': 'orks',
+  "T'au": 'tau',
+  'Tyranids': 'tyranids',
+  'Genestealer Cults': 'genestealer',
+  'Leagues of Votann': 'votann',
+};
+
+function sigilForFaction(name) {
+  return FACTION_SIGIL[name] ?? null;
+}
+
 // Flatten every book row -- entries, omnibus parents, and their children --
 // into one list, each unit carrying its own faction identity. An omnibus
 // parent and its children are each counted, mirroring the DB's own row-count
@@ -60,11 +125,11 @@ export function buildFactionTree(projectData, bookProgress) {
   if (!projectData) return { alliances: [] };
   const units = flattenAll(projectData).filter((u) => u.unit.factionPrimary);
 
-  const top = new Map(); // nodeKey -> { allianceVotes, sigilVotes, entryIds }
-  const children = new Map(); // parentKey -> Map<childKey, { allianceVotes, sigilVotes, entryIds }>
+  const top = new Map(); // nodeKey -> { allianceVotes, entryIds }
+  const children = new Map(); // parentKey -> Map<childKey, { allianceVotes, entryIds }>
 
   const touch = (map, key) => {
-    if (!map.has(key)) map.set(key, { allianceVotes: new Map(), sigilVotes: new Map(), entryIds: [] });
+    if (!map.has(key)) map.set(key, { allianceVotes: new Map(), entryIds: [] });
     return map.get(key);
   };
 
@@ -76,29 +141,25 @@ export function buildFactionTree(projectData, bookProgress) {
       const kids = children.get(parent) || new Map();
       const child = touch(kids, own);
       voteFor(child.allianceVotes, unit.grandAlliance);
-      voteFor(child.sigilVotes, unit.factionSigil);
       child.entryIds.push(unit.entryId);
       children.set(parent, kids);
       touch(top, parent); // register the umbrella even with zero direct books
     } else {
       const node = touch(top, own);
       voteFor(node.allianceVotes, unit.grandAlliance);
-      voteFor(node.sigilVotes, unit.factionSigil);
       node.entryIds.push(unit.entryId);
     }
   }
 
-  // Pool a vote-map field (allianceVotes or sigilVotes) across every child of
-  // an umbrella, weighted implicitly since each child's map already holds one
-  // vote per book. Used whenever the umbrella has no votes of its own (no
-  // direct books) -- it must still resolve to a real alliance/sigil rather
-  // than fall through to the unaligned/no-sigil default.
-  const poolChildVotes = (key, field) => {
+  // Pool alliance votes across every child of an umbrella. Used whenever the
+  // umbrella has no votes of its own (no direct books) -- it must still
+  // resolve to a real alliance rather than fall through to 'unaligned'.
+  const poolChildAllianceVotes = (key) => {
     const kids = children.get(key);
     if (!kids) return new Map();
     const pooled = new Map();
     for (const child of kids.values()) {
-      for (const [value, n] of child[field]) {
+      for (const [value, n] of child.allianceVotes) {
         pooled.set(value, (pooled.get(value) || 0) + n);
       }
     }
@@ -108,7 +169,7 @@ export function buildFactionTree(projectData, bookProgress) {
   const allianceOf = (key, node) => {
     const own = winnerOf(node.allianceVotes);
     if (own) return own;
-    return winnerOf(poolChildVotes(key, 'allianceVotes')) || 'unaligned';
+    return winnerOf(poolChildAllianceVotes(key)) || 'unaligned';
   };
 
   const byAlliance = new Map();
@@ -121,7 +182,7 @@ export function buildFactionTree(projectData, bookProgress) {
       ? [...kids.entries()].map(([childKey, child]) => ({
           key: childKey,
           label: childKey,
-          sigil: winnerOf(child.sigilVotes),
+          sigil: sigilForFaction(childKey),
           bookCount: child.entryIds.length,
           isRead: child.entryIds.length > 0 && child.entryIds.every((id) => isUnitRead(id, bookProgress)),
           parentKey: key,
@@ -141,17 +202,10 @@ export function buildFactionTree(projectData, bookProgress) {
       continue;
     }
 
-    // An umbrella with real grouping value (2+ children, or its own books)
-    // may still have no sigil votes of its own -- derive one from its
-    // children's sigils (mirrors useCatalog's own omnibus-parent fallback)
-    // instead of silently degrading every such node to the same generic
-    // alliance glyph.
-    const sigil = winnerOf(node.sigilVotes) || winnerOf(poolChildVotes(key, 'sigilVotes'));
-
     byAlliance.get(alliance).push({
       key,
       label: key,
-      sigil,
+      sigil: sigilForFaction(key),
       bookCount: ownBookCount + childBookCount,
       isRead:
         ownBookCount + childBookCount > 0 &&
