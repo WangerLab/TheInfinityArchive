@@ -360,11 +360,11 @@ export function StrategiumMap({
     <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
       {/* Nebula layer: borderless soft colour fields behind each cluster --
           no boxes, no contours, no header rules. Sized from the cluster's
-          actual spread so the field hugs its stars. */}
+          actual spread so the field hugs its stars without a hard edge. */}
       {hasSize && tree.alliances.map((alliance) => {
         const cluster = clusters[alliance.key];
         if (!cluster || cluster.anchors.length === 0) return null;
-        const nebulaDiameter = (cluster.spread + 60) * 2;
+        const nebulaRadius = cluster.spread * 1.6 + 40;
         return (
           <div
             key={`nebula-${alliance.key}`}
@@ -372,11 +372,32 @@ export function StrategiumMap({
             style={{
               left: cluster.cx,
               top: cluster.cy,
-              width: nebulaDiameter,
-              height: nebulaDiameter,
+              width: nebulaRadius * 2,
+              height: nebulaRadius * 2,
               background: ALLIANCE_FIELD[alliance.key],
             }}
           />
+        );
+      })}
+
+      {/* One small caption per cluster -- the only orientation aid now that
+          the bordered box + docked header rule are gone. Clamped to stay
+          on-canvas even when a cluster sits near the top edge. */}
+      {hasSize && tree.alliances.map((alliance) => {
+        const cluster = clusters[alliance.key];
+        if (!cluster || cluster.anchors.length === 0) return null;
+        const top = Math.min(Math.max(cluster.cy - cluster.spread - 34, 8), height - 24);
+        return (
+          <span
+            key={`caption-${alliance.key}`}
+            className={cn(
+              'absolute -translate-x-1/2 pointer-events-none font-tactical text-xs tracking-[0.3em] uppercase opacity-50',
+              ALLIANCE_TEXT[alliance.key]
+            )}
+            style={{ left: cluster.cx, top }}
+          >
+            {alliance.label}
+          </span>
         );
       })}
 
