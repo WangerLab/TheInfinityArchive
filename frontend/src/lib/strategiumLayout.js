@@ -90,13 +90,58 @@ const CLUSTER_ANCHORS_TALL = {
   xenos: { fx: 0.5, fy: 0.82 },
 };
 
-// Keep-out margin subtracted from each cluster's region radius so rest
-// anchors never hug the canvas edge or a neighbouring cluster's half-way line.
+// Keep-out margin subtracted from each cluster's territory extents so rest
+// anchors never hug the canvas edge or a neighbouring cluster's centroid.
 const EDGE_KEEPOUT = 18;
 
-// How much of its available region a cluster fills at rest (positions only,
-// never radii -- see the scale computation below for why).
+// How much of its available territory a cluster fills at rest (positions
+// only, never radii -- see the scale computation below for why).
 const FILL_FRACTION = 0.9;
+
+// Per-cluster territory: FOUR independent extents (left/right/top/bottom),
+// not one isotropic radius. An isotropic circle is capped in every direction
+// by whichever neighbour/edge is closest -- Chaos and Xenos share the right
+// half of the canvas stacked vertically, so their mutual (vertical) distance
+// capped their ENTIRE circle, even though there is plenty of free WIDTH to
+// their right that a circle can never reach. Each other cluster constrains
+// only the axis along which it's separated from this one (whichever of
+// dx/dy is larger for that pair), using the FULL centroid-to-centroid
+// distance -- a generous fill budget, not a strict partition guarantee (the
+// real non-overlap guarantee is the shared canvas clamp + forceCollide in
+// useForceLayout.js). Verified against the real WIDE anchors on a ~1230x900
+// canvas: Imperium's rightward reach grows to ~562px (was ~170px isotropic),
+// Chaos/Xenos's reach toward the canvas's right edge grows to ~302px, and
+// the vertical gap BETWEEN Chaos and Xenos (Tim's actual complaint) grows to
+// ~432px each. Degenerates correctly for the TALL (single-column) anchors
+// too: every pair there has dx=0, so every neighbour is automatically
+// classified dy-dominant and left/right fall back to plain edge distance --
+// no special-casing needed.
+function computeTerritory(cx, cy, centers, selfKey, width, height) {
+  let left = cx;
+  let right = width - cx;
+  let top = cy;
+  let bottom = height - cy;
+  for (const other of centers) {
+    if (other.alliance.key === selfKey) continue;
+    const dx = other.cx - cx;
+    const dy = other.cy - cy;
+    const dist = Math.hypot(dx, dy);
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) right = Math.min(right, dist);
+      else left = Math.min(left, dist);
+    } else if (dy > 0) {
+      bottom = Math.min(bottom, dist);
+    } else {
+      top = Math.min(top, dist);
+    }
+  }
+  return {
+    left: Math.max(1, left - EDGE_KEEPOUT),
+    right: Math.max(1, right - EDGE_KEEPOUT),
+    top: Math.max(1, top - EDGE_KEEPOUT),
+    bottom: Math.max(1, bottom - EDGE_KEEPOUT),
+  };
+}
 
 // Lay out all alliances into the shared width×height canvas. Returns
 // { [allianceKey]: { cx, cy, spread, anchors: [{ key, x, y, r }] } } with all
@@ -118,40 +163,39 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
       continue;
     }
 
-    // Region radius: nearest canvas edge, or half the distance to any other
-    // cluster centroid -- whichever is tighter -- minus a keep-out margin.
-    let regionRadius = Math.min(cx, width - cx, cy, height - cy);
-    for (const other of centers) {
-      if (other.alliance.key === alliance.key) continue;
-      regionRadius = Math.min(regionRadius, Math.hypot(other.cx - cx, other.cy - cy) / 2);
-    }
-    regionRadius = Math.max(1, regionRadius - EDGE_KEEPOUT);
+    const territory = computeTerritory(cx, cy, centers, alliance.key, width, height);
 
     const sorted = [...alliance.nodes].sort((a, b) => b.bookCount - a.bookCount);
     const radii = sorted.map((node) => radiusFor(node.bookCount, maxBookCount));
     const packed = packNodesRadially(sorted, radii);
 
     // Positional scale ONLY (never radii -- every star keeps its global,
-    // prominence-driven size regardless of cluster geometry): fills the
-    // available region rather than merely avoiding overflow. The previous
-    // Math.min(1, ...) could only ever SHRINK a cluster that overflowed its
-    // region -- it never grew one to use extra room, which is exactly what
-    // left a small-node-count cluster (Chaos) huddled tiny in the middle of
-    // a canvas half full of empty space, the bug Tim's live screenshot
-    // showed. Floored at 1 (never shrinks below the natural pack): shrinking
-    // would pull stars closer together without shrinking their radii too,
-    // breaking the greedy packer's own non-overlap guarantee. A cluster
-    // whose natural pack already exceeds its nominal region (a large
-    // Imperium, many nodes) is simply left at its natural size -- the shared
-    // canvas clamp (useForceLayout) and the real distance between cluster
-    // centroids are the actual backstop, not this scale.
-    const packedSpread = Math.max(1, ...packed.map((p) => Math.hypot(p.x, p.y) + p.r));
-    const scale = Math.max(1, (regionRadius * FILL_FRACTION) / packedSpread);
+    // prominence-driven size regardless of cluster geometry), applied
+    // independently per direction so a cluster can use a generous side while
+    // still respecting a tight one -- an isotropic single scale (the prior
+    // fix) is capped by whichever direction is tightest, exactly the
+    // structural limit computeTerritory's four extents exist to escape.
+    // Floored at 1 in every direction (never shrinks below the natural
+    // pack): shrinking would pull stars closer together without shrinking
+    // their radii too, breaking the greedy packer's own non-overlap
+    // guarantee. A cluster whose natural pack already exceeds its territory
+    // in some direction (a large Imperium) is simply left at its natural
+    // size there -- the shared canvas clamp (useForceLayout) and the real
+    // distance between cluster centroids are the actual backstop, not this
+    // scale.
+    const farthestXPos = Math.max(1, ...packed.map((p) => p.x + p.r));
+    const farthestXNeg = Math.max(1, ...packed.map((p) => -p.x + p.r));
+    const farthestYPos = Math.max(1, ...packed.map((p) => p.y + p.r));
+    const farthestYNeg = Math.max(1, ...packed.map((p) => -p.y + p.r));
+    const scaleXPos = Math.max(1, (territory.right * FILL_FRACTION) / farthestXPos);
+    const scaleXNeg = Math.max(1, (territory.left * FILL_FRACTION) / farthestXNeg);
+    const scaleYPos = Math.max(1, (territory.bottom * FILL_FRACTION) / farthestYPos);
+    const scaleYNeg = Math.max(1, (territory.top * FILL_FRACTION) / farthestYNeg);
 
     const anchors = packed.map((p) => ({
       key: p.key,
-      x: cx + p.x * scale,
-      y: cy + p.y * scale,
+      x: cx + p.x * (p.x >= 0 ? scaleXPos : scaleXNeg),
+      y: cy + p.y * (p.y >= 0 ? scaleYPos : scaleYNeg),
       r: p.r,
     }));
     const spread = Math.max(
