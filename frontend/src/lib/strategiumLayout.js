@@ -16,11 +16,14 @@
 // All dimensions are REAL measured pixels (StrategiumMap.jsx measures its
 // container via ResizeObserver), not a fixed virtual unit.
 
-// Global star radius bounds in pixels -- the constellation look wants small
-// star-points whose 20px sigil fits inside the smallest hit-area, with
-// prominence expressed as a subtle size/brightness step, never as big spheres.
-export const STAR_R_MIN = 11;
-export const STAR_R_MAX = 16;
+// Global star radius bounds in pixels. Bumped from 11-16 after Tim's live
+// test of the flattened, ~41-node map: with every faction visible at once
+// and real canvas room now that the hierarchy is flat (no satellite fan to
+// budget for), small icons were the binding legibility problem, not cluster
+// crowding. Prominence still expresses as a subtle size/brightness step
+// within this range, never as the dominant visual signal.
+export const STAR_R_MIN = 18;
+export const STAR_R_MAX = 30;
 
 export function radiusFor(bookCount, maxBookCount) {
   if (maxBookCount <= 0) return STAR_R_MIN;
@@ -37,7 +40,7 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 // golden-angle spiral outward per node until it clears every circle already
 // placed. Deterministic, non-overlapping, most-prominent node at dead center.
 const PACK_RADIAL_STEP = 2;
-const PACK_GAP = 10;
+const PACK_GAP = 14;
 
 function packNodesRadially(sortedNodes, radii) {
   const placed = [];
@@ -70,10 +73,15 @@ function packNodesRadially(sortedNodes, radii) {
 // clusters vertically instead.
 const TALL_ASPECT = 1.1;
 
+// Chaos and Xenos share the right half stacked vertically, so their region
+// budget is bound by their mutual distance as much as by any canvas edge;
+// fy 0.25/0.75 is the isotropic optimum for two circles splitting a column
+// (equal distance to the shared canvas edge and to each other), and fx 0.74
+// (was 0.72) claims a little more of the right edge's own margin.
 const CLUSTER_ANCHORS_WIDE = {
   imperium: { fx: 0.3, fy: 0.52 },
-  chaos: { fx: 0.72, fy: 0.27 },
-  xenos: { fx: 0.72, fy: 0.75 },
+  chaos: { fx: 0.74, fy: 0.25 },
+  xenos: { fx: 0.74, fy: 0.75 },
 };
 
 const CLUSTER_ANCHORS_TALL = {
@@ -84,7 +92,11 @@ const CLUSTER_ANCHORS_TALL = {
 
 // Keep-out margin subtracted from each cluster's region radius so rest
 // anchors never hug the canvas edge or a neighbouring cluster's half-way line.
-const EDGE_KEEPOUT = 24;
+const EDGE_KEEPOUT = 18;
+
+// How much of its available region a cluster fills at rest (positions only,
+// never radii -- see the scale computation below for why).
+const FILL_FRACTION = 0.9;
 
 // Lay out all alliances into the shared width×height canvas. Returns
 // { [allianceKey]: { cx, cy, spread, anchors: [{ key, x, y, r }] } } with all
@@ -119,10 +131,22 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
     const radii = sorted.map((node) => radiusFor(node.bookCount, maxBookCount));
     const packed = packNodesRadially(sorted, radii);
 
-    // Positional safety scale ONLY (never radii) for degenerate panel sizes;
-    // with global star sizes the packed spread normally fits with 2-3x room.
+    // Positional scale ONLY (never radii -- every star keeps its global,
+    // prominence-driven size regardless of cluster geometry): fills the
+    // available region rather than merely avoiding overflow. The previous
+    // Math.min(1, ...) could only ever SHRINK a cluster that overflowed its
+    // region -- it never grew one to use extra room, which is exactly what
+    // left a small-node-count cluster (Chaos) huddled tiny in the middle of
+    // a canvas half full of empty space, the bug Tim's live screenshot
+    // showed. Floored at 1 (never shrinks below the natural pack): shrinking
+    // would pull stars closer together without shrinking their radii too,
+    // breaking the greedy packer's own non-overlap guarantee. A cluster
+    // whose natural pack already exceeds its nominal region (a large
+    // Imperium, many nodes) is simply left at its natural size -- the shared
+    // canvas clamp (useForceLayout) and the real distance between cluster
+    // centroids are the actual backstop, not this scale.
     const packedSpread = Math.max(1, ...packed.map((p) => Math.hypot(p.x, p.y) + p.r));
-    const scale = Math.min(1, regionRadius / packedSpread);
+    const scale = Math.max(1, (regionRadius * FILL_FRACTION) / packedSpread);
 
     const anchors = packed.map((p) => ({
       key: p.key,

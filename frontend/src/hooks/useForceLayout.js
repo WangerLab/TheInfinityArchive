@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
 
-// Small constellation stars mostly show their label on hover now (see
-// StrategiumMap's label policy), so collision only needs to clear the star's
-// own core + glow footprint, not a permanent label block -- a soft halo
-// overlap between neighbours is fine (nebula feel), only the cores must not
-// touch.
-const COLLIDE_PADDING = 6;
+// Stars mostly show their label on hover now (see StrategiumMap's label
+// policy), so collision only needs to clear the star's own core + glow
+// footprint, not a permanent label block -- a soft halo overlap between
+// neighbours is fine (nebula feel), only the cores must not touch. Bumped
+// 6 -> 8 alongside the star-radius increase (strategiumLayout.js:
+// STAR_R_MIN/MAX) so live jitter keeps roughly the same proportional
+// breathing room around the now-bigger cores.
+const COLLIDE_PADDING = 8;
 // Keep-out from the canvas edge, and extra clearance at the BOTTOM only, so
 // the few permanent/hover/expanded labels never clip past the canvas edge
 // even after physics displaces a node toward the rim.
