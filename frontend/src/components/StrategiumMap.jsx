@@ -27,7 +27,15 @@ import { useForceLayout } from 'hooks/useForceLayout';
 //
 // The canvas is a MEASURED pixel space (ResizeObserver on the outer
 // container) -- the map genuinely fills whatever height/width its panel is
-// given, and node radius scales as a fraction of that real box height.
+// given; node radius is a fixed global size (strategiumLayout.js), so a
+// bigger panel gives every cluster more room to spread, not bigger stars.
+//
+// Labels: only the top N most prominent factions per cluster carry a
+// permanent tiny label (nodes are already prominence-sorted going in); every
+// other node's name appears on hover only. Satellites, the expanded parent,
+// and the current-position node always show their label while relevant --
+// otherwise an expanded fan or the reader's own position would be
+// unidentifiable.
 
 const PARENT_EXPANDED_SCALE = 1.18;
 const DEFOCUS_OPACITY = 0.25;
@@ -36,6 +44,7 @@ const DEFOCUS_BLUR = '2px';
 // is soft light, not a solid body -- overlap between neighbouring halos is
 // fine (nebula feel), only the cores must stay apart (collide handles that).
 const GLOW_SCALE = 2.6;
+const PERMANENT_LABELS_PER_CLUSTER = 3;
 
 const ALLIANCE_TEXT = {
   imperium: 'text-gold',
@@ -129,10 +138,26 @@ export function StrategiumMap({
   // must not collapse or replace it (spec §5's "overrides hover-collapse").
   const activeExpanded = expandedKey ?? hoverKey;
 
+  // Separate from hoverKey (expansion): EVERY node sets this on hover, not
+  // just expandable ones, so a leaf faction's name shows too without
+  // triggering the expansion mechanic.
+  const [hoverLabelKey, setHoverLabelKey] = useState(null);
+
   const maxBookCount = Math.max(
     1,
     ...tree.alliances.flatMap((a) => a.nodes.map((n) => n.bookCount))
   );
+
+  // Nodes arrive already sorted by prominence within buildFactionTree, so the
+  // top N per cluster are simply the first N.
+  const permanentLabelKeys = useMemo(() => {
+    return new Set(
+      tree.alliances.flatMap((a) =>
+        a.nodes.slice(0, PERMANENT_LABELS_PER_CLUSTER).map((n) => n.key)
+      )
+    );
+    // eslint-disable-next-line
+  }, [tree]);
 
   // Rest anchors for the TOP-LEVEL nodes only -- the base scatter never
   // reshuffles when something expands, since expansion is additive now.
@@ -237,14 +262,23 @@ export function StrategiumMap({
     // reads brighter, never bigger-sphere.
     const glowAlpha = 0.3 + 0.3 * Math.sqrt(bookCount / maxBookCount);
     const ringDiameter = pos.r * 2 + 12;
+    // Permanent (top-N per cluster) or hovered or currently relevant
+    // (satellite -- only rendered while its parent is expanded -- the
+    // expanded parent itself, or the reader's own position).
+    const showLabel =
+      permanentLabelKeys.has(key) ||
+      key === hoverLabelKey ||
+      isSatellite ||
+      isExpandedParent ||
+      key === positionKey;
 
     return (
       <div key={key}>
         <div
           role="button"
           tabIndex={0}
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
+          onMouseEnter={() => { setHoverLabelKey(key); onEnter(); }}
+          onMouseLeave={() => { setHoverLabelKey((k) => (k === key ? null : k)); onLeave(); }}
           onClick={onClick}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
           className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer transition-[opacity,filter] duration-300 hover:brightness-125"
@@ -296,26 +330,28 @@ export function StrategiumMap({
           )}
           <FactionSigil sigil={sigil} alliance={allianceKey} size={isSatellite ? 'sm' : 'md'} className="relative" />
         </div>
-        <div
-          className={cn(
-            'absolute -translate-x-1/2 pointer-events-none font-tactical uppercase text-center leading-tight',
-            'transition-opacity duration-300 overflow-hidden',
-            ALLIANCE_TEXT[allianceKey]
-          )}
-          style={{
-            left: pos.x,
-            top: pos.y + pos.r + 4,
-            width: 140,
-            fontSize: 10,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            opacity: isFocused ? 0.9 : DEFOCUS_OPACITY,
-            filter: isFocused ? 'none' : `blur(${DEFOCUS_BLUR})`,
-          }}
-        >
-          {label}
-        </div>
+        {showLabel && (
+          <div
+            className={cn(
+              'absolute -translate-x-1/2 pointer-events-none font-tactical uppercase text-center leading-tight',
+              'transition-opacity duration-300 overflow-hidden',
+              ALLIANCE_TEXT[allianceKey]
+            )}
+            style={{
+              left: pos.x,
+              top: pos.y + pos.r + 8,
+              width: 120,
+              fontSize: isSatellite ? 8 : 9,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              opacity: isFocused ? 0.75 : DEFOCUS_OPACITY,
+              filter: isFocused ? 'none' : `blur(${DEFOCUS_BLUR})`,
+            }}
+          >
+            {label}
+          </div>
+        )}
       </div>
     );
   };
