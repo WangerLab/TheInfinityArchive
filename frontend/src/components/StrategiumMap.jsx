@@ -348,7 +348,7 @@ export function StrategiumMap({
           <span
             key={`caption-${alliance.key}`}
             className={cn(
-              'absolute -translate-x-1/2 pointer-events-none font-tactical text-xs tracking-[0.3em] uppercase opacity-50',
+              'absolute -translate-x-1/2 pointer-events-none font-tactical text-sm font-bold tracking-[0.3em] uppercase opacity-80',
               ALLIANCE_TEXT[alliance.key]
             )}
             style={{ left: cluster.cx, top }}
