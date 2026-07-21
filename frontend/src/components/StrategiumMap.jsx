@@ -279,18 +279,22 @@ export function StrategiumMap({
           }}
           title={`${label} (${bookCount})`}
         >
-          <FactionSigil sigil={sigil} alliance={allianceKey} size={pos.r > 26 ? 'xl' : 'lg'} />
+          <FactionSigil sigil={sigil} alliance={allianceKey} size="lg" />
         </div>
         <div
           className={cn(
-            'absolute -translate-x-1/2 pointer-events-none font-tactical uppercase truncate transition-opacity duration-300',
+            'absolute -translate-x-1/2 pointer-events-none font-tactical uppercase text-center leading-tight',
+            'transition-opacity duration-300 overflow-hidden',
             ALLIANCE_TEXT[allianceKey]
           )}
           style={{
             left: localX,
-            top: pos.y + pos.r + 3,
-            maxWidth: Math.max(64, pos.r * 3.2),
-            fontSize: Math.max(9, Math.min(12, pos.r * 0.32)),
+            top: pos.y + pos.r + 4,
+            width: 140,
+            fontSize: 10,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
             opacity: isFocused ? 0.9 : DEFOCUS_OPACITY,
             filter: isFocused ? 'none' : `blur(${DEFOCUS_BLUR})`,
           }}

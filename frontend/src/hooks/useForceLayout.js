@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
 
-const COLLIDE_PADDING = 4;
+// Every node carries a label underneath it -- collision must clear the whole
+// node+label footprint, not just the sphere, or two labels can overlap even
+// while their spheres look politely spaced apart.
+const COLLIDE_PADDING = 14;
+// Extra clearance reserved at the BOTTOM of each box only, so a node's label
+// never clips past its territory's lower edge even after physics displaces
+// it toward the rim.
+const LABEL_BOTTOM_CLEARANCE = 24;
 // Single dial between "fixed slots" and "gas waft", set once in code -- not a
 // user setting (spec §4/§7). Mid-firm: nodes read as recognisable slots but
 // yield when a neighbour is displaced (expansion, collision).
@@ -104,7 +111,7 @@ export function useForceLayout(nodes, boxesByKey) {
         const box = boxesByKey[n.boxKey];
         if (!box) continue;
         n.x = clamp(n.x, box.left + n.r, box.left + box.width - n.r);
-        n.y = clamp(n.y, box.top + n.r, box.top + box.height - n.r);
+        n.y = clamp(n.y, box.top + n.r, box.top + box.height - n.r - LABEL_BOTTOM_CLEARANCE);
       }
       if (!rafScheduled) {
         rafScheduled = true;
