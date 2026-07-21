@@ -105,17 +105,23 @@ const FILL_FRACTION = 0.9;
 // capped their ENTIRE circle, even though there is plenty of free WIDTH to
 // their right that a circle can never reach. Each other cluster constrains
 // only the axis along which it's separated from this one (whichever of
-// dx/dy is larger for that pair), using the FULL centroid-to-centroid
-// distance -- a generous fill budget, not a strict partition guarantee (the
-// real non-overlap guarantee is the shared canvas clamp + forceCollide in
-// useForceLayout.js). Verified against the real WIDE anchors on a ~1230x900
-// canvas: Imperium's rightward reach grows to ~562px (was ~170px isotropic),
-// Chaos/Xenos's reach toward the canvas's right edge grows to ~302px, and
-// the vertical gap BETWEEN Chaos and Xenos (Tim's actual complaint) grows to
-// ~432px each. Degenerates correctly for the TALL (single-column) anchors
-// too: every pair there has dx=0, so every neighbour is automatically
-// classified dy-dominant and left/right fall back to plain edge distance --
-// no special-casing needed.
+// dx/dy is larger for that pair) -- at HALF the centroid-to-centroid
+// distance, a true midpoint partition (same halving the original isotropic
+// circle always used, just applied per-axis instead of isotropically). An
+// earlier version of this function used the FULL distance ("a generous fill
+// budget, the real backstop is forceCollide") -- that was wrong: the nebula
+// glow and caption position are static per-alliance visuals with zero
+// collision-awareness against OTHER alliances, so a live test immediately
+// showed Chaos/Xenos/Imperium bleeding into each other in the shared middle
+// once both sides of a pair grew toward that budget. Verified against the
+// real WIDE anchors on a ~1230x900 canvas: Chaos<->Xenos's mutual extent is
+// now 207px each side (414px total, safely under their 450px centroid
+// distance -- a clean 36px buffer), Imperium's rightward reach is ~272px
+// (still the entire left half of the canvas, up to the neighbours' own left
+// boundary, with no dead gap between them). Degenerates correctly for the
+// TALL (single-column) anchors too: every pair there has dx=0, so every
+// neighbour is automatically classified dy-dominant and left/right fall
+// back to plain edge distance -- no special-casing needed.
 function computeTerritory(cx, cy, centers, selfKey, width, height) {
   let left = cx;
   let right = width - cx;
@@ -125,14 +131,14 @@ function computeTerritory(cx, cy, centers, selfKey, width, height) {
     if (other.alliance.key === selfKey) continue;
     const dx = other.cx - cx;
     const dy = other.cy - cy;
-    const dist = Math.hypot(dx, dy);
+    const halfDist = Math.hypot(dx, dy) / 2;
     if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 0) right = Math.min(right, dist);
-      else left = Math.min(left, dist);
+      if (dx > 0) right = Math.min(right, halfDist);
+      else left = Math.min(left, halfDist);
     } else if (dy > 0) {
-      bottom = Math.min(bottom, dist);
+      bottom = Math.min(bottom, halfDist);
     } else {
-      top = Math.min(top, dist);
+      top = Math.min(top, halfDist);
     }
   }
   return {
