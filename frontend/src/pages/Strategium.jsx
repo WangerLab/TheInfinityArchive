@@ -16,11 +16,13 @@ import {
 // Split console (spec §2): 2/3 living meta-map, 1/3 advisory panel, both
 // visible, coupled by hover in both directions. The advisory query calls
 // api/strategium-advise, resolves each of the 3 returned entry_ids back to a
-// full book object locally, latches the map's expansion onto any
-// recommendation that targets a nested faction (spec §5's auto-expand
-// latch), and logs the event to recommendations_log for the advisor's
-// long-term track record (recommendations themselves stay ephemeral -- only
-// the event persists, per spec §6).
+// full book object locally, and logs the event to recommendations_log for
+// the advisor's long-term track record (recommendations themselves stay
+// ephemeral -- only the event persists, per spec §6).
+//
+// The map has no expand/collapse state anymore (every faction is its own
+// flat node -- see strategiumMap.js's buildFactionTree header), so a
+// recommendation vector always targets a real, already-visible node.
 
 export function Strategium() {
   const navigate = useNavigate();
@@ -49,18 +51,14 @@ export function Strategium() {
         factionPrimary: readingBook.factionPrimary,
         parentFaction: readingBook.parentFaction || null,
         grandAlliance: readingBook.grandAlliance,
-        nodeKey: readingBook.parentFaction || readingBook.factionPrimary,
+        // The book's OWN faction -- every faction is its own flat node now,
+        // so a chapter/legion always resolves to a real, visible node.
+        nodeKey: readingBook.factionPrimary,
         status: 'reading',
       };
     }
     return lastCompleted ? { ...lastCompleted, status: 'completed' } : null;
   }, [currentReading, lastCompleted]);
-
-  // The latch: null when nothing is pinned open, or a top-level node key
-  // once a recommendation targets one of its children, or the reader clicks
-  // an expandable node directly. A fresh query always replaces it (or clears
-  // it, if none of the new recommendations need it).
-  const [expandedKey, setExpandedKey] = useState(null);
 
   const [freeText, setFreeText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,10 +68,9 @@ export function Strategium() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [expandedRowIndex, setExpandedRowIndex] = useState(null);
 
-  // Each recommendation resolved to its full book object plus the map keys
-  // needed to draw its vector -- topKey is always a visible top-level node;
-  // childKey is set only when the target is nested (StrategiumMap falls back
-  // to topKey if that child isn't the currently-expanded one).
+  // Each recommendation resolved to its full book object plus the map key
+  // needed to draw its vector -- the book's own faction, which is always a
+  // real, visible top-level node (no nesting to fall back through anymore).
   const resolvedRecommendations = useMemo(() => {
     return recommendations.map((rec) => {
       const book = resolveBookByEntryId(projectData, rec.entry_id);
@@ -84,8 +81,7 @@ export function Strategium() {
         deviationConsequence: rec.deviation_consequence,
         interludeAwareness: rec.interlude_awareness,
         book,
-        topKey: book?.parentFaction || book?.factionPrimary || null,
-        childKey: book?.parentFaction ? book.factionPrimary : null,
+        targetKey: book?.factionPrimary || null,
       };
     });
   }, [recommendations, projectData]);
@@ -116,21 +112,6 @@ export function Strategium() {
       setRecommendations(data.recommendations);
       setExpandedRowIndex(null);
       setHoveredIndex(null);
-
-      // Auto-expand latch (spec §5): the first recommendation that targets a
-      // nested faction pins its parent open. Only one node can be expanded
-      // at a time, so later cross-parent recommendations fall back to their
-      // umbrella node on the map (StrategiumMap's own fallback).
-      const nestedTarget = data.recommendations.find((r) => {
-        const book = resolveBookByEntryId(projectData, r.entry_id);
-        return book?.parentFaction;
-      });
-      if (nestedTarget) {
-        const book = resolveBookByEntryId(projectData, nestedTarget.entry_id);
-        setExpandedKey(book.parentFaction);
-      } else {
-        setExpandedKey(null);
-      }
 
       // Log the event -- recommendations stay ephemeral, this is the track
       // record (spec §6). Best-effort: a logging failure shouldn't surface
@@ -177,8 +158,6 @@ export function Strategium() {
           <div className="lg:col-span-2 grimdark-panel rounded-xl p-4 h-full min-h-[360px]">
             <StrategiumMap
               tree={tree}
-              expandedKey={expandedKey}
-              onToggleExpand={setExpandedKey}
               onSelectFaction={() => {}}
               positionKey={position?.nodeKey || null}
               vectors={resolvedRecommendations}

@@ -114,13 +114,16 @@ function winnerOf(votesMap) {
   return best;
 }
 
-// Build the two-tier faction tree, grouped by grand_alliance. A book's own
-// faction (factionPrimary) is a top-level node when its parentFaction is
-// NULL, or a child nested under parentFaction otherwise. Umbrella nodes with
-// zero direct books of their own (Chaos Undivided, Nurgle, Tzeentch, Khorne,
-// Slaanesh) still appear -- they exist purely as parent_faction values, never
-// as any book's own faction, but they are the mid-tier expansion target for
-// their children.
+// Build the FLAT faction tree, grouped by grand_alliance. Every distinct
+// faction (factionPrimary) becomes its own top-level node, whether or not it
+// carries a parentFaction -- there is no nesting and no click-to-expand
+// (reversed from the original two-tier design: with the constellation
+// rework's bigger, well-spread stars there was no longer real cover to hide
+// chapters/legions behind an umbrella; Tim's call after that live test).
+// Umbrella values that carry zero direct books of their own (Chaos Undivided,
+// Nurgle, Tzeentch, Khorne, Slaanesh) exist purely as parent_faction values,
+// never as any book's own faction -- they contribute no node of their own,
+// only their children, each promoted to a normal top-level node.
 export function buildFactionTree(projectData, bookProgress) {
   if (!projectData) return { alliances: [] };
   const units = flattenAll(projectData).filter((u) => u.unit.factionPrimary);
@@ -173,45 +176,46 @@ export function buildFactionTree(projectData, bookProgress) {
   };
 
   const byAlliance = new Map();
+  const pushNode = (allianceKey, node) => {
+    if (!byAlliance.has(allianceKey)) byAlliance.set(allianceKey, []);
+    byAlliance.get(allianceKey).push(node);
+  };
+
   for (const [key, node] of top) {
     const alliance = allianceOf(key, node);
-    if (!byAlliance.has(alliance)) byAlliance.set(alliance, []);
 
+    // Every child is promoted to its OWN top-level node, resolving its OWN
+    // alliance from its own votes -- almost always identical to the
+    // umbrella's, but resolved independently rather than inherited. Falls
+    // back to the umbrella's alliance only if a child somehow carried no
+    // votes of its own.
     const kids = children.get(key);
-    const childNodes = kids
-      ? [...kids.entries()].map(([childKey, child]) => ({
+    if (kids) {
+      for (const [childKey, child] of kids) {
+        const childAlliance = winnerOf(child.allianceVotes) || alliance;
+        pushNode(childAlliance, {
           key: childKey,
           label: childKey,
           sigil: sigilForFaction(childKey),
           bookCount: child.entryIds.length,
           isRead: child.entryIds.length > 0 && child.entryIds.every((id) => isUnitRead(id, bookProgress)),
-          parentKey: key,
-        })).sort((a, b) => b.bookCount - a.bookCount)
-      : [];
-
-    const ownBookCount = node.entryIds.length;
-    const childBookCount = childNodes.reduce((sum, c) => sum + c.bookCount, 0);
-
-    // A pure single-child umbrella (no books of its own, exactly one child --
-    // the four Chaos gods, each hiding one legion) carries no information: it
-    // just relabels its only child behind a name the sigil can't show. Emit
-    // the child directly at top level instead of the umbrella wrapper.
-    if (ownBookCount === 0 && childNodes.length === 1) {
-      const only = childNodes[0];
-      byAlliance.get(alliance).push({ ...only, parentKey: null, children: [] });
-      continue;
+        });
+      }
     }
 
-    byAlliance.get(alliance).push({
+    // An umbrella with no books of its own (Chaos Undivided, the four Chaos
+    // gods) exists purely as a parent_faction value -- it carried no real
+    // content of its own, so it contributes no node of its own now that its
+    // children have been promoted above.
+    const ownBookCount = node.entryIds.length;
+    if (ownBookCount === 0) continue;
+
+    pushNode(alliance, {
       key,
       label: key,
       sigil: sigilForFaction(key),
-      bookCount: ownBookCount + childBookCount,
-      isRead:
-        ownBookCount + childBookCount > 0 &&
-        node.entryIds.every((id) => isUnitRead(id, bookProgress)) &&
-        childNodes.every((c) => c.isRead),
-      children: childNodes,
+      bookCount: ownBookCount,
+      isRead: node.entryIds.every((id) => isUnitRead(id, bookProgress)),
     });
   }
 
@@ -226,6 +230,9 @@ export function buildFactionTree(projectData, bookProgress) {
 // The reader's current position: the faction of the most recently completed
 // book (by completed_at), across entries and sub-items alike. Null if
 // nothing has been finished yet -- the recommendation moment has no anchor.
+// nodeKey is the book's OWN faction (never its parentFaction) -- every
+// faction is its own flat node on the map now, so a chapter/legion always
+// resolves to a real, visible node.
 export function getPosition(projectData, bookProgress) {
   if (!projectData) return null;
   const units = flattenAll(projectData);
@@ -246,7 +253,7 @@ export function getPosition(projectData, bookProgress) {
         factionPrimary: unit.factionPrimary,
         parentFaction: unit.parentFaction || null,
         grandAlliance: unit.grandAlliance,
-        nodeKey: unit.parentFaction || unit.factionPrimary,
+        nodeKey: unit.factionPrimary,
       };
     }
   }

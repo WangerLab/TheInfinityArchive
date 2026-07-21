@@ -64,31 +64,23 @@ function packNodesRadially(sortedNodes, radii) {
   return placed;
 }
 
-// Cluster centroids as fractions of the canvas, plus a `bias` unit direction
-// used to point a big umbrella node (and thus its expansion fan) toward the
-// open space at that cluster's rim. Landscape: Imperium (most nodes) owns the
-// left half; Chaos and Xenos split the right side vertically. A tall/narrow
-// panel (mobile single column) stacks the three clusters vertically instead.
+// Cluster centroids as fractions of the canvas. Landscape: Imperium (most
+// nodes) owns the left half; Chaos and Xenos split the right side
+// vertically. A tall/narrow panel (mobile single column) stacks the three
+// clusters vertically instead.
 const TALL_ASPECT = 1.1;
 
 const CLUSTER_ANCHORS_WIDE = {
-  imperium: { fx: 0.3, fy: 0.52, bias: { x: -0.707, y: 0.707 } }, // umbrella -> bottom-left
-  chaos: { fx: 0.72, fy: 0.27, bias: { x: 0.707, y: -0.707 } },
-  xenos: { fx: 0.72, fy: 0.75, bias: { x: 0.707, y: 0.707 } },
+  imperium: { fx: 0.3, fy: 0.52 },
+  chaos: { fx: 0.72, fy: 0.27 },
+  xenos: { fx: 0.72, fy: 0.75 },
 };
 
 const CLUSTER_ANCHORS_TALL = {
-  imperium: { fx: 0.5, fy: 0.25, bias: { x: -1, y: 0 } },
-  chaos: { fx: 0.5, fy: 0.55, bias: { x: 1, y: 0 } },
-  xenos: { fx: 0.5, fy: 0.82, bias: { x: -1, y: 0 } },
+  imperium: { fx: 0.5, fy: 0.25 },
+  chaos: { fx: 0.5, fy: 0.55 },
+  xenos: { fx: 0.5, fy: 0.82 },
 };
-
-// A node with at least this many children gets edge-biased placement: packed
-// LAST (so the greedy packer necessarily lands it on the cluster rim), then
-// the whole cluster is rigidly rotated so that rim position points along the
-// cluster's bias direction. Rigid rotation preserves the packer's
-// non-overlap guarantee and stays fully deterministic.
-const UMBRELLA_EDGE_BIAS_MIN_CHILDREN = 6;
 
 // Keep-out margin subtracted from each cluster's region radius so rest
 // anchors never hug the canvas edge or a neighbouring cluster's half-way line.
@@ -103,12 +95,12 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
   const config = width / height < TALL_ASPECT ? CLUSTER_ANCHORS_TALL : CLUSTER_ANCHORS_WIDE;
 
   const centers = alliances.map((alliance) => {
-    const cfg = config[alliance.key] || { fx: 0.5, fy: 0.5, bias: { x: 0, y: 1 } };
-    return { alliance, cfg, cx: cfg.fx * width, cy: cfg.fy * height };
+    const cfg = config[alliance.key] || { fx: 0.5, fy: 0.5 };
+    return { alliance, cx: cfg.fx * width, cy: cfg.fy * height };
   });
 
   const result = {};
-  for (const { alliance, cfg, cx, cy } of centers) {
+  for (const { alliance, cx, cy } of centers) {
     if (alliance.nodes.length === 0) {
       result[alliance.key] = { cx, cy, spread: 0, anchors: [] };
       continue;
@@ -124,43 +116,8 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
     regionRadius = Math.max(1, regionRadius - EDGE_KEEPOUT);
 
     const sorted = [...alliance.nodes].sort((a, b) => b.bookCount - a.bookCount);
-
-    // Umbrella edge bias: move the biggest qualifying umbrella to the END of
-    // the placement sequence so it lands on the rim.
-    let umbrellaKey = null;
-    let umbrellaIdx = -1;
-    let mostChildren = UMBRELLA_EDGE_BIAS_MIN_CHILDREN - 1;
-    sorted.forEach((node, i) => {
-      const childCount = (node.children || []).length;
-      if (childCount > mostChildren) {
-        mostChildren = childCount;
-        umbrellaIdx = i;
-        umbrellaKey = node.key;
-      }
-    });
-    if (umbrellaIdx >= 0) {
-      const [umbrella] = sorted.splice(umbrellaIdx, 1);
-      sorted.push(umbrella);
-    }
-
     const radii = sorted.map((node) => radiusFor(node.bookCount, maxBookCount));
-    let packed = packNodesRadially(sorted, radii);
-
-    // Rotate the whole cluster so the umbrella's rim position points along
-    // the bias direction (its expansion fan opens into free canvas).
-    if (umbrellaKey) {
-      const u = packed.find((p) => p.key === umbrellaKey);
-      if (u && (u.x !== 0 || u.y !== 0)) {
-        const delta = Math.atan2(cfg.bias.y, cfg.bias.x) - Math.atan2(u.y, u.x);
-        const cos = Math.cos(delta);
-        const sin = Math.sin(delta);
-        packed = packed.map((p) => ({
-          ...p,
-          x: p.x * cos - p.y * sin,
-          y: p.x * sin + p.y * cos,
-        }));
-      }
-    }
+    const packed = packNodesRadially(sorted, radii);
 
     // Positional safety scale ONLY (never radii) for degenerate panel sizes;
     // with global star sizes the packed spread normally fits with 2-3x room.
@@ -180,35 +137,4 @@ export function layoutClusters(alliances, width, height, maxBookCount) {
     result[alliance.key] = { cx, cy, spread, anchors };
   }
   return result;
-}
-
-// Positions a parent's children as a ring of satellites AROUND its own anchor
-// (spec §10: "expand this parent + dock here" -- explicitly not
-// promote-and-pin). Additive, not a replacement: the parent stays exactly
-// where it was. Satellites are smaller stars than top-level nodes; the ring
-// radius clears the (boosted) parent AND gives the satellites enough
-// circumference to sit without forced overlap -- collide relaxes the rest.
-// Same coordinate space as the parent's anchor (global canvas pixels).
-export function satelliteAnchors(parentAnchor, children, maxBookCount) {
-  const n = children.length;
-  if (n === 0) return [];
-  const radii = children.map((c) =>
-    Math.min(11, Math.max(8, radiusFor(c.bookCount, maxBookCount) * 0.7))
-  );
-  const avgRadius = radii.reduce((s, r) => s + r, 0) / n;
-  const maxRadius = Math.max(...radii);
-  const ring = Math.max(
-    parentAnchor.r + maxRadius + 16,
-    (n * (2 * avgRadius + 8)) / (2 * Math.PI)
-  );
-
-  return children.map((child, i) => {
-    const angle = -Math.PI / 2 + i * ((2 * Math.PI) / n);
-    return {
-      key: child.key,
-      x: parentAnchor.x + ring * Math.cos(angle),
-      y: parentAnchor.y + ring * Math.sin(angle),
-      r: radii[i],
-    };
-  });
 }
