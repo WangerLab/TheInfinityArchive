@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from 'lib/utils';
 import { FactionSigil } from './FactionSigil';
 import { layoutConstellations, NEBULA_SCALE } from 'lib/strategiumLayout';
-import { useForceLayout } from 'hooks/useForceLayout';
+import { useStellarDrift } from 'hooks/useStellarDrift';
 
 // Living meta-map: ONE shared canvas holding three alliance REGIONS (rects,
 // never rendered as visible boxes -- only the soft nebula glow marks them).
@@ -186,13 +186,7 @@ export function StrategiumMap({
     // eslint-disable-next-line
   }, [tree, width, height]);
 
-  const simNodes = useMemo(
-    () => layout.anchors.map((a) => ({ key: a.key, x: a.x, y: a.y, r: a.r })),
-    [layout]
-  );
-
-  const bounds = useMemo(() => ({ width, height }), [width, height]);
-  const positions = useForceLayout(simNodes, bounds);
+  const positions = useStellarDrift(layout.anchors, layout.metrics?.wobble ?? 4);
 
   // Resolve each recommendation vector's endpoint -- the target's own
   // faction is always a real, visible top-level node now (no nesting to
