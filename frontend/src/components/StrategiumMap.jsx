@@ -32,6 +32,10 @@ import { useForceLayout } from 'hooks/useForceLayout';
 const PARENT_EXPANDED_SCALE = 1.18;
 const DEFOCUS_OPACITY = 0.25;
 const DEFOCUS_BLUR = '2px';
+// Star halo diameter as a multiple of the node's hit-area diameter. The halo
+// is soft light, not a solid body -- overlap between neighbouring halos is
+// fine (nebula feel), only the cores must stay apart (collide handles that).
+const GLOW_SCALE = 2.6;
 
 const ALLIANCE_TEXT = {
   imperium: 'text-gold',
@@ -233,13 +237,18 @@ export function StrategiumMap({
     onSelectFaction?.(child.key, parentKey);
   };
 
-  const renderNode = ({ key, label, sigil, bookCount, isRead, allianceKey, isExpandedParent, onClick, onEnter, onLeave }) => {
+  const renderNode = ({ key, label, sigil, bookCount, isRead, allianceKey, isSatellite, isExpandedParent, onClick, onEnter, onLeave }) => {
     const pos = positions[key];
     if (!pos) return null;
     // Focus (expansion) and read-state are independent signals -- a docked
     // satellite that happens to be fully read still dims for read-state,
     // exactly like any top-level node.
     const isFocused = !focusedKeys || focusedKeys.has(key);
+    const tint = ALLIANCE_COLOR[allianceKey];
+    // Prominence maps to halo brightness within a narrow band -- the star
+    // reads brighter, never bigger-sphere.
+    const glowAlpha = 0.3 + 0.3 * Math.sqrt(bookCount / maxBookCount);
+    const ringDiameter = pos.r * 2 + 12;
 
     return (
       <div key={key}>
@@ -250,25 +259,54 @@ export function StrategiumMap({
           onMouseLeave={onLeave}
           onClick={onClick}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer transition-[opacity,filter] duration-300"
+          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer transition-[opacity,filter] duration-300 hover:brightness-125"
           style={{
             left: pos.x,
             top: pos.y,
             width: pos.r * 2,
             height: pos.r * 2,
             opacity: isFocused ? (isRead ? 0.35 : 1) : DEFOCUS_OPACITY,
-            filter: isFocused ? 'none' : `blur(${DEFOCUS_BLUR})`,
-            background: `radial-gradient(circle at 34% 30%, ${ALLIANCE_COLOR[allianceKey](0.95)}, ${ALLIANCE_COLOR[allianceKey](0.28)} 62%, hsl(var(--void) / 0.92) 100%)`,
-            boxShadow: `0 0 ${Math.max(6, pos.r * 0.9)}px ${ALLIANCE_COLOR[allianceKey](0.55)}, inset 0 0 ${pos.r * 0.5}px hsl(var(--void) / 0.6)`,
-            border: isExpandedParent
-              ? '2px solid hsl(var(--gold) / 0.85)'
-              : key === positionKey
-                ? '2px solid hsl(var(--auspex) / 0.85)'
-                : 'none',
+            // undefined (not 'none') when focused, so the hover brightness
+            // utility isn't overridden by an inline filter.
+            filter: isFocused ? undefined : `blur(${DEFOCUS_BLUR})`,
           }}
           title={`${label} (${bookCount})`}
         >
-          <FactionSigil sigil={sigil} alliance={allianceKey} size="lg" />
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+            style={{
+              width: pos.r * 2 * GLOW_SCALE,
+              height: pos.r * 2 * GLOW_SCALE,
+              background: `radial-gradient(circle, ${tint(glowAlpha)} 0%, ${tint(glowAlpha * 0.4)} 40%, transparent 70%)`,
+            }}
+          />
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+            style={{ width: 4, height: 4, background: tint(0.95), boxShadow: `0 0 6px 2px ${tint(0.7)}` }}
+          />
+          {isExpandedParent && (
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+              style={{
+                width: ringDiameter,
+                height: ringDiameter,
+                border: '1px solid hsl(var(--gold) / 0.85)',
+                boxShadow: '0 0 10px hsl(var(--gold) / 0.5)',
+              }}
+            />
+          )}
+          {key === positionKey && (
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none animate-pulse"
+              style={{
+                width: ringDiameter,
+                height: ringDiameter,
+                border: '1px solid hsl(var(--auspex) / 0.85)',
+                boxShadow: '0 0 10px hsl(var(--auspex) / 0.5)',
+              }}
+            />
+          )}
+          <FactionSigil sigil={sigil} alliance={allianceKey} size={isSatellite ? 'sm' : 'md'} className="relative" />
         </div>
         <div
           className={cn(
@@ -365,8 +403,8 @@ export function StrategiumMap({
           viewBox={`0 0 ${width} ${height}`}
           style={{ pointerEvents: 'none' }}
         >
-          {/* Satellite connectors -- thin lines from the expanded parent to
-              each of its docked children, in the parent's alliance tint. */}
+          {/* Satellite connectors -- hairline constellation edges from the
+              expanded parent to each docked child, in the alliance tint. */}
           {expandedParent && expandedParent.node.children.map((child) => {
             const from = positions[expandedParent.node.key];
             const to = positions[child.key];
@@ -375,8 +413,8 @@ export function StrategiumMap({
               <line
                 key={`connector-${child.key}`}
                 x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                stroke="hsl(var(--gold) / 0.35)"
-                strokeWidth={1}
+                stroke={ALLIANCE_COLOR[expandedParent.allianceKey](0.3)}
+                strokeWidth={0.75}
               />
             );
           })}
