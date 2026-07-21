@@ -99,8 +99,13 @@ const CLUSTER_ANCHORS_TALL = {
 const EDGE_KEEPOUT = 18;
 
 // How much of its available territory a cluster fills at rest (positions
-// only, never radii -- see the scale computation below for why).
-const FILL_FRACTION = 0.9;
+// only, never radii -- see the scale computation below for why). 0.9 -> 0.93
+// reclaims a bit of the fill the territory-halving fix took away. Kept well
+// below ~0.98: computeTerritory halves the DIAGONAL centroid distance but
+// applies it along a single axis, so a diagonal neighbour pair (e.g.
+// Imperium <-> Chaos/Xenos) has a small Pythagorean safety margin that
+// narrows as this approaches 1 -- verified comfortable at 0.93.
+const FILL_FRACTION = 0.93;
 
 // Per-cluster territory: FOUR independent extents (left/right/top/bottom),
 // not one isotropic radius. An isotropic circle is capped in every direction
