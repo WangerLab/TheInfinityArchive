@@ -155,13 +155,7 @@ export function Strategium() {
             for their own much taller headers -- this page's header is far
             smaller, hence the lower starting estimate). */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:h-[calc(100vh-150px)]">
-          {/* Below lg the grid loses its calc-height (no reliable viewport
-              height to divide three ways at that size), so StrategiumMap's
-              own STACKED layout may need more room than this panel naturally
-              gets -- overflow-y-auto lets IT scroll rather than clip;
-              lg:overflow-visible turns that off once the calc-height grid
-              (WIDE layout, sized to match exactly) takes over. */}
-          <div className="lg:col-span-2 grimdark-panel rounded-xl p-4 h-full min-h-[360px] overflow-y-auto lg:overflow-visible">
+          <div className="lg:col-span-2 grimdark-panel rounded-xl p-4 h-full min-h-[360px]">
             <StrategiumMap
               tree={tree}
               onSelectFaction={() => {}}

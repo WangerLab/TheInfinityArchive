@@ -223,13 +223,6 @@ export function StrategiumMap({
 
   const positions = useStellarDrift(layout.anchors, layout.metrics?.wobble ?? 4);
 
-  // On a short/stacked panel (layoutConstellations' STACKED path), the
-  // content genuinely needs more vertical room than the panel currently
-  // has -- canvasHeight is what every absolutely-positioned child and SVG
-  // below actually spans; the outer, ResizeObserver-measured container
-  // stays at the panel's real height and scrolls to it.
-  const canvasHeight = Math.max(height, layout.requiredHeight || 0);
-
   // Resolve each recommendation vector's endpoint -- the target's own
   // faction is always a real, visible top-level node now (no nesting to
   // fall back through).
@@ -324,25 +317,20 @@ export function StrategiumMap({
   };
 
   return (
-    // ResizeObserver watches THIS outer div, at the panel's real size --
-    // never the inner canvas below, which can be taller (STACKED layout) and
-    // would otherwise create a resize feedback loop. overflow-y-auto is
-    // inert whenever the inner canvas fits (the normal WIDE case).
-    <div ref={containerRef} className="relative w-full h-full min-h-[320px] overflow-y-auto">
-      <div className="relative w-full" style={{ height: canvasHeight }}>
+    <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
       {/* Background starfield: pseudo-depth dust, sits behind everything. */}
       {hasSize && (
         <svg
           className="absolute inset-0 pointer-events-none"
           width={width}
-          height={canvasHeight}
-          viewBox={`0 0 ${width} ${canvasHeight}`}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
         >
           {starfield.map((s, i) => (
             <circle
               key={`dust-${i}`}
               cx={s.fx * width}
-              cy={s.fy * canvasHeight}
+              cy={s.fy * height}
               r={s.r}
               fill="white"
               opacity={s.opacity}
@@ -386,8 +374,8 @@ export function StrategiumMap({
         <svg
           className="absolute inset-0 pointer-events-none"
           width={width}
-          height={canvasHeight}
-          viewBox={`0 0 ${width} ${canvasHeight}`}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
         >
           {layout.edges.map((edge, i) => {
             const from = positions[edge.a];
@@ -457,8 +445,8 @@ export function StrategiumMap({
         <svg
           className="absolute inset-0"
           width={width}
-          height={canvasHeight}
-          viewBox={`0 0 ${width} ${canvasHeight}`}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
           style={{ pointerEvents: 'none' }}
         >
           {resolvedVectors.map((v, i) => {
@@ -498,7 +486,6 @@ export function StrategiumMap({
           </div>
         );
       })}
-      </div>
     </div>
   );
 }
