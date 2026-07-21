@@ -309,14 +309,32 @@ export function StrategiumMap({
     <div ref={containerRef} className="relative w-full h-full min-h-[320px]">
       {hasSize && boxes.map(({ alliance, x, width: boxWidth }) => (
         <React.Fragment key={alliance.key}>
+          {/* Header docked onto the territory's top edge: a rule in the
+              alliance tint, fading out to both sides, with the label sitting
+              on a small cutout patch so the line doesn't cross the letters --
+              anchors the heading TO its territory instead of floating loose
+              above empty space. */}
           <div
-            className={cn(
-              'absolute text-center font-tactical text-xs tracking-[0.3em] uppercase flex items-end justify-center pb-2',
-              ALLIANCE_TEXT[alliance.key]
-            )}
+            className="absolute flex items-center justify-center"
             style={{ left: x, top: 0, width: boxWidth, height: labelHeight }}
           >
-            {alliance.label}
+            <div
+              className="absolute left-0 right-0"
+              style={{
+                top: '50%',
+                height: 1,
+                background: `linear-gradient(to right, transparent, ${ALLIANCE_COLOR[alliance.key](0.4)} 50%, transparent)`,
+              }}
+            />
+            <span
+              className={cn(
+                'relative font-tactical text-xs tracking-[0.3em] uppercase px-3',
+                ALLIANCE_TEXT[alliance.key]
+              )}
+              style={{ background: 'hsl(var(--void) / 0.55)' }}
+            >
+              {alliance.label}
+            </span>
           </div>
 
           <div
@@ -327,6 +345,8 @@ export function StrategiumMap({
               width: boxWidth,
               height: boxHeight,
               background: ALLIANCE_FIELD[alliance.key],
+              border: `1px solid ${ALLIANCE_COLOR[alliance.key](0.25)}`,
+              borderRadius: 24,
             }}
           >
             {alliance.nodes.map((node) =>
