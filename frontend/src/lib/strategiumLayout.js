@@ -37,19 +37,48 @@ export function radiusFor(bookCount, maxBookCount) {
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
 // Greedy radial packing (see the pre-rework commit history): walk the
-// golden-angle spiral outward per node until it clears every circle already
-// placed. Deterministic, non-overlapping, most-prominent node at dead center.
+// golden-angle spiral outward per node until it clears every footprint
+// already placed. Deterministic, non-overlapping, most-prominent node at
+// dead center.
 const PACK_RADIAL_STEP = 2;
-// Bumped 14 -> 18 -> 40: every node's label is now always visible (not just
-// a top-3-per-cluster subset), and 18 still wasn't enough -- a live test
-// showed adjacent labels merging into each other (e.g. "GREY KNIGHTS" /
-// "SPACE MARINES" running together). Labels are 100px wide, so two
-// horizontally-neighbouring stars need roughly that much CENTER-to-center
-// distance to keep their labels apart; PACK_GAP=40 gives a typical pair
-// (r~24 each) a center distance of ~88px -- close to that target without
-// inflating every cluster by the full label width, since diagonally-offset
-// neighbours need less (their labels sit at different vertical bands).
-const PACK_GAP = 40;
+
+// Every node's actual collision footprint is icon-circle PLUS the 100px-wide
+// label hanging below it (StrategiumMap.jsx: width 100, 3 lines @ ~12.5px
+// leading-tight, 8px gap below the icon) -- not just the bare circle. A
+// single isotropic radius gap can't express "needs full label width apart
+// horizontally, needs almost nothing apart vertically" at the same time:
+// raising it twice (14 -> 18 -> 40) still let diagonally-close spiral points
+// merge labels (e.g. Thousand Sons / Emperor's Children), because a value
+// generous enough for horizontally-adjacent pairs is still checked
+// isotropically against pairs that never needed that much room vertically.
+const LABEL_WIDTH = 100;
+const LABEL_GAP = 8;
+const LABEL_HEIGHT = 38;
+// Real, visible breathing room beyond bare non-touching -- every element
+// should read as standing clearly on its own, not just technically clear.
+const FOOTPRINT_MARGIN = 20;
+
+// True if two nodes' footprints (icon + the label rectangle hanging below
+// it) do NOT overlap, with FOOTPRINT_MARGIN of real clearance. Each node's
+// footprint is a rectangle: half-width = max(its icon radius, half the
+// label width) so the box always contains both the icon circle and the
+// label; vertical span runs from the icon's own top edge down through the
+// label's bottom edge. Two rectangles are clear if separated on EITHER axis
+// (standard AABB non-overlap test) -- this is what correctly allows tight
+// vertical packing (labels land in different height bands) while forcing
+// wide horizontal separation (labels would otherwise run into each other),
+// which a single isotropic radius could never express at once.
+function footprintsClear(x, y, r, p) {
+  const halfW = Math.max(r, LABEL_WIDTH / 2);
+  const pHalfW = Math.max(p.r, LABEL_WIDTH / 2);
+  if (Math.abs(x - p.x) >= halfW + pHalfW + FOOTPRINT_MARGIN) return true;
+
+  const bottom = y + r + LABEL_GAP + LABEL_HEIGHT;
+  const pBottom = p.y + p.r + LABEL_GAP + LABEL_HEIGHT;
+  const top = y - r;
+  const pTop = p.y - p.r;
+  return bottom + FOOTPRINT_MARGIN <= pTop || pBottom + FOOTPRINT_MARGIN <= top;
+}
 
 function packNodesRadially(sortedNodes, radii) {
   const placed = [];
@@ -63,11 +92,7 @@ function packNodesRadially(sortedNodes, radii) {
         radius += PACK_RADIAL_STEP;
         const x = radius * Math.cos(angle);
         const y = radius * Math.sin(angle);
-        clear = placed.every((p) => {
-          const dx = x - p.x;
-          const dy = y - p.y;
-          return Math.sqrt(dx * dx + dy * dy) >= r + p.r + PACK_GAP;
-        });
+        clear = placed.every((p) => footprintsClear(x, y, r, p));
         if (radius > 20000) clear = true; // safety valve, never expected to hit
       }
     }
